@@ -1,0 +1,2 @@
+
+1 - Look at using namespaces throughout the HISSTools Common Library
