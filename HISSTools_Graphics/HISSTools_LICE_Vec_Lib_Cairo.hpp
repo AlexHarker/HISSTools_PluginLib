@@ -58,9 +58,9 @@ public:
     
     double getScale() const { return mScale; }
 
-    void mergeBitmap(cairo_surface_t *source, int writeXOffset, int writeYOffset, int readXOffset, int readYOffset, int width, int height)
+    void mergeBitmap(cairo_surface_t *source, int writeXOffset, int writeYOffset, int readXOffset, int readYOffset, int width, int height, double scale = 1.0)
     {
-        HISSTools_LICE_Raster::mergeBitmap(source, writeXOffset, writeYOffset, readXOffset, readYOffset, width, height);
+        HISSTools_LICE_Raster::mergeBitmap(source, writeXOffset, writeYOffset, readXOffset, readYOffset, width, height, scale);
     }
     
     void setColor(HISSTools_Color_Spec * color)

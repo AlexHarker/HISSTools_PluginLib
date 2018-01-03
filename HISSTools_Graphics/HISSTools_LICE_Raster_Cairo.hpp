@@ -166,13 +166,14 @@ public:
 	
 protected:
 
-    void mergeBitmap(cairo_surface_t *source, int writeXOffset, int writeYOffset, int readXOffset, int readYOffset, int width, int height)
+    void mergeBitmap(cairo_surface_t *source, int writeXOffset, int writeYOffset, int readXOffset, int readYOffset, int width, int height, double scale = 1.0)
     {
         cairo_t *cr = getContext();
         
         cairo_save(cr);
         cairo_rectangle(cr, writeXOffset, writeYOffset, width, height);
         cairo_clip(cr);
+        cairo_scale(cr, 1.0/scale, 1.0/scale);
         cairo_set_source_surface(cr, source, writeXOffset - readXOffset, writeYOffset - readYOffset);
         cairo_paint_with_alpha(cr, 1.0);
         cairo_restore(cr);
@@ -260,16 +261,10 @@ protected:
 	//////////////////////////////////////////////////////////////////////////////
 	
 	// Drop Shadow
-	
-    void drawPixel(double x, double y, double alpha)
+    
+    void setPixel(int x, int y, double alpha, unsigned char *data, int stride)
     {
-        HISSTools_Color srcColour = mColor->getColor(x, y);
-        
-        cairo_set_source_rgba(getContext(), srcColour.r, srcColour.g, srcColour.b, srcColour.a * alpha);
-        cairo_move_to(getContext(), x - 0.5, y - 0.5);
-        cairo_line_to(getContext(), x + 0.5, y + 0.5);
-        cairo_set_line_width(getContext(), 1);
-        cairo_stroke(getContext());
+        data[y * stride + x] = std::min(static_cast<int>(alpha * 255.0), 0xff);
     }
     
 public:
@@ -277,11 +272,10 @@ public:
 	void startShadow(HISSTools_Shadow *shadow, double scale)
 	{
         mShadow = shadow;
-        shadow->setScaling(1.0);
-        //shadow->setScaling(scale);
+        shadow->setScaling(scale);
 
-        int width = getWidth();// * scale;
-        int height = getHeight();// * scale;
+        int width = getWidth() * scale;
+        int height = getHeight() * scale;
 
 		// Make new temp image (inefficient!!)
 		
@@ -289,7 +283,7 @@ public:
         
         mCairoSurfaceShadow = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
         mCairoShadow = cairo_create(mCairoSurfaceShadow);
-        //cairo_scale(mCairoShadow, scale, scale);
+        cairo_scale(mCairoShadow, scale, scale);
         
         mCairoRestore = mCairoDraw;
         setContext(mCairoShadow);
@@ -315,6 +309,7 @@ public:
         return data[y * stride + (x * 4)];*/
     }
     
+    
 	void renderShadow(bool renderImage, double scale)
 	{
         if (mCairoRestore)
@@ -322,10 +317,10 @@ public:
         mCairoRestore = NULL;
         
 		int i, j;
-		int xLo = mDrawXLo;
-		int xHi = mDrawXHi;
-		int yLo = mDrawYLo;
-		int yHi = mDrawYHi;
+		int xLo = round(mDrawXLo * scale);
+		int xHi = round(mDrawXHi * scale);
+		int yLo = round(mDrawYLo * scale);
+		int yHi = round(mDrawYHi * scale);
 		
 		// Check there is a shadow specified (otherwise only render original image)
 		
@@ -361,7 +356,7 @@ public:
 
 			// Zero temp values
 			
-			for (i = 0; i < width * height; i++)
+			for (i = 0; i < sizeRequired; i++)
 				mBlurTempAlpha1[i] = mBlurTempAlpha2[i] = 0.0;
 			
 			// Copy alpha values from the temp bitmap
@@ -373,7 +368,7 @@ public:
 				for (j = kernelSize - 1; j < (width - kernelSize) + 1; j++)
 					mBlurTempAlpha2[i * width + j] = getAlpha((j + xLo - (kernelSize - 1)), (i + yLo - (kernelSize - 1)), data, surface_stride) * maxChanRecip;
 			
-			// Do blur
+			// Do blur (row, column then alpha mask with offsets)
 			
 			if (kernelSize > 1)
 			{
@@ -381,33 +376,35 @@ public:
 				mShadow->colBlur(&mBlurTempAlpha2[0], &mBlurTempAlpha1[0], width, height);
 			}
 			
-			// Set to shadow color
-			
-			setColor(mShadow->getShadowColor(mColor));
-			
-			// Draw Shadow (add offsets here)
 			// FIX - Add Fractional offset - use linear interpolation on write
-			/*
+			
+            surface_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, getWidth() * scale);
+            data = (unsigned char *)calloc(surface_stride * scale * getHeight(), 1);
+            
             for (i = clipY(yLo + yShift); i < clipY(yLo + yShift + height); i++)
                 for (j =  clipX(xLo + xShift); j < clipX(xLo + xShift + width); j++)
-                    drawPixel(j, i, mBlurTempAlpha2[(i - yLo - yShift) * width + (j - xLo - xShift)]);
-			*/
-			// Set back to standard color spec
-			
-			setColor(mShadow->getPrevColor());
+                    setPixel(j, i, mBlurTempAlpha2[(i - yLo - yShift) * width + (j - xLo - xShift)], data, surface_stride);
+            
+            // Draw Shadow in correct color
+            
+            cairo_t *cr = getContext();
+            
+            cairo_save(cr);
+            mShadow->getShadowColor()->setAsSource(cr);
+            cairo_surface_t *mask = cairo_image_surface_create_for_data(data, CAIRO_FORMAT_A8, getWidth() * scale, getHeight() * scale, surface_stride);
+            cairo_scale(cr, 1.0/scale, 1.0/scale);
+            cairo_mask_surface(cr, mask, 0, 0);
+            cairo_restore(cr);
+            cairo_surface_destroy(mask);
+            free(data);
 		}
 		
 		// Merge from temp bitmap
-	
+
+        // FIX - this looks inefficient - ensure better clipping!
+         
 		if (renderImage)
-		{
-            // FIX - this looks inefficient - ensure better clipping!
-            
-            mergeBitmap(mCairoSurfaceShadow, 0, 0, 0, 0, getWidth(), getHeight());
-            /*for (i = clipY(yLo); i < clipY(yHi + 1); i++)
-                for (j = clipX(xLo); j < clipX(xHi + 1); j++)
-                    mergePixel(mBits + i * mRowSpan + j, inPixels[i * rowSpan + j]);*/
-		}
+            mergeBitmap(mCairoSurfaceShadow, 0, 0, 0, 0, getWidth(), getHeight(), scale);
 	}
 };
 

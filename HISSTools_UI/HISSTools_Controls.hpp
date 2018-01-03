@@ -31,11 +31,11 @@ private:
 	cairo_surface_t *mBackground;
     cairo_t *mContext;
 	bool mDrawBackground;
-    bool mAlwaysDrawNoCache;
+    bool mNoCaching;
     
 public:
 	
-    HISSTools_Control_Layers() : mBackground(NULL), mContext(NULL), mDrawBackground(true), mAlwaysDrawNoCache(false)
+    HISSTools_Control_Layers() : mBackground(NULL), mContext(NULL), mDrawBackground(true), mNoCaching(true)
 	{}
     
     ~HISSTools_Control_Layers()
@@ -48,27 +48,28 @@ public:
 	
     bool startBackground(IGraphics& pGraphics, HISSTools_LICE_Vec_Lib *vecDraw, IRECT area)
     {
-        if (mDrawBackground && !mAlwaysDrawNoCache)
+        if (mDrawBackground && !mNoCaching)
         {
-            int height = pGraphics.Height();// * pGraphics.GetDisplayScale();
-            int width = pGraphics.Width();// * pGraphics.GetDisplayScale();
+            int height = pGraphics.Height() * pGraphics.GetDisplayScale();
+            int width = pGraphics.Width() * pGraphics.GetDisplayScale();
 
             // FIX - this is super wasteful...
 
             mBackground = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
             mContext = cairo_create(mBackground);
-            //cairo_scale(mContext, pGraphics.GetDisplayScale(), pGraphics.GetDisplayScale());
+            cairo_scale(mContext, pGraphics.GetDisplayScale(), pGraphics.GetDisplayScale());
             
             vecDraw->setContext(mContext, pGraphics.GetDisplayScale());
         }
         
-        return mDrawBackground || mAlwaysDrawNoCache;
+        return mDrawBackground || mNoCaching;
     }
     
     void renderBackground(IGraphics& pGraphics, HISSTools_LICE_Vec_Lib *vecDraw, IRECT area)
     {
         vecDraw->setContext((cairo_t *)pGraphics.GetData(), pGraphics.GetDisplayScale());
-        vecDraw->mergeBitmap(mBackground, area.L, area.T, area.L, area.T, area.W(), area.H());
+        if (!mNoCaching)
+            vecDraw->mergeBitmap(mBackground, area.L, area.T, area.L, area.T, area.W(), area.H(), pGraphics.GetDisplayScale());
         mDrawBackground = false;
     }
    
@@ -1915,7 +1916,6 @@ public:
 			mXHilite = -1;
 			mXHilite = -1;
 		}
-
 		
 		SetDirty(false);
 	}
