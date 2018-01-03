@@ -69,7 +69,7 @@ protected:
     
 public:
     
-    HISSTools_Color_Spec ()
+    HISSTools_Color_Spec()
     {
         mColor.r = 0;
         mColor.g = 0;
@@ -89,10 +89,6 @@ public:
     
     virtual ~HISSTools_Color_Spec(){}
     
-    virtual HISSTools_Color getColor(double x, double y)
-    {
-        return mColor;
-    }
     
     virtual void setAsSource(cairo_t *cr)
     {
@@ -143,30 +139,13 @@ public:
         cairo_set_source(cr, mPattern);
     }
     
-	bool addStop(HISSTools_Color color, double stop)
+	void addStop(HISSTools_Color color, double stop)
 	{
         color = clampColor(color);
         
         cairo_pattern_add_color_stop_rgba(mPattern, stop, color.r, color.g, color.b, color.a);
-        
-        return true;
     }
     
-	virtual HISSTools_Color getColor(double x, double y)
-	{	
-        if (mOrientation == kCSOrientVertical)
-        {
-            if (mFlipVertical == true)
-                return calcColor(1.0 - ((y - mYLo) / (mYHi - mYLo)));
-            else
-                return calcColor((y - mYLo) / (mYHi - mYLo));
-        }
-        else
-            return calcColor((x - mXLo) / (mXHi - mXLo));
-        
-        return calcColor((y - mYLo) / (mYHi - mYLo));
-	}
-
     virtual void setRect(double xLo, double xHi, double yLo, double yHi, ColorOrientation CSOrientation)
     {
         HISSTools_Color_Spec::setRect(xLo, xHi, yLo, yHi, CSOrientation);
@@ -194,42 +173,6 @@ public:
         
         cairo_pattern_set_matrix(mPattern, &mMatrix);
     }
-    
-protected:
-	
-	HISSTools_Color calcColor(double gradPoint)
-	{
-		HISSTools_Color col1, col2, retColor;
-        double stop1, stop2;
-		int i, nStops;
-        
-        cairo_pattern_get_color_stop_count(mPattern, &nStops);
-
-        if (!nStops)
-			return mColor;
-		
-		for (i = 0; i < nStops; i++)
-        {
-            cairo_pattern_get_color_stop_rgba (mPattern, i, &stop2, &col2.r, &col2.g, &col2.b, &col2.a);
-
-			if (gradPoint < stop2)
-				break;
-        }
-
-		if (i == 0 || i == nStops)
-			return col1;
-
-        cairo_pattern_get_color_stop_rgba(mPattern, i, &stop1, &col1.r, &col1.g, &col1.b, &col1.a);
-
-		double linInterp = (gradPoint - stop1) / (stop2 - stop1);
-		
-		retColor.r = col1.r + linInterp * (col2.r - col1.r);
-		retColor.g = col1.g + linInterp * (col2.g - col1.g);
-		retColor.b = col1.b + linInterp * (col2.b - col1.b);
-		retColor.a = col1.a + linInterp * (col2.a - col1.a);
-		
-		return retColor;		
-	}
 };
 
 class HISSTools_LICE_HGradient : public HISSTools_LICE_HVGradient
@@ -238,11 +181,6 @@ class HISSTools_LICE_HGradient : public HISSTools_LICE_HVGradient
 public:
 	
     HISSTools_LICE_HGradient() : HISSTools_LICE_HVGradient() {}
-    
-	HISSTools_Color getColor(double x, double y, ColorOrientation CSOrientation)
-	{		
-		return calcColor((x - mXLo) / (mXHi - mXLo));
-	}
     
     virtual void setRect(double xLo, double xHi, double yLo, double yHi, ColorOrientation CSOrientation)
     {
@@ -258,12 +196,6 @@ public:
     
     HISSTools_LICE_VGradient() : HISSTools_LICE_HVGradient(false) {}
 
-	
-	HISSTools_Color getColor(double x, double y, ColorOrientation CSOrientation)
-	{
-        return calcColor((y - mYLo) / (mYHi - mYLo));
-	}
-    
     virtual void setRect(double xLo, double xHi, double yLo, double yHi, ColorOrientation CSOrientation)
     {
         HISSTools_LICE_HVGradient::setRect(xLo, xHi, yLo, yHi, kCSOrientVertical);
