@@ -26,12 +26,11 @@ private:
     double mScale;
     
 	HISSTools_Color_Spec *mShadowColor;
-	HISSTools_Color_Spec *mPrevColor;
 	
 public:
 		
 	HISSTools_Shadow(HISSTools_Color_Spec *shadowColor, double xOffset, double yOffset, double blurSize)
-    : mXOffset(xOffset), mYOffset(yOffset), mBlurSize(blurSize), mShadowColor(shadowColor), mPrevColor(NULL)
+    : mXOffset(xOffset), mYOffset(yOffset), mBlurSize(blurSize), mShadowColor(shadowColor)
 	{
         setScaling(1.0);
     }
@@ -125,14 +124,11 @@ public:
 	double getXOffset() const   { return mXOffset * mScale; }
 	double getYOffset() const   { return mYOffset * mScale; }
 	
-	HISSTools_Color_Spec *getShadowColor(HISSTools_Color_Spec *prevColor)
+	HISSTools_Color_Spec *getShadowColor()
 	{
-		mPrevColor = prevColor;
 		return mShadowColor;
 	}
-	
-	HISSTools_Color_Spec *getPrevColor() const  { return mPrevColor; }
-		
+			
 	HISSTools_Bounds getBlurBounds(HISSTools_Bounds currentBounds, double scale)
 	{
         setScaling(scale);
