@@ -50,7 +50,7 @@ private:
 	
     std::vector <double> mBlurTempAlpha1;
     std::vector <double> mBlurTempAlpha2;
-	
+    std::vector<unsigned char> mAlphaMask;
 protected:
 	
 	//////////////////////////////////////////////////////////////////////////////
@@ -189,8 +189,9 @@ protected:
 			// FIX - Add Fractional offset - use linear interpolation on write
 			
             surfaceStride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, getWidth() * scale);
-            std::vector<unsigned char> alphaMask(surfaceStride * scale * getHeight(), 0);
-            data = &alphaMask[0];
+            mAlphaMask.resize(surfaceStride * scale * getHeight());
+            std::fill(mAlphaMask.begin(), mAlphaMask.end(), 0);
+            data = &mAlphaMask[0];
             
             Area clipExtents;
             IRECT rect;
