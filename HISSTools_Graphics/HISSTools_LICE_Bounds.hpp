@@ -4,10 +4,6 @@
 
 #include <IPlugStructs.h>
 
-#ifndef WDL_NO_DEFINE_MINMAX
-#define WDL_NO_DEFINE_MINMAX
-#endif
-
 class HISSTools_Bounds
 {
 		

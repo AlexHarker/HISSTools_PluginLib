@@ -2,10 +2,6 @@
 #ifndef __HISSTOOLS_COLOR_SPEC__
 #define __HISSTOOLS_COLOR_SPEC__
 
-#ifndef WDL_NO_DEFINE_MINMAX
-#define WDL_NO_DEFINE_MINMAX
-#endif
-
 #include <lice.h>
 #include "cairo/cairo.h"
 

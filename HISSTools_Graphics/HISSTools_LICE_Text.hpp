@@ -5,10 +5,6 @@
 
 #include "HISSTools_LICE_Raster_Cairo.hpp"
 
-#ifndef WDL_NO_DEFINE_MINMAX
-#define WDL_NO_DEFINE_MINMAX
-#endif
-
 #include <lice.h>
 #include <lice_text.h>
 

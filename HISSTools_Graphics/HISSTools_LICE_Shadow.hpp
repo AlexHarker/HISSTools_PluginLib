@@ -6,10 +6,6 @@
 #include "HISSTools_LICE_Color_Cairo.hpp"
 #include "HISSTools_LICE_Bounds.hpp"
 
-#ifndef WDL_NO_DEFINE_MINMAX
-#define WDL_NO_DEFINE_MINMAX
-#endif
-
 #include <lice.h>
 #include <vector>
 

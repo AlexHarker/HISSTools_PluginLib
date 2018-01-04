@@ -8,12 +8,6 @@
 
 #include "cairo/cairo.h"
 
-#ifndef WDL_NO_DEFINE_MINMAX
-#define WDL_NO_DEFINE_MINMAX
-#endif
-
-#include <lice.h>
-
 
 class HISSTools_LICE_Vec_Lib : private virtual HISSTools_LICE_Raster, private HISSTools_LICE_Text
 {
@@ -255,7 +249,7 @@ public:
     
     void startShadow(HISSTools_Shadow *shadow)
     {
-        HISSTools_LICE_Raster::startShadow(shadow, getScale());
+        HISSTools_LICE_Raster::startShadow(shadow);
     }
     
     void renderShadow(bool renderImage = true)
