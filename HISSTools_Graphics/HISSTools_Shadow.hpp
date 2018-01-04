@@ -1,10 +1,10 @@
 
 
-#ifndef __HISSTOOLS_LICE_SHADOW__
-#define __HISSTOOLS_LICE_SHADOW__
+#ifndef __HISSTOOLS_SHADOW__
+#define __HISSTOOLS_SHADOW__
 
-#include "HISSTools_LICE_Color_Cairo.hpp"
-#include "HISSTools_LICE_Bounds.hpp"
+#include "HISSTools_Color.hpp"
+#include "HISSTools_Bounds.hpp"
 
 #include <vector>
 

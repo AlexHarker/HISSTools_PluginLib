@@ -1,40 +1,39 @@
 
 
-#ifndef __HISSTOOLS_LICE_LVL_CAIRO__
-#define __HISSTOOLS_LICE_LVL_CAIRO__
+#ifndef __HISSTOOLS_VL__
+#define __HISSTOOLS_VL__
 
-#include "HISSTools_LICE_Raster_Cairo.hpp"
-#include "HISSTools_LICE_Text.hpp"
+#include "HISSTools_Raster.hpp"
 
 #include "cairo/cairo.h"
 
 
-class HISSTools_LICE_Vec_Lib : private virtual HISSTools_LICE_Raster, private HISSTools_LICE_Text
+class HISSTools_LICE_Vec_Lib : private HISSTools_Raster
 {
 
 public:
 	
-	HISSTools_LICE_Vec_Lib(cairo_t *cairo) : HISSTools_LICE_Raster(cairo), mScale(1.0),HISSTools_LICE_Text(cairo)
+	HISSTools_LICE_Vec_Lib(cairo_t *cairo) : HISSTools_Raster(cairo), mScale(1.0)
 	{}
     
     void setSize(int w, int h)
     {
-        HISSTools_LICE_Raster::setSize(w, h);
+        HISSTools_Raster::setSize(w, h);
     }
     
     void setClip(double xLo, double yLo, double xHi, double yHi)
     {
-        HISSTools_LICE_Raster::setClip(xLo, yLo, xHi, yHi);
+        HISSTools_Raster::setClip(xLo, yLo, xHi, yHi);
     }
     
     void setClip()
     {
-        HISSTools_LICE_Raster::setClip();
+        HISSTools_Raster::setClip();
     }
     
     void setClip(IRECT rect)
     {
-        HISSTools_LICE_Raster::setClip(rect.L, rect.T, rect.R, rect.B);
+        HISSTools_Raster::setClip(rect.L, rect.T, rect.R, rect.B);
     }
     
     void moveTo(double x, double y)
@@ -42,11 +41,11 @@ public:
         cairo_move_to(getContext(), x, y);
     }
     
-    cairo_t *getContext() const { return HISSTools_LICE_Raster::getContext(); }
+    cairo_t *getContext() const { return HISSTools_Raster::getContext(); }
     
     void setContext(cairo_t *context, double scale)
     {
-        HISSTools_LICE_Raster::setContext(context);
+        HISSTools_Raster::setContext(context);
         mScale = scale;
     }
     
@@ -72,18 +71,18 @@ public:
 
     void setColor(HISSTools_Color_Spec * color)
     {
-        HISSTools_LICE_Raster::setColor(color);
+        HISSTools_Raster::setColor(color);
     }
     
     void setColorOrientation(ColorOrientation orientation)
     {
-        HISSTools_LICE_Raster::setColorOrientation(orientation);
+        HISSTools_Raster::setColorOrientation(orientation);
     }
     
-    void forceGradientBox() { HISSTools_LICE_Raster::forceGradientBox(); }
+    void forceGradientBox() { HISSTools_Raster::forceGradientBox(); }
     void forceGradientBox(double xLo, double yLo, double xHi, double yHi)
     {
-        HISSTools_LICE_Raster::forceGradientBox(xLo, yLo, xHi, yHi);
+        HISSTools_Raster::forceGradientBox(xLo, yLo, xHi, yHi);
     }
     
     double getX() const
@@ -237,9 +236,9 @@ public:
         stroke(true);
     }
     
-    bool text(HISSTools_Text *pTxt, const char *str, double x, double y, double w, double h, HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter)
+    void text(HISSTools_Text *pTxt, const char *str, double x, double y, double w, double h, HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter)
     {
-        return true;//HISSTools_LICE_Text::text(pTxt, str, x, y, w , h, 1.0, hAlign, vAlign);
+        HISSTools_Raster::text(pTxt, str, x, y, w, h, mScale, hAlign, vAlign);
     }
 
     static double getTextLineHeight(HISSTools_Text *pTxt)
@@ -249,15 +248,27 @@ public:
     
     void startShadow(HISSTools_Shadow *shadow)
     {
-        HISSTools_LICE_Raster::startShadow(shadow);
+        HISSTools_Raster::startShadow(shadow);
     }
     
     void renderShadow(bool renderImage = true)
     {
-        HISSTools_LICE_Raster::renderShadow(renderImage, getScale());
+        HISSTools_Raster::renderShadow(renderImage, getScale());
     }
     
 private:
+    
+    void fill(bool useExtents = false)
+    {
+        updateDrawBounds(true, useExtents);
+        cairo_fill(getContext());
+    }
+    
+    void stroke(bool useExtents = false)
+    {
+        updateDrawBounds(false, useExtents);
+        cairo_stroke(getContext());
+    }
     
     double sanitizeRadius(double r, double w, double h)
     {

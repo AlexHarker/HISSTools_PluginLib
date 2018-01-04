@@ -1,6 +1,6 @@
 
-#ifndef __HISSTOOLS_LICE_BOUNDS__
-#define __HISSTOOLS_LICE_BOUNDS__
+#ifndef __HISSTOOLS_BOUNDS__
+#define __HISSTOOLS_BOUNDS__
 
 #include <IPlugStructs.h>
 

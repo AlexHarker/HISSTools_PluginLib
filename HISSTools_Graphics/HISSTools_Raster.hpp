@@ -1,10 +1,11 @@
 
 
-#ifndef __HISSTOOLS_LICE_RASTER__
-#define __HISSTOOLS_LICE_RASTER__
+#ifndef __HISSTOOLS_RASTER__
+#define __HISSTOOLS_RASTER__
 
-#include "HISSTools_LICE_Color_Cairo.hpp"
-#include "HISSTools_LICE_Shadow.hpp"
+#include "HISSTools_Color.hpp"
+#include "HISSTools_Shadow.hpp"
+#include "HISSTools_LICE_Text.hpp"
 
 #include <algorithm>
 #include <vector>
@@ -12,7 +13,7 @@
 
 static HISSTools_Color_Spec defaultColor;
 
-class HISSTools_LICE_Raster
+class HISSTools_Raster
 {
     struct Area
     {
@@ -27,6 +28,8 @@ class HISSTools_LICE_Raster
     
 private:
 
+    LICE_SysBitmap mTextBitmap;
+    
     cairo_t *mContext;
 
 	// Boundaries
@@ -58,7 +61,7 @@ protected:
 	
 	// Request clipping with negative values is equivalent to turning clipping off for that edge
 	
-    HISSTools_LICE_Raster(cairo_t *cairo) : mContext(cairo), mShadow(NULL), mWidth(0), mHeight(0), mForceGradientBox(false), mCSOrientation(kCSOrientHorizontal)
+    HISSTools_Raster(cairo_t *cairo) : mContext(cairo), mShadow(NULL), mWidth(0), mHeight(0), mForceGradientBox(false), mCSOrientation(kCSOrientHorizontal)
 	{
 		setColor(&defaultColor);
 	}
@@ -236,6 +239,32 @@ protected:
         cairo_pattern_destroy(shadowRender);
 	}
     
+    void text(HISSTools_Text *pTxt, const char *str, double x, double y, double w, double h, double scale, HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter)
+    {
+        LICE_IBitmap *bitmap = &mTextBitmap;
+        
+        int width = getWidth() * scale;
+        int height = getHeight() * scale;
+        
+        bitmap->resize(width, height);
+        LICE_Clear(bitmap, 0);
+        
+        HISSTools_LICE_Text::text(bitmap,pTxt, str, x, y, w, h, scale, hAlign, vAlign);
+        
+        updateDrawBounds(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1, true);
+         
+        Area clip(x, x + w, y, y + h);
+        
+        cairo_save(mContext);
+        setClip(clip.x1, clip.y1, clip.x2, clip.y2);
+        int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
+        cairo_surface_t *surface = cairo_image_surface_create_for_data((unsigned char *) bitmap->getBits(), CAIRO_FORMAT_ARGB32, width, height, stride);
+        cairo_scale(mContext, 1.0/scale, 1.0/scale);
+        cairo_mask_surface(mContext, surface, 0, 0);
+        cairo_restore(mContext);
+        cairo_surface_destroy(surface);
+    }
+    
     void updateDrawBounds(bool fill, bool useExtents)
     {
         double xLo, xHi, yLo, yHi;
@@ -244,7 +273,12 @@ protected:
             cairo_fill_extents(mContext, &xLo, &yLo, &xHi, &yHi);
         else
             cairo_stroke_extents(mContext, &xLo, &yLo, &xHi, &yHi);
-
+        
+        updateDrawBounds(xLo, xHi, yLo, yHi, useExtents);
+    }
+    
+    void updateDrawBounds(double xLo, double xHi, double yLo, double yHi, bool useExtents)
+    {
         mDrawArea.x1 = std::min(xLo, mDrawArea.x1);
         mDrawArea.x2 = std::max(xHi, mDrawArea.x2);
         mDrawArea.y1 = std::min(yLo, mDrawArea.y1);
@@ -262,18 +296,6 @@ protected:
             mColor->setRect(mGradientArea.x1, mGradientArea.x2, mGradientArea.y1, mGradientArea.y2, mCSOrientation);
         
         setColor(mColor);
-    }
-    
-    void fill(bool useExtents = false)
-    {
-        updateDrawBounds(true, useExtents);
-        cairo_fill(mContext);
-    }
-    
-    void stroke(bool useExtents = false)
-    {
-        updateDrawBounds(false, useExtents);
-        cairo_stroke(mContext);
     }
     
 private:

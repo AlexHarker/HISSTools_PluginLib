@@ -3,7 +3,7 @@
 #ifndef __HISSTOOLS_DESIGN_SCHEME__
 #define __HISSTOOLS_DESIGN_SCHEME__
 
-#include <HISSTools_Graphics/HISSTools_LICE_Color_Cairo.hpp>
+#include <HISSTools_Graphics/HISSTools_Color.hpp>
 #include <wdlstring.h>
 #include <vector>
 #include <iostream>
@@ -267,10 +267,15 @@ private:
 
 		// Shadows
 		
-		HISSTools_Color_Spec *shadowCS1 = new HISSTools_Color_Spec(HISSTools_Color(0.05, 0.05, 0.05, 0.4));
-		HISSTools_Color_Spec *shadowCS2 = new HISSTools_Color_Spec(HISSTools_Color(0.05, 0.05, 0.05, 1.0));
-		HISSTools_Color_Spec *shadowCS3 = new HISSTools_Color_Spec(HISSTools_Color(0.00, 0.00, 0.00, 0.5));
-		HISSTools_Color_Spec *shadowCS4 = new HISSTools_Color_Spec(HISSTools_Color(0.00, 0.00, 0.00, 0.65));
+        HISSTools_Color_Spec *shadowCS1 = new HISSTools_Color_Spec(HISSTools_Color(0.05, 0.05, 0.05, 0.63));
+        HISSTools_Color_Spec *shadowCS2 = new HISSTools_Color_Spec(HISSTools_Color(0.05, 0.05, 0.05, 1.0));
+        HISSTools_Color_Spec *shadowCS3 = new HISSTools_Color_Spec(HISSTools_Color(0.00, 0.00, 0.00, 0.70));
+        HISSTools_Color_Spec *shadowCS4 = new HISSTools_Color_Spec(HISSTools_Color(0.00, 0.00, 0.00, 0.81));
+        
+		//HISSTools_Color_Spec *shadowCS1 = new HISSTools_Color_Spec(HISSTools_Color(0.05, 0.05, 0.05, 0.4));
+		//HISSTools_Color_Spec *shadowCS2 = new HISSTools_Color_Spec(HISSTools_Color(0.05, 0.05, 0.05, 1.0));
+		//HISSTools_Color_Spec *shadowCS3 = new HISSTools_Color_Spec(HISSTools_Color(0.00, 0.00, 0.00, 0.5));
+		//HISSTools_Color_Spec *shadowCS4 = new HISSTools_Color_Spec(HISSTools_Color(0.00, 0.00, 0.00, 0.65));
 		
 		HISSTools_Shadow *shadowSpec1 = new HISSTools_Shadow(shadowCS1, 3, 3, 8);
 		HISSTools_Shadow *shadowSpec2 = new HISSTools_Shadow(shadowCS3, 4, 4, 6);

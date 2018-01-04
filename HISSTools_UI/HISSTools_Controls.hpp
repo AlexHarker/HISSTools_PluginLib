@@ -4,7 +4,7 @@
 
 static int ConvertMouseDeltaToNative(int x) { return x; }
 
-#include <HISSTools_Graphics/HISSTools_LICE_Vec_Lib_Cairo.hpp>
+#include <HISSTools_Graphics/HISSTools_VecLib.hpp>
 #include "HISSTools_Design_Scheme.hpp"
 #include <IControl.h>
 #include <IControls.h>

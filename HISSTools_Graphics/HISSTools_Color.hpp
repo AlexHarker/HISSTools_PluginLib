@@ -72,11 +72,6 @@ public:
         mOrientation = CSOrientation;
     }
     
-    LICE_pixel LICEColor()
-    {
-        return LICE_RGBA((unsigned int) (mColor.r * 255.0), (unsigned int) (mColor.g * 255.0), (unsigned int) (mColor.b * 255.0), (unsigned int) (mColor.a * 255.0));
-    }
-    
 protected:
     
     HISSTools_Color mColor;

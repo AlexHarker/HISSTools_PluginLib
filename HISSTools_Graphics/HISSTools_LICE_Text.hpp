@@ -3,11 +3,8 @@
 #ifndef __HISSTOOLS_LICE_TEXT__
 #define __HISSTOOLS_LICE_TEXT__
 
-#include "HISSTools_LICE_Raster_Cairo.hpp"
-
 #include <lice.h>
 #include <lice_text.h>
-
 
 // HISSTools_Text is very similar to IText from IPlug (but does not require IPlug)
 
@@ -102,75 +99,52 @@ public:
 
 static HISSTools_FontStorage HISSTools_fontCache;
 	
-
 // Drawing routines are also taken from IPlug, in order that we can know what the drawing rect for text is (for shadows)
 // Fix - Clip Text or add option to do so...	
 
-class HISSTools_LICE_Text : public virtual HISSTools_LICE_Raster
-{	
-public:
-	
-	HISSTools_LICE_Text(cairo_t *cairo) : HISSTools_LICE_Raster(cairo)
-	{
-	}
-	
-    
-	bool text(HISSTools_Text *pTxt, const char *str, double x, double y, double w, double h, double scale, HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter)
-	{
-		if (!str || str[0] == '\0') {
-			return true;
-		}
+struct HISSTools_LICE_Text
+{
+    static bool text(LICE_IBitmap *bitmap, HISSTools_Text *pTxt, const char *str, double x, double y, double w, double h, double scale, HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter)
+    {
+        if (!str || str[0] == '\0')
+            return false;
         
         LICE_IFont* font = checkFont(pTxt, scale);
         
-		if (!font)
-            return font;
-		
-		LICE_pixel color = getColorSpec()->LICEColor();
-		font->SetTextColor(color);
-		
-		UINT fmt = DT_NOCLIP;
-		
-		if (LICE_GETA(color) < 255) 
-			fmt |= LICE_DT_USEFGALPHA;
-		if (hAlign == kHAlignLeft)
-			fmt |= DT_LEFT;
-		else if (hAlign == kHAlignCenter)
-			fmt |= DT_CENTER;
-		else
-			fmt |= DT_RIGHT;
-		
-		if (vAlign == kVAlignCenter)
-			fmt |= DT_VCENTER;
-		if (vAlign == kVAlignBottom)
-			fmt |= DT_BOTTOM;
-		
+        if (!font)
+            return false;
+        
+        LICE_pixel color = LICE_RGBA(255, 255, 255, 255);
+        font->SetTextColor(color);
+        
+        UINT fmt = DT_NOCLIP;
+        
+        if (hAlign == kHAlignLeft)
+            fmt |= DT_LEFT;
+        else if (hAlign == kHAlignCenter)
+            fmt |= DT_CENTER;
+        else
+            fmt |= DT_RIGHT;
+        
+        if (vAlign == kVAlignCenter)
+            fmt |= DT_VCENTER;
+        if (vAlign == kVAlignBottom)
+            fmt |= DT_BOTTOM;
+        
         fmt |= LICE_DT_NEEDALPHA;
         
-        // FIX later!
-		//updateDrawBounds(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1);
-		
-		RECT pR;
+        RECT pR;
         
-		pR.left = floor(x);
-		pR.right = ceil(x + w);
-		pR.top = floor(y);
-		pR.bottom = ceil(y + h);
-    /*
-        int L = clipX(pR.left);
-        int R = clipX(pR.right);
-        int T = clipY(pR.top);
-        int B = clipY(pR.bottom);
-        int W = R - L;
-        int H = B - T;
+        pR.left = floor(x * scale);
+        pR.right = ceil((x + w) * scale);
+        pR.top = floor(y * scale);
+        pR.bottom = ceil((y + h) * scale);
         
-        LICE_Blit(&mTextBitmap, mMainBitmap, L, T, L, T, W, H, 1.f, LICE_BLIT_MODE_COPY);
-        font->DrawText(&mTextBitmap, str, -1, &pR, fmt);
-        LICE_Blit(mMainBitmap, &mTextBitmap, L, T, L, T, W, H, 1.f, LICE_BLIT_MODE_COPY);
-*/
-		return true;
-	}
-	
+        font->DrawText(bitmap, str, -1, &pR, fmt);
+        
+        return true;
+    }
+    
 	static double getTextLineHeight(HISSTools_Text *pTxt)
 	{
 		LICE_IFont* font = checkFont(pTxt, 1.0);
@@ -180,10 +154,7 @@ public:
 		
 		return font->GetLineHeight();
 	}
-	
-	
-    private:
-            
+    
     static LICE_IFont* checkFont(HISSTools_Text *pTxt, double scale)
     {
         LICE_IFont* font = pTxt->mCached;
