@@ -28,48 +28,41 @@ class HISSTools_Control_Layers
 
 private:
 	
-	cairo_surface_t *mBackground;
-    cairo_t *mContext;
+    cairo_pattern_t *mBackground;
 	bool mDrawBackground;
     bool mNoCaching;
     
 public:
 	
-    HISSTools_Control_Layers() : mBackground(NULL), mContext(NULL), mDrawBackground(true), mNoCaching(true)
+    HISSTools_Control_Layers() : mBackground(NULL), mDrawBackground(true), mNoCaching(false)
 	{}
     
     ~HISSTools_Control_Layers()
     {
         if (mBackground)
-            cairo_surface_destroy(mBackground);
-        if (mContext)
-            cairo_destroy(mContext);
+            cairo_pattern_destroy(mBackground);
     }
 	
     bool startBackground(IGraphics& pGraphics, HISSTools_LICE_Vec_Lib *vecDraw, IRECT area)
     {
         if (mDrawBackground && !mNoCaching)
-        {
-            int height = pGraphics.Height() * pGraphics.GetDisplayScale();
-            int width = pGraphics.Width() * pGraphics.GetDisplayScale();
+            cairo_push_group(vecDraw->getContext());
 
-            // FIX - this is super wasteful...
-
-            mBackground = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-            mContext = cairo_create(mBackground);
-            cairo_scale(mContext, pGraphics.GetDisplayScale(), pGraphics.GetDisplayScale());
-            
-            vecDraw->setContext(mContext, pGraphics.GetDisplayScale());
-        }
         
         return mDrawBackground || mNoCaching;
     }
     
     void renderBackground(IGraphics& pGraphics, HISSTools_LICE_Vec_Lib *vecDraw, IRECT area)
     {
-        vecDraw->setContext((cairo_t *)pGraphics.GetData(), pGraphics.GetDisplayScale());
         if (!mNoCaching)
-            vecDraw->mergeBitmap(mBackground, area.L, area.T, area.L, area.T, area.W(), area.H(), pGraphics.GetDisplayScale());
+        {
+            if (!mBackground)
+                mBackground = cairo_pop_group(vecDraw->getContext());
+            
+            cairo_set_source(vecDraw->getContext(), mBackground);
+            cairo_paint_with_alpha(vecDraw->getContext(), 1.0);
+        }
+        
         mDrawBackground = false;
     }
    
