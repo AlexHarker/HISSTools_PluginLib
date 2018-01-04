@@ -63,10 +63,6 @@ protected:
 		setColor(&defaultColor);
 	}
 	
-	~HISSTools_LICE_Raster()
-	{
-    }
-	
     void setSize(int w, int h)
     {
         mWidth = w;
@@ -75,26 +71,18 @@ protected:
     
     void setContext(cairo_t *context)
     {
-        // FIX - clip and other state etc. etc..
+        // FIX - clip and other state etc. when pushing and popping?
         
         mContext = context;
         cairo_set_operator(mContext, CAIRO_OPERATOR_OVER);
     }
 		
-    /*
-     void setBitmap(LICE_IBitmap *bitmap)
-     {
-     double x1, x2, y1, y2;
-     cairo_clip_extents(mCairoMain, &x1, &y1, &x2, &y2);
-     setClip(x1, y1, x2, y2);
-     }*/
- 	
     cairo_t *getContext() const { return mContext; }
     
-    void setClip()
-    {
-        cairo_reset_clip(mContext);
-    }
+    HISSTools_Color_Spec *getColorSpec() const { return mColor; }
+
+    
+    void setClip()  { cairo_reset_clip(mContext); }
     
 	void setClip(double xLo, double yLo, double xHi, double yHi)
 	{
@@ -111,10 +99,7 @@ protected:
             mColor->setAsSource(getContext());
 	}
 	
-	void forceGradientBox()
-	{
-		mForceGradientBox = false;
-	}
+	void forceGradientBox()     { mForceGradientBox = false; }
 	
 	void forceGradientBox(double xLo, double yLo, double xHi, double yHi)
 	{
@@ -141,6 +126,11 @@ protected:
     
 	void renderShadow(bool renderImage, double scale)
 	{
+        // Sanity Check
+        
+        if (mDrawArea.x1 > mDrawArea.x2 || mDrawArea.y1 > mDrawArea.y2)
+            return;
+        
         cairo_pattern_t *shadowRender = cairo_pop_group(getContext());
         
         // Check there is a shadow specified (otherwise only render original image)
@@ -163,27 +153,16 @@ protected:
 			int yShift = trunc(yOffset) - (kernelSize - 1);		
 			
 			double alphaRecip = 1.0 / 255.0;
-			
-			// Sanity Checks
-			
-			if (mDrawArea.x1 > mDrawArea.x2 || mDrawArea.y1 > mDrawArea.y2)
-				return;
-			
-			// Alloc Blur Memory
+
+			// Alloc and zero blur memory
 			
 			int sizeRequired = width * height;
 			
-			if ((mBlurTempAlpha1.size() < sizeRequired) || (mBlurTempAlpha2.size() < sizeRequired))
-			{
-				mBlurTempAlpha1.resize(sizeRequired);
-				mBlurTempAlpha2.resize(sizeRequired);
-			}
+            mBlurTempAlpha1.resize(sizeRequired);
+            mBlurTempAlpha2.resize(sizeRequired);
+			std::fill(mBlurTempAlpha1.begin(), mBlurTempAlpha1.end(), 0);
+            std::fill(mBlurTempAlpha2.begin(), mBlurTempAlpha2.end(), 0);
 
-			// Zero temp values
-			
-			for (int i = 0; i < sizeRequired; i++)
-				mBlurTempAlpha1[i] = mBlurTempAlpha2[i] = 0.0;
-			
 			// Copy alpha values from the temp bitmap
 				
             cairo_surface_t* shadowSurface = cairo_image_surface_create(CAIRO_FORMAT_A8, getWidth() * scale, getHeight() * scale);
@@ -202,19 +181,16 @@ protected:
             cairo_surface_destroy(shadowSurface);
             cairo_destroy(shadowContext);
             
-            
 			// Do blur (row, column then alpha mask with offsets)
 			
-			if (kernelSize > 1)
-			{
-				mShadow->rowBlur(&mBlurTempAlpha1[0], &mBlurTempAlpha2[0], width, height);
-				mShadow->colBlur(&mBlurTempAlpha2[0], &mBlurTempAlpha1[0], width, height);
-			}
+			mShadow->rowBlur(&mBlurTempAlpha1[0], &mBlurTempAlpha2[0], width, height);
+            mShadow->colBlur(&mBlurTempAlpha2[0], &mBlurTempAlpha1[0], width, height);
 			
 			// FIX - Add Fractional offset - use linear interpolation on write
 			
             surfaceStride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, getWidth() * scale);
-            data = (unsigned char *)calloc(surfaceStride * scale * getHeight(), 1);
+            std::vector<unsigned char> alphaMask(surfaceStride * scale * getHeight(), 0);
+            data = &alphaMask[0];
             
             Area clipExtents;
             IRECT rect;
@@ -246,7 +222,6 @@ protected:
             cairo_mask_surface(cr, mask, 0, 0);
             cairo_restore(cr);
             cairo_surface_destroy(mask);
-            free(data);
 		}
 		
 		// Render pattern
@@ -260,17 +235,22 @@ protected:
         cairo_pattern_destroy(shadowRender);
 	}
     
-    HISSTools_Color_Spec *getColorSpec()
+    void updateDrawBounds(bool fill, bool useExtents)
     {
-        return mColor;
-    }
-    
-    void updateDrawBounds(double xLo, double xHi, double yLo, double yHi)
-    {
+        double xLo, xHi, yLo, yHi;
+        
+        if (fill)
+            cairo_fill_extents(mContext, &xLo, &yLo, &xHi, &yHi);
+        else
+            cairo_stroke_extents(mContext, &xLo, &yLo, &xHi, &yHi);
+
         mDrawArea.x1 = std::min(xLo, mDrawArea.x1);
         mDrawArea.x2 = std::max(xHi, mDrawArea.x2);
         mDrawArea.y1 = std::min(yLo, mDrawArea.y1);
         mDrawArea.y2 = std::max(yHi, mDrawArea.y2);
+        
+        if (useExtents)
+            setShapeGradient(xLo, xHi, yLo, yHi);
     }
     
     void setShapeGradient(double xLo, double xHi, double yLo, double yHi)
@@ -285,27 +265,13 @@ protected:
     
     void fill(bool useExtents = false)
     {
-        double xLo, xHi, yLo, yHi;
-        
-        cairo_fill_extents(mContext, &xLo, &yLo, &xHi, &yHi);
-        
-        updateDrawBounds(xLo, xHi, yLo, yHi);
-        
-        if (useExtents)
-            setShapeGradient(xLo, xHi, yLo, yHi);
+        updateDrawBounds(true, useExtents);
         cairo_fill(mContext);
     }
     
     void stroke(bool useExtents = false)
     {
-        double xLo, xHi, yLo, yHi;
-        
-        cairo_stroke_extents(mContext, &xLo, &yLo, &xHi, &yHi);
-        
-        updateDrawBounds(xLo, xHi, yLo, yHi);
-        
-        if (useExtents)
-            setShapeGradient(xLo, xHi, yLo, yHi);
+        updateDrawBounds(false, useExtents);
         cairo_stroke(mContext);
     }
     

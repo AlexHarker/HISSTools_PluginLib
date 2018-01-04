@@ -147,7 +147,8 @@ public:
 		
         fmt |= LICE_DT_NEEDALPHA;
         
-		updateDrawBounds(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1);
+        // FIX later!
+		//updateDrawBounds(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1);
 		
 		RECT pR;
         

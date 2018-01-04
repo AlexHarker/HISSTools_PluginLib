@@ -5,16 +5,10 @@
 #include <lice.h>
 #include "cairo/cairo.h"
 
-
 enum ColorOrientation { kCSOrientHorizontal, kCSOrientVertical };
 
 struct HISSTools_Color
 {
-	double r;
-	double g;
-	double b;
-	double a;	
-
 	HISSTools_Color() : r(0), g(0), b(0), a(0) {}
 	HISSTools_Color(double R, double G, double B, double A) : r(R), g(G), b(B), a(A)
     {
@@ -31,37 +25,15 @@ struct HISSTools_Color
         if (r > 1.0 || g > 1.0 || b > 1.0)
             r = g = b = 1.0;
     }
+    
+    double r;
+    double g;
+    double b;
+    double a;
 };
-
 
 class HISSTools_Color_Spec
 {
-    
-protected:
-    
-    HISSTools_Color mColor;
-    
-    double mXLo, mXHi, mYLo, mYHi;
-    
-    ColorOrientation mOrientation;
-    
-    double clampValue(double x)
-    {
-        x = x < 0.0 ? 0.0 : x;
-        x = x > 1.0 ? 1.0 : x;
-        
-        return x;
-    }
-    
-    HISSTools_Color clampColor(HISSTools_Color color)
-    {
-        color.r = clampValue(color.r);
-        color.g = clampValue(color.g);
-        color.b = clampValue(color.b);
-        color.a = clampValue(color.a);
-        
-        return color;
-    }
     
 public:
     
@@ -104,18 +76,38 @@ public:
     {
         return LICE_RGBA((unsigned int) (mColor.r * 255.0), (unsigned int) (mColor.g * 255.0), (unsigned int) (mColor.b * 255.0), (unsigned int) (mColor.a * 255.0));
     }
+    
+protected:
+    
+    HISSTools_Color mColor;
+    
+    double mXLo, mXHi, mYLo, mYHi;
+    
+    ColorOrientation mOrientation;
+    
+    double clampValue(double x)
+    {
+        x = x < 0.0 ? 0.0 : x;
+        x = x > 1.0 ? 1.0 : x;
+        
+        return x;
+    }
+    
+    HISSTools_Color clampColor(HISSTools_Color color)
+    {
+        color.r = clampValue(color.r);
+        color.g = clampValue(color.g);
+        color.b = clampValue(color.b);
+        color.a = clampValue(color.a);
+        
+        return color;
+    }
 };
 
 
 class HISSTools_LICE_HVGradient : public HISSTools_Color_Spec
 {
 	
-private: 
-	
-    cairo_pattern_t *mPattern;
-    cairo_matrix_t mMatrix;
-    bool mFlipVertical;
-    
 public:
     
     HISSTools_LICE_HVGradient(bool flipVertical = true)
@@ -153,22 +145,28 @@ public:
         }
         else
         {
-            if (!mFlipVertical)
+            cairo_matrix_init_rotate(&mMatrix, -M_PI / 2.0);
+
+            if (mFlipVertical)
             {
-                cairo_matrix_init_rotate(&mMatrix, -M_PI / 2.0);
-                cairo_matrix_scale(&mMatrix, 1.0, 1.0 / (yHi - yLo));
-                cairo_matrix_translate(&mMatrix, 0.0, -yLo);
+                cairo_matrix_scale(&mMatrix, 1.0, -1.0 / (yHi - yLo));
+                cairo_matrix_translate(&mMatrix, 0.0, -yHi);
             }
             else
             {
-                cairo_matrix_init_rotate(&mMatrix, -M_PI / 2.0);
-                cairo_matrix_scale(&mMatrix, 1.0, -1.0 / (yHi - yLo));
-                cairo_matrix_translate(&mMatrix, 0.0, -yHi);
+                cairo_matrix_scale(&mMatrix, 1.0, 1.0 / (yHi - yLo));
+                cairo_matrix_translate(&mMatrix, 0.0, -yLo);
             }
         }
         
         cairo_pattern_set_matrix(mPattern, &mMatrix);
     }
+    
+private:
+    
+    cairo_pattern_t *mPattern;
+    cairo_matrix_t mMatrix;
+    bool mFlipVertical;
 };
 
 class HISSTools_LICE_HGradient : public HISSTools_LICE_HVGradient

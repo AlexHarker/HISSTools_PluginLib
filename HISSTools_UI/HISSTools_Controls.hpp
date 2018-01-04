@@ -5,7 +5,6 @@
 static int ConvertMouseDeltaToNative(int x) { return x; }
 
 #include <HISSTools_Graphics/HISSTools_LICE_Vec_Lib_Cairo.hpp>
-//#include <HISSTools_Graphics/HISSTools_LICE_Vec_Lib.hpp>
 #include "HISSTools_Design_Scheme.hpp"
 #include <IControl.h>
 #include <IControls.h>
@@ -58,8 +57,7 @@ public:
             if (!mBackground)
                 mBackground = vecDraw->endGroup();
             if (mBackground)
-            vecDraw->renderPattern(mBackground);
-            
+                vecDraw->renderPattern(mBackground);
         }
         
         mDrawBackground = false;
@@ -277,12 +275,12 @@ public:
 		mStr.Set(str);
 	}
 	
-	HISSTools_Bounds bounds(double scale)
+	HISSTools_Bounds bounds()
 	{
 		HISSTools_Bounds boxBounds(mX, mY, mW, mH);
 		
 		if (mTextSD)
-			boxBounds.include(mTextSD->getBlurBounds(boxBounds, scale));
+			boxBounds.include(mTextSD->getBlurBounds(boxBounds));
 		
 		return boxBounds;
 	}	
@@ -437,16 +435,16 @@ public:
 		mPanelOutlineCS = colorSpec;
 	}
 	
-	HISSTools_Bounds bounds(double scale)
+	HISSTools_Bounds bounds()
 	{
 		HISSTools_Bounds boxBounds(mX, mY, mW, mH);
 		
 		boxBounds.addThickness(mPanelOutlineTK);
 		
 		if (mPanelSD)
-			boxBounds.include(mPanelSD->getBlurBounds(boxBounds, scale));
+			boxBounds.include(mPanelSD->getBlurBounds(boxBounds));
 		
-		boxBounds.include(HISSTools_Text_Helper_Block::bounds(scale));
+		boxBounds.include(HISSTools_Text_Helper_Block::bounds());
 		
 		return boxBounds;
 	}
@@ -656,7 +654,7 @@ public:
 		}
 		
 		entryBounds = HISSTools_Bounds(promptLeft, promptTop, promptWidth, promptHeight);
-		iEntryBounds = entryBounds.iBounds(1.0);
+		iEntryBounds = entryBounds.iBounds();
 		
 		setControlText();
 		mControl->DisablePrompt(false);
@@ -665,7 +663,7 @@ public:
 	
 	bool promptUserInput(HISSTools_LICE_Vec_Lib *vecDraw, int x, int y)
 	{
-		if (bounds(1.0).iBounds(1.0).Contains(x, y))
+		if (bounds().iBounds().Contains(x, y))
 		{
 			if (!mDrawSeparator || (mMenuFlipTriangle == (x < mSeparatorX)))
 			{
@@ -796,11 +794,11 @@ public:
 		mTextLabel = new HISSTools_Text_Helper_Block(x, y - mTextArea, w, mTextArea, kHAlignCenter, kVAlignTop, "ValueLabel", type, designScheme);
 		mTextLabel->setText((GetParam() != NULL && label) ? GetParam()->GetNameForHost() : "");
 
-		SetTargetArea(HISSTools_Bounds(x, y, w, h).iBounds(1.0));
+		SetTargetArea(HISSTools_Bounds(x, y, w, h).iBounds());
 		
-		HISSTools_Bounds fullBoxBounds = mTextParam->bounds(1.0);
-		fullBoxBounds.include(mTextLabel->bounds(1.0));
-		mRECT = fullBoxBounds.iBounds(1.0);
+		HISSTools_Bounds fullBoxBounds = mTextParam->bounds();
+		fullBoxBounds.include(mTextLabel->bounds());
+		mRECT = fullBoxBounds.iBounds();
 	}
 	
 	~HISSTools_Value()
@@ -1026,11 +1024,11 @@ public:
 		dialBoxBounds.addThickness(mOutlineTK);
 		ptrBoxBounds.addThickness(mPointerOutlineTK);
 		
-		fullBoxBounds.include(mOutlineSD->getBlurBounds(dialBoxBounds, 1.0));
-		fullBoxBounds.include(mPointerSD->getBlurBounds(ptrBoxBounds, 1.0));
+		fullBoxBounds.include(mOutlineSD->getBlurBounds(dialBoxBounds));
+		fullBoxBounds.include(mPointerSD->getBlurBounds(ptrBoxBounds));
 		
-		mRECT = fullBoxBounds.iBounds(1.0);
-		SetTargetArea(dialBoxBounds.iBounds(1.0));
+		mRECT = fullBoxBounds.iBounds();
+		SetTargetArea(dialBoxBounds.iBounds());
 	}	
 	
 	~HISSTools_Dial()
@@ -1316,11 +1314,11 @@ public:
 		
 		handleBounds.addThickness(mOutlineTK);
 		
-		fullBounds = mShadow->getBlurBounds(handleBounds, 1.0);
+		fullBounds = mShadow->getBlurBounds(handleBounds);
 		fullBounds.include(fullBounds);
 		
-		mRECT = (fullBounds.iBounds(1.0));
-		SetTargetArea(handleBounds.iBounds(1.0));
+		mRECT = (fullBounds.iBounds());
+		SetTargetArea(handleBounds.iBounds());
 		
         mName = GetParam() != NULL ? GetParam()->GetNameForHost() : "";
         
@@ -1463,11 +1461,11 @@ public:
 		boxBounds.addThickness(mBoxOutlineTK);
 		fullBounds.addThickness(mHandleTK);
 		
-		fullBounds = mShadow->getBlurBounds(fullBounds, 1.0);
+		fullBounds = mShadow->getBlurBounds(fullBounds);
 		fullBounds.include(boxBounds);
 		
-		mRECT = (fullBounds.iBounds(1.0));
-		SetTargetArea(boxBounds.iBounds(1.0));
+		mRECT = (fullBounds.iBounds());
+		SetTargetArea(boxBounds.iBounds());
 	}
 	
 public:
@@ -1747,13 +1745,13 @@ public:
 		HISSTools_Bounds fullBoxBounds(mX, mY, mW, mH);
 		
 		boxBoundsShadow.addThickness(mHandleEmptyOutlineTK);
-		boxBoundsShadow = mShadow->getBlurBounds(boxBoundsShadow, 1.0);
+		boxBoundsShadow = mShadow->getBlurBounds(boxBoundsShadow);
 		boxBoundsOutline.addThickness(mHandleFilledOutlineTK);
 		fullBoxBounds = boxBoundsOutline;
 		fullBoxBounds.include(boxBoundsShadow);
 		
-		mRECT = (fullBoxBounds.iBounds(1.0));
-		SetTargetArea(boxBoundsOutline.iBounds(1.0));
+		mRECT = (fullBoxBounds.iBounds());
+		SetTargetArea(boxBoundsOutline.iBounds());
 		
 		mValidReport = false;
 	}
@@ -1947,7 +1945,7 @@ public:
 	{
 		mVecDraw = vecDraw;
 		setText(str);
-		mRECT = bounds(1.0).iBounds(1.0);
+		mRECT = bounds().iBounds();
 	}
 	
 	void Draw(IGraphics& pGraphics)
@@ -2058,9 +2056,9 @@ public:
 		if (mDrawOutline)
 			fullBounds.addThickness(mOutlineTK);
 		
-		fullBounds = mShadow->getBlurBounds(fullBounds, 1.0);
+		fullBounds = mShadow->getBlurBounds(fullBounds);
 		
-		mRECT = (fullBounds.iBounds(1.0));
+		mRECT = (fullBounds.iBounds());
 	}
 	
 public:
@@ -2148,7 +2146,7 @@ public:
 		
 		// FIX - Hack
 		
-		mRECT = HISSTools_Bounds(x, y, w, h).iBounds(1.0);
+		mRECT = HISSTools_Bounds(x, y, w, h).iBounds();
 	}
 	
 	~HISSTools_Progress() {}

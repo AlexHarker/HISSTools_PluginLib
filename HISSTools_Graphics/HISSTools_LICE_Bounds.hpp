@@ -29,11 +29,6 @@ public:
 		}
 	}
 	
-	IRECT iBounds(double scale)
-	{
-		return IRECT(floor(mX * scale), floor(mY * scale), ceil((mX + mW) * scale), ceil((mY + mH) * scale));
-	}
-	
 	void include(HISSTools_Bounds inc)
 	{
 		if (inc.mX < mX)
@@ -63,6 +58,8 @@ public:
 		mH += thickness;
 	}
 	
+    IRECT iBounds() const  { return IRECT(floor(mX), floor(mY), ceil((mX + mW)), ceil((mY + mH))); }
+    
 	double getX() const         { return mX; }
 	double getY() const         { return mY; }
 	double getWidth() const     { return mW; }

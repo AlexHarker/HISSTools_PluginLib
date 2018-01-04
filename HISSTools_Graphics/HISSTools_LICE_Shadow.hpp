@@ -6,7 +6,6 @@
 #include "HISSTools_LICE_Color_Cairo.hpp"
 #include "HISSTools_LICE_Bounds.hpp"
 
-#include <lice.h>
 #include <vector>
 
 class HISSTools_Shadow
@@ -37,7 +36,7 @@ public:
 		long i, j, k;
         int kernelSize = getKernelSize();
         
-		if (width < kernelSize)
+		if (width < kernelSize || kernelSize < 2)
 			return;
 		
 		for (i = 0; i < height; i++)
@@ -79,7 +78,7 @@ public:
 		long i, j, k;
         int kernelSize = getKernelSize();
 
-		if (height < kernelSize)
+		if (height < kernelSize || kernelSize < 2)
 			return;
 		
 		for (i = 0; i < width; i++)
@@ -125,14 +124,12 @@ public:
 		return mShadowColor;
 	}
 			
-	HISSTools_Bounds getBlurBounds(HISSTools_Bounds currentBounds, double scale)
-	{
-        setScaling(scale);
-        
+	HISSTools_Bounds getBlurBounds(HISSTools_Bounds currentBounds)
+	{        
         int kernelSize = getKernelSize();
         
-		double x = currentBounds.getX() + mXOffset * scale - (kernelSize - 1);
-		double y = currentBounds.getY() + mYOffset * scale - (kernelSize - 1);
+		double x = currentBounds.getX() + mXOffset - (kernelSize - 1);
+		double y = currentBounds.getY() + mYOffset - (kernelSize - 1);
 		double width = currentBounds.getWidth() + 2 * (kernelSize - 1);
 		double height = currentBounds.getHeight() + 2 * (kernelSize - 1);
 		
@@ -165,14 +162,12 @@ private:
             {
                 double blurRatio = kernelSize / 3.0;
                 double blurConst = 1.0 / (2 * blurRatio * blurRatio);
-                double accum = 0.;
+                double accum = 0.0;
                 
                 for (int i = 0; i < kernelSize; i++)
                     mBlurKernel[i] = exp(-(i * i) * blurConst);
-                
-                accum = mBlurKernel[0];
-                
-                for (int i = 1; i < kernelSize; i++)
+                                
+                for (int i = 0; i < kernelSize; i++)
                     accum += mBlurKernel[i] + mBlurKernel[i];
                 
                 double normalise = 1.0 / accum;
