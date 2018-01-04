@@ -22,13 +22,8 @@ class HISSTools_LICE_Raster
     
 private:
 
-    cairo_t *mCairoRestore;
-
     cairo_t *mCairoDraw;
-    
-    cairo_t *mCairoShadow;
-    cairo_surface_t *mCairoSurfaceShadow;
-    
+
 	// Boundaries
 	
     int mWidth, mHeight;
@@ -58,7 +53,7 @@ protected:
 	
 	// Request clipping with negative values is equivalent to turning clipping off for that edge
 	
-    HISSTools_LICE_Raster(cairo_t *cairo) : mCairoDraw(NULL), mCairoShadow(NULL), mCairoSurfaceShadow(NULL), mShadow(NULL), mCairoRestore(NULL), mWidth(0), mHeight(0)
+    HISSTools_LICE_Raster(cairo_t *cairo) : mCairoDraw(NULL), mShadow(NULL), mWidth(0), mHeight(0)
 	{
         mCairoDraw = cairo;
 		setColor(&defaultColor);
@@ -68,7 +63,6 @@ protected:
 	
 	~HISSTools_LICE_Raster()
 	{
-        destroyCairoResources(mCairoShadow, mCairoSurfaceShadow);
     }
 	
     void setSize(int w, int h)
@@ -109,14 +103,6 @@ private:
 	
     int getHeight() const   { return mHeight; }
     int getWidth() const    { return mWidth; }
-    
-    void destroyCairoResources(cairo_t *cairoContext, cairo_surface_t *cairoSurface)
-    {
-        if (cairoSurface)
-            cairo_surface_destroy(cairoSurface);
-        if (cairoContext)
-            cairo_destroy(cairoContext);
-    }
     
 public:
 	
@@ -165,19 +151,6 @@ public:
 	}
 	
 protected:
-
-    void mergeBitmap(cairo_surface_t *source, int writeXOffset, int writeYOffset, int readXOffset, int readYOffset, int width, int height, double scale = 1.0)
-    {
-        cairo_t *cr = getContext();
-        
-        cairo_save(cr);
-        cairo_rectangle(cr, writeXOffset, writeYOffset, width, height);
-        cairo_clip(cr);
-        cairo_scale(cr, 1.0/scale, 1.0/scale);
-        cairo_set_source_surface(cr, source, writeXOffset - readXOffset, writeYOffset - readYOffset);
-        cairo_paint_with_alpha(cr, 1.0);
-        cairo_restore(cr);
-    }
     
     void setShapeGradient(double xLo, double xHi, double yLo, double yHi)
     {
@@ -233,8 +206,9 @@ protected:
 	
 	// N.B. clip will clip to the range [lo-hi] (inclusive) - suitable for choosing loop points
 	
-	int clipX(int x)
+	int clipX(int x, double scale)
 	{
+        x /= scale;
         double x1, x2, y1, y2;
         
         cairo_clip_extents(mCairoDraw, &x1, &y1, &x2, &y2);
@@ -242,11 +216,12 @@ protected:
         x1 = std::max(ceil(x1), 0.0);
         x2 = std::min(floor(x2), (double) getWidth());
         
-		return std::min((int) x2, std::max((int) x1, x));
+		return std::min((int) x2, std::max((int) x1, x)) * scale;
 	}
 	
-	int clipY(int y)
+	int clipY(int y, double scale)
 	{
+        y /= scale;
         double x1, x2, y1, y2;
         
         cairo_clip_extents(mCairoDraw, &x1, &y1, &x2, &y2);
@@ -254,7 +229,7 @@ protected:
         y1 = std::max(ceil(y1), 0.0);
         y2 = std::min(floor(y2), (double) getHeight());
         
-        return std::min((int) y2, std::max((int) y1, y));
+        return std::min((int) y2, std::max((int) y1, y)) * scale;
 	}
 	
 	//////////////////////////////////////////////////////////////////////////////
@@ -274,32 +249,19 @@ public:
         mShadow = shadow;
         shadow->setScaling(scale);
 
-        int width = getWidth() * scale;
-        int height = getHeight() * scale;
-
-		// Make new temp image (inefficient!!)
-		
-        destroyCairoResources(mCairoShadow, mCairoSurfaceShadow);
-        
-        mCairoSurfaceShadow = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-        mCairoShadow = cairo_create(mCairoSurfaceShadow);
-        cairo_scale(mCairoShadow, scale, scale);
-        
-        mCairoRestore = mCairoDraw;
-        setContext(mCairoShadow);
+        cairo_push_group(getContext());
         
 		// Reset draw boundaries for shadow calculation
 		
-		mDrawXLo = width;
+		mDrawXLo = getWidth();
 		mDrawXHi = 0;
-		mDrawYLo = height;
+		mDrawYLo = getHeight();
 		mDrawYHi = 0;
 	}
 	
 	unsigned char getAlpha(int x, int y, unsigned char *data, int stride)
     {
-        unsigned int *pixel = (unsigned int*)(data + y * stride);
-        pixel += x;
+        unsigned char *pixel = data + y * stride + x;
         
         return ((*pixel) >> 0) & 0xff;
        /*
@@ -312,10 +274,6 @@ public:
     
 	void renderShadow(bool renderImage, double scale)
 	{
-        if (mCairoRestore)
-            setContext(mCairoRestore);
-        mCairoRestore = NULL;
-        
 		int i, j;
 		int xLo = round(mDrawXLo * scale);
 		int xHi = round(mDrawXHi * scale);
@@ -324,6 +282,8 @@ public:
 		
 		// Check there is a shadow specified (otherwise only render original image)
 		
+        cairo_pattern_t *shadowRender = cairo_pop_group(getContext());
+        
 		if (mShadow)
 		{
             // FIX - kernel size issue!
@@ -361,13 +321,23 @@ public:
 			
 			// Copy alpha values from the temp bitmap
 				
-            unsigned char *data = cairo_image_surface_get_data(mCairoSurfaceShadow);
-            int surface_stride = cairo_image_surface_get_stride(mCairoSurfaceShadow);
+            cairo_surface_t* shadowSurface = cairo_image_surface_create(CAIRO_FORMAT_A8, getWidth() * scale, getHeight() * scale);
+            cairo_t* shadowContext = cairo_create(shadowSurface);
+            cairo_scale(shadowContext, scale, scale);
+            cairo_set_source(shadowContext, shadowRender);
+            cairo_paint(shadowContext);
+            
+            unsigned char *data = cairo_image_surface_get_data(shadowSurface);
+            int surfaceStride = cairo_image_surface_get_stride(shadowSurface);
             
 			for (i = kernelSize - 1; i < (height - kernelSize) + 1; i++)
 				for (j = kernelSize - 1; j < (width - kernelSize) + 1; j++)
-					mBlurTempAlpha2[i * width + j] = getAlpha((j + xLo - (kernelSize - 1)), (i + yLo - (kernelSize - 1)), data, surface_stride) * maxChanRecip;
+					mBlurTempAlpha2[i * width + j] = getAlpha((j + xLo - (kernelSize - 1)), (i + yLo - (kernelSize - 1)), data, surfaceStride) * maxChanRecip;
 			
+            cairo_surface_destroy(shadowSurface);
+            cairo_destroy(shadowContext);
+            
+            
 			// Do blur (row, column then alpha mask with offsets)
 			
 			if (kernelSize > 1)
@@ -378,12 +348,12 @@ public:
 			
 			// FIX - Add Fractional offset - use linear interpolation on write
 			
-            surface_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, getWidth() * scale);
-            data = (unsigned char *)calloc(surface_stride * scale * getHeight(), 1);
+            surfaceStride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, getWidth() * scale);
+            data = (unsigned char *)calloc(surfaceStride * scale * getHeight(), 1);
             
-            for (i = clipY(yLo + yShift); i < clipY(yLo + yShift + height); i++)
-                for (j =  clipX(xLo + xShift); j < clipX(xLo + xShift + width); j++)
-                    setPixel(j, i, mBlurTempAlpha2[(i - yLo - yShift) * width + (j - xLo - xShift)], data, surface_stride);
+            for (i = clipY(yLo + yShift, scale); i < clipY(yLo + yShift + height, scale); i++)
+                for (j =  clipX(xLo + xShift, scale); j < clipX(xLo + xShift + width, scale); j++)
+                    setPixel(j, i, mBlurTempAlpha2[(i - yLo - yShift) * width + (j - xLo - xShift)], data, surfaceStride);
             
             // Draw Shadow in correct color
             
@@ -391,7 +361,7 @@ public:
             
             cairo_save(cr);
             mShadow->getShadowColor()->setAsSource(cr);
-            cairo_surface_t *mask = cairo_image_surface_create_for_data(data, CAIRO_FORMAT_A8, getWidth() * scale, getHeight() * scale, surface_stride);
+            cairo_surface_t *mask = cairo_image_surface_create_for_data(data, CAIRO_FORMAT_A8, getWidth() * scale, getHeight() * scale, surfaceStride);
             cairo_scale(cr, 1.0/scale, 1.0/scale);
             cairo_mask_surface(cr, mask, 0, 0);
             cairo_restore(cr);
@@ -404,7 +374,12 @@ public:
         // FIX - this looks inefficient - ensure better clipping!
          
 		if (renderImage)
-            mergeBitmap(mCairoSurfaceShadow, 0, 0, 0, 0, getWidth(), getHeight(), scale);
+        {
+            cairo_set_source(getContext(), shadowRender);
+            cairo_paint_with_alpha(getContext(), 1.0);
+        }
+
+        cairo_pattern_destroy(shadowRender);
 	}
 };
 

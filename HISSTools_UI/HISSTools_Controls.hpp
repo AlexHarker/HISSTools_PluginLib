@@ -46,8 +46,7 @@ public:
     bool startBackground(IGraphics& pGraphics, HISSTools_LICE_Vec_Lib *vecDraw, IRECT area)
     {
         if (mDrawBackground && !mNoCaching)
-            cairo_push_group(vecDraw->getContext());
-
+            vecDraw->startGroup();
         
         return mDrawBackground || mNoCaching;
     }
@@ -57,10 +56,10 @@ public:
         if (!mNoCaching)
         {
             if (!mBackground)
-                mBackground = cairo_pop_group(vecDraw->getContext());
+                mBackground = vecDraw->endGroup();
+            if (mBackground)
+            vecDraw->renderPattern(mBackground);
             
-            cairo_set_source(vecDraw->getContext(), mBackground);
-            cairo_paint_with_alpha(vecDraw->getContext(), 1.0);
         }
         
         mDrawBackground = false;

@@ -56,13 +56,26 @@ public:
         mScale = scale;
     }
     
-    double getScale() const { return mScale; }
-
-    void mergeBitmap(cairo_surface_t *source, int writeXOffset, int writeYOffset, int readXOffset, int readYOffset, int width, int height, double scale = 1.0)
+    void startGroup()
     {
-        HISSTools_LICE_Raster::mergeBitmap(source, writeXOffset, writeYOffset, readXOffset, readYOffset, width, height, scale);
+        cairo_push_group(getContext());
     }
     
+    cairo_pattern_t *endGroup()
+    {
+        return cairo_pop_group(getContext());
+    }
+    
+    void renderPattern(cairo_pattern_t *pattern)
+    {
+        cairo_t *cr = getContext();
+
+        cairo_set_source(cr, pattern);
+        cairo_paint_with_alpha(cr, 1.0);
+    }
+    
+    double getScale() const { return mScale; }
+
     void setColor(HISSTools_Color_Spec * color)
     {
         HISSTools_LICE_Raster::setColor(color);
