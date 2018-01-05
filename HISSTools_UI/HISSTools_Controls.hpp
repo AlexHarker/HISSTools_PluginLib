@@ -33,7 +33,7 @@ private:
     
 public:
 	
-    HISSTools_Control_Layers() : mBackground(NULL), mDrawBackground(true), mNoCaching(false)
+    HISSTools_Control_Layers() : mBackground(NULL), mDrawBackground(true), mNoCaching(true)
 	{}
     
     ~HISSTools_Control_Layers()

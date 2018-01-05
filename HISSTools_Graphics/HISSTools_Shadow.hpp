@@ -7,19 +7,10 @@
 #include "HISSTools_Bounds.hpp"
 
 #include <vector>
+#include <algorithm>
 
 class HISSTools_Shadow
 {
-
-private:
-	
-    std::vector<double> mBlurKernel;
-	
-	double mXOffset;
-	double mYOffset;
-    double mBlurSize;
-    
-	HISSTools_Color_Spec *mShadowColor;
 	
 public:
 		
@@ -29,10 +20,15 @@ public:
         setScaling(1.0);
     }
 	
-    void blur(double *io, double *temp, int width, int height)
+    void blur(unsigned char *io, unsigned char *temp, int width, int height)
     {
-        blurSwap(temp, io, width, height);
-        blurSwap(io, temp, height, width);
+        int kernelSize = getKernelSize();
+
+        if (height < kernelSize || width < kernelSize || kernelSize < 2)
+            return;
+        
+        blurSwap(temp, io, width, height, kernelSize, mNorm);
+        blurSwap(io, temp, height, width, kernelSize, mNorm);
     }
     
 	int getKernelSize() const   { return mBlurKernel.size(); }
@@ -66,42 +62,35 @@ public:
     
 private:
     
-    void blurSwap(double *output, double *input, int width, int height)
+    void blurSwap(unsigned char *output, unsigned char *input, int width, int height, int kernelSize, unsigned long norm)
     {
-        int kernelSize = getKernelSize();
-        
-        if (height < kernelSize || width < kernelSize || kernelSize < 2)
-            return;
-        
-        for (int i = 0; i < height; i++)
+        for (int i = 0; i < height; i++, input += width)
         {
             for (int j = 0; j < kernelSize - 1; j++)
             {
-                double accum = input[j] * mBlurKernel[0];
+                unsigned long accum = input[j] * mBlurKernel[0];
                 for (int k = 1; k < j + 1; k++)
                     accum += mBlurKernel[k] * input[j - k];
                 for (int k = 1; k < kernelSize; k++)
                     accum += mBlurKernel[k] * input[j + k];
-                output[j * height + i] = accum;
+                output[j * height + i] = std::min(static_cast<unsigned long>(255), accum / norm);
             }
             for (int j = kernelSize - 1; j < (width - kernelSize) + 1; j++)
             {
-                double accum = input[j] * mBlurKernel[0];
+                unsigned long accum = input[j] * mBlurKernel[0];
                 for (int k = 1; k < kernelSize; k++)
                     accum += mBlurKernel[k] * (input[j - k] + input[j + k]);
-                output[j * height + i] = accum;
+                output[j * height + i] = std::min(static_cast<unsigned long>(255), accum / norm);
             }
             for (int j = (width - kernelSize) + 1; j < width; j++)
             {
-                double accum = input[j] * mBlurKernel[0];
+                unsigned long accum = input[j] * mBlurKernel[0];
                 for (int k = 1; k < kernelSize; k++)
                     accum += mBlurKernel[k] * input[j - k];
                 for (int k = 1; k < width - j; k++)
                     accum += mBlurKernel[k] * input[j + k];
-                output[j * height + i] = accum;
+                output[j * height + i] = std::min(static_cast<unsigned long>(255), accum / norm);
             }
-            
-            input += width;
         }
     }
     
@@ -120,18 +109,22 @@ private:
             double blurConst = 4.5 / (kernelSize * kernelSize);
                 
             for (int i = 0; i < kernelSize; i++)
-                mBlurKernel[i] = exp(-(i * i) * blurConst);
+                mBlurKernel[i] = round(255.0 * exp(-(i * i) * blurConst));
                 
-            double accum =  mBlurKernel[0];
+            mNorm = mBlurKernel[0];
             for (int i = 1; i < kernelSize; i++)
-                accum += mBlurKernel[i] + mBlurKernel[i];
-                
-            double normalise = 1.0 / accum;
-                
-            for (int i = 0; i < kernelSize; i++)
-                mBlurKernel[i] *= normalise;
+                mNorm += mBlurKernel[i] + mBlurKernel[i];
         }
     }
+    
+    std::vector<unsigned char> mBlurKernel;
+    unsigned long mNorm;
+    
+    double mXOffset;
+    double mYOffset;
+    double mBlurSize;
+    
+    HISSTools_Color_Spec *mShadowColor;
 };
 
 #endif /* __HISSTOOLS_LICE_SHADOW__ */
