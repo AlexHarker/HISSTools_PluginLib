@@ -211,7 +211,6 @@ public:
         frameRoundRect(x, y, w, h, r, r, r, r, thickness);
     }
 
-
     void fillCPointer(double cx, double cy, double r, double pr, double ang, double pAng)
     {
         cPointer(cx, cy, r, pr, ang, pAng);
@@ -297,7 +296,6 @@ private:
     {
         cairo_rectangle(getContext(), x, y, w, h);
         setShapeGradient(x, x + w, y, y + h);
-        
     }
     
     void roundedRectangle(double x, double y, double w, double h, double rtl, double rtr, double rbl, double rbr)
