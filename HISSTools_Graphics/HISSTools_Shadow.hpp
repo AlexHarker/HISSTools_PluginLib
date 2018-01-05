@@ -29,86 +29,12 @@ public:
         setScaling(1.0);
     }
 	
-	void rowBlur(double *oRow, double *iRow, long width, long height)
-	{
-        int kernelSize = getKernelSize();
-        
-		if (width < kernelSize || kernelSize < 2)
-			return;
-		
-		for (long i = 0; i < height; i++)
-		{
-			for (long j = 0; j < kernelSize - 1; j++)
-			{
-				double accum = iRow[j] * mBlurKernel[0];
-				for (long k = 1; k < j + 1; k++)
-					accum += mBlurKernel[k] * iRow[j - k];
-				for (long k = 1; k < kernelSize; k++)
-					accum += mBlurKernel[k] * iRow[j + k];
-				oRow[j] = accum;
-			}
-			for (long j = kernelSize - 1; j < (width - kernelSize) + 1; j++)
-			{
-				double accum = iRow[j] * mBlurKernel[0];
-				for (long k = 1; k < kernelSize; k++)
-					accum += mBlurKernel[k] * (iRow[j - k] + iRow[j + k]);
-				oRow[j] = accum;
-			}
-			for (long j = (width - kernelSize) + 1; j < width; j++)
-			{
-				double accum = iRow[j] * mBlurKernel[0];
-				for (long k = 1; k < kernelSize; k++)
-					accum += mBlurKernel[k] * iRow[j - k];
-				for (long k = 1; k < width - j; k++)
-					accum += mBlurKernel[k] * iRow[j + k];
-				oRow[j] = accum;			
-			}
-			
-			iRow += width;
-			oRow += width;
-		}
-	}
-	
-	void colBlur(double *oCol, double *iCol, int width, int height)
-	{
-        int kernelSize = getKernelSize();
-
-		if (height < kernelSize || kernelSize < 2)
-			return;
-		
-		for (long i = 0; i < width; i++)
-		{
-			for (long j = 0; j < kernelSize - 1; j++)
-			{
-				double accum = iCol[j * width] * mBlurKernel[0];
-				for (long k = 1; k < j + 1; k++)
-					accum += mBlurKernel[k] * iCol[(j - k) * width];
-				for (long k = 1; k < kernelSize; k++)
-					accum += mBlurKernel[k] * iCol[(j + k) * width];
-				oCol[j * width] = accum;
-			}
-			for (long j = kernelSize - 1; j < (height - kernelSize) + 1; j++)
-			{
-				double accum = iCol[j * width] * mBlurKernel[0];
-				for (long k = 1; k < kernelSize; k++)
-					accum += mBlurKernel[k] * (iCol[(j - k) * width] + iCol[(j + k) * width]);
-				oCol[j * width] = accum;
-			}
-			for (long j = (height - kernelSize) + 1; j < height; j++)
-			{
-				double accum = iCol[j * width] * mBlurKernel[0];
-				for (long k = 1; k < kernelSize; k++)
-					accum += mBlurKernel[k] * iCol[(j - k) * width];
-				for (long k = 1; k < height - j; k++)
-					accum += mBlurKernel[k] * iCol[(j + k) * width];
-				oCol[j * width] = accum;			
-			}
-			
-			iCol++;
-			oCol++;
-		}
-	}
-	
+    void blur(double *io, double *temp, int width, int height)
+    {
+        blurSwap(temp, io, width, height);
+        blurSwap(io, temp, height, width);
+    }
+    
 	int getKernelSize() const   { return mBlurKernel.size(); }
 	
 	double getXOffset() const   { return mXOffset; }
@@ -139,6 +65,45 @@ public:
     }
     
 private:
+    
+    void blurSwap(double *output, double *input, int width, int height)
+    {
+        int kernelSize = getKernelSize();
+        
+        if (height < kernelSize || width < kernelSize || kernelSize < 2)
+            return;
+        
+        for (int i = 0; i < height; i++)
+        {
+            for (int j = 0; j < kernelSize - 1; j++)
+            {
+                double accum = input[j] * mBlurKernel[0];
+                for (int k = 1; k < j + 1; k++)
+                    accum += mBlurKernel[k] * input[j - k];
+                for (int k = 1; k < kernelSize; k++)
+                    accum += mBlurKernel[k] * input[j + k];
+                output[j * height + i] = accum;
+            }
+            for (int j = kernelSize - 1; j < (width - kernelSize) + 1; j++)
+            {
+                double accum = input[j] * mBlurKernel[0];
+                for (int k = 1; k < kernelSize; k++)
+                    accum += mBlurKernel[k] * (input[j - k] + input[j + k]);
+                output[j * height + i] = accum;
+            }
+            for (int j = (width - kernelSize) + 1; j < width; j++)
+            {
+                double accum = input[j] * mBlurKernel[0];
+                for (int k = 1; k < kernelSize; k++)
+                    accum += mBlurKernel[k] * input[j - k];
+                for (int k = 1; k < width - j; k++)
+                    accum += mBlurKernel[k] * input[j + k];
+                output[j * height + i] = accum;
+            }
+            
+            input += width;
+        }
+    }
     
     void makeKernel(double scale)
     {

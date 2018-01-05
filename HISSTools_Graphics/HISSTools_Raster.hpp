@@ -143,17 +143,13 @@ protected:
             mShadow->setScaling(scale);
             
             int kernelSize = mShadow->getKernelSize();
-            double xOffset = mShadow->getXOffset();
-            double yOffset = mShadow->getYOffset();
             
             int xLo = floor(mDrawArea.x1 * scale);
             int xHi = ceil(mDrawArea.x2 * scale);
             int yLo = floor(mDrawArea.y1 * scale);
             int yHi = ceil(mDrawArea.y2 * scale);
-			int width = (xHi - xLo) + (2 * kernelSize - 1);		// Account for blur size and fractional shift
-			int height = (yHi - yLo) + (2 * kernelSize - 1);	// Account for blur size and fractional shift
-			int xShift = trunc(xOffset) - (kernelSize - 1);		
-			int yShift = trunc(yOffset) - (kernelSize - 1);		
+			int width = (xHi - xLo) + (2 * kernelSize - 1);
+			int height = (yHi - yLo) + (2 * kernelSize - 1);
 			
 			double alphaRecip = 1.0 / 255.0;
 
@@ -179,17 +175,14 @@ protected:
             
 			for (int i = kernelSize - 1; i < (height - kernelSize) + 1; i++)
 				for (int j = kernelSize - 1; j < (width - kernelSize) + 1; j++)
-					mBlurTempAlpha2[i * width + j] = getAlpha((j + xLo - (kernelSize - 1)), (i + yLo - (kernelSize - 1)), data, surfaceStride) * alphaRecip;
+					mBlurTempAlpha1[i * width + j] = getAlpha((j + xLo - (kernelSize - 1)), (i + yLo - (kernelSize - 1)), data, surfaceStride) * alphaRecip;
 			
             cairo_surface_destroy(shadowSurface);
             cairo_destroy(shadowContext);
             
 			// Do blur (row, column then alpha mask with offsets)
 			
-			mShadow->rowBlur(&mBlurTempAlpha1[0], &mBlurTempAlpha2[0], width, height);
-            mShadow->colBlur(&mBlurTempAlpha2[0], &mBlurTempAlpha1[0], width, height);
-			
-			// FIX - Add Fractional offset - use linear interpolation on write
+			mShadow->blur(&mBlurTempAlpha1[0], &mBlurTempAlpha2[0], width, height);
 			
             surfaceStride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, getWidth() * scale);
             mAlphaMask.resize(surfaceStride * scale * getHeight());
@@ -206,16 +199,16 @@ protected:
             clipExtents.y1 = std::max(ceil(clipExtents.y1), 0.0) * scale;
             clipExtents.y2 = std::min(floor(clipExtents.y2), (double) getHeight()) * scale;
 
-            rect.L = floor(clipExtents.clipX(xLo + xShift));
-            rect.R = ceil(clipExtents.clipX(xLo + xShift + width));
-            rect.T = floor(clipExtents.clipY(yLo + yShift));
-            rect.B = ceil(clipExtents.clipY(yLo + yShift + height));
+            rect.L = floor(clipExtents.clipX(xLo));
+            rect.R = ceil(clipExtents.clipX(xLo + width));
+            rect.T = floor(clipExtents.clipY(yLo));
+            rect.B = ceil(clipExtents.clipY(yLo + height));
             
             for (int i = rect.T; i < rect.B; i++)
                 for (int j = rect.L; j < rect.R; j++)
-                    setAlpha(j, i, mBlurTempAlpha2[(i - yLo - yShift) * width + (j - xLo - xShift)], data, surfaceStride);
+                    setAlpha(j, i, mBlurTempAlpha1[(i - yLo) * width + (j - xLo)], data, surfaceStride);
             
-            // Draw Shadow in correct color
+            // Draw shadow in correct place and color
             
             cairo_t *cr = getContext();
             
@@ -223,6 +216,7 @@ protected:
             mShadow->getShadowColor()->setAsSource(cr);
             cairo_surface_t *mask = cairo_image_surface_create_for_data(data, CAIRO_FORMAT_A8, getWidth() * scale, getHeight() * scale, surfaceStride);
             cairo_scale(cr, 1.0/scale, 1.0/scale);
+            cairo_translate(cr, mShadow->getXOffset() - ((kernelSize - 1) / scale), mShadow->getYOffset() - ((kernelSize - 1) / scale));
             cairo_mask_surface(cr, mask, 0, 0);
             cairo_restore(cr);
             cairo_surface_destroy(mask);
