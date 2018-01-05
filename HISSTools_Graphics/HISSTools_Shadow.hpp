@@ -31,37 +31,35 @@ public:
 	
 	void rowBlur(double *oRow, double *iRow, long width, long height)
 	{
-		double accum;
-		long i, j, k;
         int kernelSize = getKernelSize();
         
 		if (width < kernelSize || kernelSize < 2)
 			return;
 		
-		for (i = 0; i < height; i++)
+		for (long i = 0; i < height; i++)
 		{
-			for (j = 0; j < kernelSize - 1; j++)
+			for (long j = 0; j < kernelSize - 1; j++)
 			{
-				accum = iRow[j] * mBlurKernel[0];
-				for (k = 1; k < j + 1; k++)
+				double accum = iRow[j] * mBlurKernel[0];
+				for (long k = 1; k < j + 1; k++)
 					accum += mBlurKernel[k] * iRow[j - k];
-				for (k = 1; k < kernelSize; k++)
+				for (long k = 1; k < kernelSize; k++)
 					accum += mBlurKernel[k] * iRow[j + k];
 				oRow[j] = accum;
 			}
-			for (j = kernelSize - 1; j < (width - kernelSize) + 1; j++)
+			for (long j = kernelSize - 1; j < (width - kernelSize) + 1; j++)
 			{
-				accum = iRow[j] * mBlurKernel[0];
-				for (k = 1; k < kernelSize; k++)
+				double accum = iRow[j] * mBlurKernel[0];
+				for (long k = 1; k < kernelSize; k++)
 					accum += mBlurKernel[k] * (iRow[j - k] + iRow[j + k]);
 				oRow[j] = accum;
 			}
-			for (j = (width - kernelSize) + 1; j < width; j++)
+			for (long j = (width - kernelSize) + 1; j < width; j++)
 			{
-				accum = iRow[j] * mBlurKernel[0];
-				for (k = 1; k < kernelSize; k++)
+				double accum = iRow[j] * mBlurKernel[0];
+				for (long k = 1; k < kernelSize; k++)
 					accum += mBlurKernel[k] * iRow[j - k];
-				for (k = 1; k < width - j; k++)
+				for (long k = 1; k < width - j; k++)
 					accum += mBlurKernel[k] * iRow[j + k];
 				oRow[j] = accum;			
 			}
@@ -73,37 +71,35 @@ public:
 	
 	void colBlur(double *oCol, double *iCol, int width, int height)
 	{
-		double accum;
-		long i, j, k;
         int kernelSize = getKernelSize();
 
 		if (height < kernelSize || kernelSize < 2)
 			return;
 		
-		for (i = 0; i < width; i++)
+		for (long i = 0; i < width; i++)
 		{
-			for (j = 0; j < kernelSize - 1; j++)
+			for (long j = 0; j < kernelSize - 1; j++)
 			{
-				accum = iCol[j * width] * mBlurKernel[0];
-				for (k = 1; k < j + 1; k++)
+				double accum = iCol[j * width] * mBlurKernel[0];
+				for (long k = 1; k < j + 1; k++)
 					accum += mBlurKernel[k] * iCol[(j - k) * width];
-				for (k = 1; k < kernelSize; k++)
+				for (long k = 1; k < kernelSize; k++)
 					accum += mBlurKernel[k] * iCol[(j + k) * width];
 				oCol[j * width] = accum;
 			}
-			for (; j < (height - kernelSize) + 1; j++)
+			for (long j = kernelSize - 1; j < (height - kernelSize) + 1; j++)
 			{
-				accum = iCol[j * width] * mBlurKernel[0];
-				for (k = 1; k < kernelSize; k++)
+				double accum = iCol[j * width] * mBlurKernel[0];
+				for (long k = 1; k < kernelSize; k++)
 					accum += mBlurKernel[k] * (iCol[(j - k) * width] + iCol[(j + k) * width]);
 				oCol[j * width] = accum;
 			}
-			for (; j < height; j++)
+			for (long j = (height - kernelSize) + 1; j < height; j++)
 			{
-				accum = iCol[j * width] * mBlurKernel[0];
-				for (k = 1; k < kernelSize; k++)
+				double accum = iCol[j * width] * mBlurKernel[0];
+				for (long k = 1; k < kernelSize; k++)
 					accum += mBlurKernel[k] * iCol[(j - k) * width];
-				for (k = 1; k < height - j; k++)
+				for (long k = 1; k < height - j; k++)
 					accum += mBlurKernel[k] * iCol[(j + k) * width];
 				oCol[j * width] = accum;			
 			}
