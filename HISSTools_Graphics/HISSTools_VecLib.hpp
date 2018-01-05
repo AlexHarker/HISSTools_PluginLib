@@ -170,7 +170,7 @@ public:
         cairo_move_to(cr, x1, y1 );
         cairo_line_to(cr, x2, y2);
         cairo_line_to(cr, x3, y3);
-        cairo_line_to(cr, x1, y1);
+        cairo_close_path(cr);
         //setShapeGradient();
         fill(true);
     }
@@ -314,7 +314,8 @@ private:
         cairo_arc(cr, x + w - rbr, y + h - rbr, rbr, 0.0, M_PI / 2.0);
         cairo_line_to(cr, x + rbl, y + h);
         cairo_arc(cr, x + rbl, y + h - rbl, rbl, M_PI / 2.0, M_PI);
-        cairo_line_to(cr, x, y + rtl);
+        cairo_close_path(cr);
+        //cairo_line_to(cr, x, y + rtl);
         setShapeGradient(x, x + w, y, y + h);
     }
     
@@ -322,10 +323,7 @@ private:
     {
         double xx = cx + sin(2.0 * PI * ang) * pr;
         double yy = cy - cos(2.0 * PI * ang) * pr;
-        double xxx, yyy;
-        
-        circleIntersection(cx, cy, ang - pAng, r, &xxx, &yyy);
-        
+
         cairo_t *cr = getContext();
         
         double begAng = (ang - pAng - 0.25) * 2.0 * M_PI;
@@ -333,7 +331,7 @@ private:
         
         cairo_arc_negative(cr, cx, cy, r, begAng, arcAng);
         cairo_line_to(cr, xx, yy);
-        cairo_line_to(cr, xxx, yyy);
+        cairo_close_path(cr);
         // FIX - revise...
         setShapeGradient(cx - pr, cx + pr, cy - pr, cy + pr);
     }
