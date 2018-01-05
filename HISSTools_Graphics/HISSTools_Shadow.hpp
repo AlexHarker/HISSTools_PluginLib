@@ -18,7 +18,6 @@ private:
 	double mXOffset;
 	double mYOffset;
     double mBlurSize;
-    double mScale;
     
 	HISSTools_Color_Spec *mShadowColor;
 	
@@ -116,8 +115,8 @@ public:
 	
 	int getKernelSize() const   { return mBlurKernel.size(); }
 	
-	double getXOffset() const   { return mXOffset * mScale; }
-	double getYOffset() const   { return mYOffset * mScale; }
+	double getXOffset() const   { return mXOffset; }
+	double getYOffset() const   { return mYOffset; }
 	
 	HISSTools_Color_Spec *getShadowColor()
 	{
@@ -140,7 +139,6 @@ public:
     
     void setScaling(double scale)
     {
-        mScale = scale;
         makeKernel(scale);
     }
     
@@ -158,25 +156,19 @@ private:
         {
             mBlurKernel.resize(kernelSize);
             
-            if (kernelSize > 1)
-            {
-                double blurRatio = kernelSize / 3.0;
-                double blurConst = 1.0 / (2 * blurRatio * blurRatio);
-                double accum = 0.0;
+            double blurConst = 4.5 / (kernelSize * kernelSize);
                 
-                for (int i = 0; i < kernelSize; i++)
-                    mBlurKernel[i] = exp(-(i * i) * blurConst);
-                                
-                for (int i = 0; i < kernelSize; i++)
-                    accum += mBlurKernel[i] + mBlurKernel[i];
+            for (int i = 0; i < kernelSize; i++)
+                mBlurKernel[i] = exp(-(i * i) * blurConst);
                 
-                double normalise = 1.0 / accum;
+            double accum =  mBlurKernel[0];
+            for (int i = 1; i < kernelSize; i++)
+                accum += mBlurKernel[i] + mBlurKernel[i];
                 
-                for (int i = 0; i < kernelSize; i++)
-                    mBlurKernel[i] *= normalise;
-            }
-            else
-                mBlurKernel[0] = 1.0;
+            double normalise = 1.0 / accum;
+                
+            for (int i = 0; i < kernelSize; i++)
+                mBlurKernel[i] *= normalise;
         }
     }
 };
