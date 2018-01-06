@@ -20,15 +20,15 @@ public:
         setScaling(1.0);
     }
 	
-    void blur(unsigned char *io, unsigned char *temp, int width, int height)
+    void blur(unsigned char *io, unsigned char *temp, int width, int height, int stride)
     {
         int kernelSize = getKernelSize();
 
         if (height < kernelSize || width < kernelSize || kernelSize < 2)
             return;
         
-        blurSwap(temp, io, width, height, kernelSize, mNorm);
-        blurSwap(io, temp, height, width, kernelSize, mNorm);
+        blurSwap(temp, io, width, height, stride, height, kernelSize, mNorm);
+        blurSwap(io, temp, height, width, height, stride, kernelSize, mNorm);
     }
     
 	int getKernelSize() const   { return mBlurKernel.size(); }
@@ -62,9 +62,9 @@ public:
     
 private:
     
-    void blurSwap(unsigned char *output, unsigned char *input, int width, int height, int kernelSize, unsigned long norm)
+    void blurSwap(unsigned char *output, unsigned char *input, int width, int height, int inStride, int outStride, int kernelSize, unsigned long norm)
     {
-        for (int i = 0; i < height; i++, input += width)
+        for (int i = 0; i < height; i++, input += inStride)
         {
             for (int j = 0; j < kernelSize - 1; j++)
             {
@@ -73,14 +73,14 @@ private:
                     accum += mBlurKernel[k] * input[j - k];
                 for (int k = 1; k < kernelSize; k++)
                     accum += mBlurKernel[k] * input[j + k];
-                output[j * height + i] = std::min(static_cast<unsigned long>(255), accum / norm);
+                output[j * outStride + i] = std::min(static_cast<unsigned long>(255), accum / norm);
             }
             for (int j = kernelSize - 1; j < (width - kernelSize) + 1; j++)
             {
                 unsigned long accum = input[j] * mBlurKernel[0];
                 for (int k = 1; k < kernelSize; k++)
                     accum += mBlurKernel[k] * (input[j - k] + input[j + k]);
-                output[j * height + i] = std::min(static_cast<unsigned long>(255), accum / norm);
+                output[j * outStride + i] = std::min(static_cast<unsigned long>(255), accum / norm);
             }
             for (int j = (width - kernelSize) + 1; j < width; j++)
             {
@@ -89,7 +89,7 @@ private:
                     accum += mBlurKernel[k] * input[j - k];
                 for (int k = 1; k < width - j; k++)
                     accum += mBlurKernel[k] * input[j + k];
-                output[j * height + i] = std::min(static_cast<unsigned long>(255), accum / norm);
+                output[j * outStride + i] = std::min(static_cast<unsigned long>(255), accum / norm);
             }
         }
     }

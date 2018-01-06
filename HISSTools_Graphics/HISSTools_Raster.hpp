@@ -51,9 +51,9 @@ private:
 	
 	HISSTools_Shadow *mShadow;
 	
-    std::vector <double> mBlurTempAlpha1;
-    std::vector <double> mBlurTempAlpha2;
-    std::vector<unsigned char> mAlphaMask;
+    std::vector <unsigned char> mBlurTempAlpha1;
+    std::vector <unsigned char> mBlurTempAlpha2;
+
 protected:
 	
 	//////////////////////////////////////////////////////////////////////////////
@@ -150,75 +150,36 @@ protected:
             int yHi = ceil(mDrawArea.y2 * scale);
 			int width = (xHi - xLo) + (2 * kernelSize - 1);
 			int height = (yHi - yLo) + (2 * kernelSize - 1);
-			
-			double alphaRecip = 1.0 / 255.0;
+            int alphaSurfaceStride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, width);
 
 			// Alloc and zero blur memory
 			
-			int sizeRequired = width * height;
-			
-            mBlurTempAlpha1.resize(sizeRequired);
-            mBlurTempAlpha2.resize(sizeRequired);
+            mBlurTempAlpha1.resize(alphaSurfaceStride * height);
+            mBlurTempAlpha2.resize(alphaSurfaceStride * height);
 			std::fill(mBlurTempAlpha1.begin(), mBlurTempAlpha1.end(), 0);
             std::fill(mBlurTempAlpha2.begin(), mBlurTempAlpha2.end(), 0);
 
 			// Copy alpha values from the temp bitmap
 				
-            cairo_surface_t* shadowSurface = cairo_image_surface_create(CAIRO_FORMAT_A8, getWidth() * scale, getHeight() * scale);
-            cairo_t* shadowContext = cairo_create(shadowSurface);
-            cairo_scale(shadowContext, scale, scale);
-            cairo_set_source(shadowContext, shadowRender);
-            cairo_paint(shadowContext);
+            cairo_surface_t *mask = cairo_image_surface_create_for_data(&mBlurTempAlpha1[0], CAIRO_FORMAT_A8, width, height, alphaSurfaceStride);
+            cairo_t* maskContext = cairo_create(mask);
+            cairo_scale(maskContext, scale, scale);
+            cairo_translate(maskContext, (kernelSize - 1 - xLo) / scale, (kernelSize - 1 - yLo) / scale);
+            cairo_set_source(maskContext, shadowRender);
+            cairo_paint(maskContext);
+            cairo_destroy(maskContext);
             
-            unsigned char *data = cairo_image_surface_get_data(shadowSurface);
-            int surfaceStride = cairo_image_surface_get_stride(shadowSurface);
-            
-			for (int i = kernelSize - 1; i < (height - kernelSize) + 1; i++)
-				for (int j = kernelSize - 1; j < (width - kernelSize) + 1; j++)
-					mBlurTempAlpha1[i * width + j] = getAlpha((j + xLo - (kernelSize - 1)), (i + yLo - (kernelSize - 1)), data, surfaceStride) * alphaRecip;
+			// Do blur
 			
-            cairo_surface_destroy(shadowSurface);
-            cairo_destroy(shadowContext);
-            
-			// Do blur (row, column then alpha mask with offsets)
-			
-			mShadow->blur(&mBlurTempAlpha1[0], &mBlurTempAlpha2[0], width, height);
-			
-            surfaceStride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, getWidth() * scale);
-            mAlphaMask.resize(surfaceStride * scale * getHeight());
-            std::fill(mAlphaMask.begin(), mAlphaMask.end(), 0);
-            data = &mAlphaMask[0];
-            
-            Area clipExtents;
-            IRECT rect;
-            
-            cairo_clip_extents(mContext, &clipExtents.x1, &clipExtents.y1, &clipExtents.x2, &clipExtents.y2);
-            
-            clipExtents.x1 = std::max(ceil(clipExtents.x1), 0.0) * scale;
-            clipExtents.x2 = std::min(floor(clipExtents.x2), (double) getWidth()) * scale;
-            clipExtents.y1 = std::max(ceil(clipExtents.y1), 0.0) * scale;
-            clipExtents.y2 = std::min(floor(clipExtents.y2), (double) getHeight()) * scale;
+			mShadow->blur(&mBlurTempAlpha1[0], &mBlurTempAlpha2[0], width, height, alphaSurfaceStride);
 
-            rect.L = floor(clipExtents.clipX(xLo));
-            rect.R = ceil(clipExtents.clipX(xLo + width));
-            rect.T = floor(clipExtents.clipY(yLo));
-            rect.B = ceil(clipExtents.clipY(yLo + height));
-            
-            for (int i = rect.T; i < rect.B; i++)
-                for (int j = rect.L; j < rect.R; j++)
-                    setAlpha(j, i, mBlurTempAlpha1[(i - yLo) * width + (j - xLo)], data, surfaceStride);
-            
             // Draw shadow in correct place and color
             
-            cairo_t *cr = getContext();
-            
-            cairo_save(cr);
-            mShadow->getShadowColor()->setAsSource(cr);
-            cairo_surface_t *mask = cairo_image_surface_create_for_data(data, CAIRO_FORMAT_A8, getWidth() * scale, getHeight() * scale, surfaceStride);
-            cairo_scale(cr, 1.0/scale, 1.0/scale);
-            cairo_translate(cr, mShadow->getXOffset() - ((kernelSize - 1) / scale), mShadow->getYOffset() - ((kernelSize - 1) / scale));
-            cairo_mask_surface(cr, mask, 0, 0);
-            cairo_restore(cr);
+            cairo_save(mContext);
+            mShadow->getShadowColor()->setAsSource(mContext);
+            cairo_scale(mContext, 1.0/scale, 1.0/scale);
+            cairo_mask_surface(mContext, mask, mShadow->getXOffset() * scale + ((xLo - (kernelSize - 1))), mShadow->getYOffset() * scale + ((yLo - (kernelSize - 1))));
+            cairo_restore(mContext);
             cairo_surface_destroy(mask);
 		}
 		
@@ -295,11 +256,6 @@ protected:
 private:
     
     // Drop Shadow
-    
-    void setAlpha(int x, int y, double alpha, unsigned char *data, int stride)
-    {
-        data[y * stride + x] = std::min(static_cast<int>(alpha * 255.0), 0xff);
-    }
     
     unsigned char getAlpha(int x, int y, unsigned char *data, int stride)
     {
