@@ -132,35 +132,35 @@ public:
     virtual void setRect(double xLo, double xHi, double yLo, double yHi, ColorOrientation CSOrientation)
     {
         HISSTools_Color_Spec::setRect(xLo, xHi, yLo, yHi, CSOrientation);
-        
+        cairo_matrix_t matrix;
+
         if (CSOrientation == kCSOrientHorizontal)
         {
-            cairo_matrix_init_translate(&mMatrix, -xLo, 0.0);
-            cairo_matrix_scale(&mMatrix, 1.0 / (xHi - xLo), 1.0);
+            cairo_matrix_init_translate(&matrix, -xLo, 0.0);
+            cairo_matrix_scale(&matrix, 1.0 / (xHi - xLo), 1.0);
         }
         else
         {
-            cairo_matrix_init_rotate(&mMatrix, -M_PI / 2.0);
+            cairo_matrix_init_rotate(&matrix, -M_PI / 2.0);
 
             if (mFlipVertical)
             {
-                cairo_matrix_scale(&mMatrix, 1.0, -1.0 / (yHi - yLo));
-                cairo_matrix_translate(&mMatrix, 0.0, -yHi);
+                cairo_matrix_scale(&matrix, 1.0, -1.0 / (yHi - yLo));
+                cairo_matrix_translate(&matrix, 0.0, -yHi);
             }
             else
             {
-                cairo_matrix_scale(&mMatrix, 1.0, 1.0 / (yHi - yLo));
-                cairo_matrix_translate(&mMatrix, 0.0, -yLo);
+                cairo_matrix_scale(&matrix, 1.0, 1.0 / (yHi - yLo));
+                cairo_matrix_translate(&matrix, 0.0, -yLo);
             }
         }
         
-        cairo_pattern_set_matrix(mPattern, &mMatrix);
+        cairo_pattern_set_matrix(mPattern, &matrix);
     }
     
 private:
     
     cairo_pattern_t *mPattern;
-    cairo_matrix_t mMatrix;
     bool mFlipVertical;
 };
 

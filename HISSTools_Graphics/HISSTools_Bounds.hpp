@@ -11,22 +11,12 @@ public:
 		
     HISSTools_Bounds() : mX(0.0), mY(0.0), mW(0.0), mH(0.0) {}
 	
-	HISSTools_Bounds(double v1, double v2, double v3, double v4, bool absolute = false)
+	HISSTools_Bounds(double x, double y, double w, double h)
 	{
-		if (absolute)
-		{
-			mX = v1 < v3 ? v1 : v3;
-			mY = v2 < v4 ? v2 : v4;
-			mW = v1 < v3 ? v3 : v1;
-			mH = v2 < v4 ? v4 : v2;
-		}
-		else 
-		{
-			mX = v3 > 0 ? v1 : v1 - v3;
-			mY = v4 > 0 ? v2 : v2 - v4;
-			mW = fabs(v3);
-			mH = fabs(v4);
-		}
+        mX = w > 0 ? x : x - w;
+        mY = h > 0 ? y : y - h;
+        mW = fabs(w);
+        mH = fabs(h);
 	}
 	
 	void include(HISSTools_Bounds inc)
@@ -50,15 +40,14 @@ public:
 	void addThickness(double thickness)
 	{
 		thickness = thickness > 0 ? thickness : 0;
-		double halfThickness = thickness / 2.0;
 		
-		mX -= halfThickness;
-		mY -= halfThickness;
+		mX -= thickness * 0.5;
+		mY -= thickness * 0.5;
 		mW += thickness;
 		mH += thickness;
 	}
 	
-    IRECT iBounds() const  { return IRECT(floor(mX), floor(mY), ceil((mX + mW)), ceil((mY + mH))); }
+    IRECT iBounds() const       { return IRECT(floor(mX), floor(mY), ceil((mX + mW)), ceil((mY + mH))); }
     
 	double getX() const         { return mX; }
 	double getY() const         { return mY; }
