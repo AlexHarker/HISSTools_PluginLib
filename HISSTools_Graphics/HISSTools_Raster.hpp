@@ -124,7 +124,7 @@ protected:
         
 		// Reset draw boundaries for shadow calculation
 		
-        mDrawArea = Area(std::numeric_limits<double>::infinity(), 0, numeric_limits<double>::infinity(), 0);
+        mDrawArea = Area(std::numeric_limits<double>::infinity(), 0, std::numeric_limits<double>::infinity(), 0);
 	}
     
 	void renderShadow(bool renderImage, double scale)
