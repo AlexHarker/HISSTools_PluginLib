@@ -89,10 +89,10 @@ protected:
         cairo_save(mContext);
         cairo_clip_extents(mContext, &clip.x1, &clip.y1, &clip.x2, &clip.y2);
         cairo_reset_clip(mContext);
-        clip.x1 -= shadow->getXOffset() + (shadow->getBlurSize() + 4);
-        clip.x2 -= shadow->getXOffset() - (shadow->getBlurSize() + 4);
-        clip.y1 -= shadow->getYOffset() + (shadow->getBlurSize() + 4);
-        clip.y2 -= shadow->getYOffset() - (shadow->getBlurSize() + 4);
+        clip.x1 = std::min(clip.x1, clip.x1 - (shadow->getXOffset() + (shadow->getBlurSize() + 2)));
+        clip.x2 = std::max(clip.x2, clip.x2 - (shadow->getXOffset() - (shadow->getBlurSize() + 2)));
+        clip.y1 = std::min(clip.y1, clip.y1 - (shadow->getYOffset() + (shadow->getBlurSize() + 2)));
+        clip.y2 = std::max(clip.y2, clip.y2 - (shadow->getYOffset() - (shadow->getBlurSize() + 2)));
         cairo_rectangle(mContext, clip.x1, clip.y1, clip.x2 - clip.x1, clip.y2 - clip.y1);
         cairo_clip(mContext);
         cairo_push_group(mContext);

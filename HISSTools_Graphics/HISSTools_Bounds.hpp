@@ -23,7 +23,7 @@ public:
 	void include(HISSTools_Bounds inc)
 	{
         double x = std::max(mX + mW, inc.mX + inc.mW);
-        double y = std::max(mY + mY, inc.mY + inc.mH);
+        double y = std::max(mY + mH, inc.mY + inc.mH);
         
         mX = std::min(mX, inc.mX);
         mY = std::min(mY, inc.mY);

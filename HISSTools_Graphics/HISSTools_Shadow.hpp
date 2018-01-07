@@ -43,13 +43,11 @@ public:
 	}
 			
 	HISSTools_Bounds getBlurBounds(HISSTools_Bounds currentBounds)
-	{        
-        int kernelSize = getKernelSize();
-        
-		double x = currentBounds.getX() + mXOffset - (kernelSize - 1);
-		double y = currentBounds.getY() + mYOffset - (kernelSize - 1);
-		double width = currentBounds.getWidth() + 2 * (kernelSize - 1);
-		double height = currentBounds.getHeight() + 2 * (kernelSize - 1);
+	{                
+		double x = currentBounds.getX() + mXOffset - (mBlurSize - 1);
+		double y = currentBounds.getY() + mYOffset - (mBlurSize - 1);
+		double width = currentBounds.getWidth() + 2 * (mBlurSize - 1);
+		double height = currentBounds.getHeight() + 2 * (mBlurSize - 1);
 		
 		currentBounds.include(HISSTools_Bounds(x, y, width, height));
 		
