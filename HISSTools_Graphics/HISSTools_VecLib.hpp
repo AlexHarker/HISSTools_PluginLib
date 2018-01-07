@@ -8,12 +8,12 @@
 #include "cairo/cairo.h"
 
 
-class HISSTools_LICE_Vec_Lib : private HISSTools_Raster
+class HISSTools_VecLib : private HISSTools_Raster
 {
 
 public:
 	
-	HISSTools_LICE_Vec_Lib(cairo_t *cairo) : HISSTools_Raster(cairo), mScale(1.0)
+	HISSTools_VecLib(cairo_t *cairo) : HISSTools_Raster(cairo), mScale(1.0)
 	{}
     
     void setSize(int w, int h)

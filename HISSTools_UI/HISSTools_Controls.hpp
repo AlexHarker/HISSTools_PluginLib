@@ -42,7 +42,7 @@ public:
             cairo_pattern_destroy(mBackground);
     }
 	
-    bool startBackground(IGraphics& pGraphics, HISSTools_LICE_Vec_Lib *vecDraw, IRECT area)
+    bool startBackground(IGraphics& pGraphics, HISSTools_VecLib *vecDraw, IRECT area)
     {
         if (mDrawBackground && !mNoCaching)
             vecDraw->startGroup();
@@ -50,7 +50,7 @@ public:
         return mDrawBackground || mNoCaching;
     }
     
-    void renderBackground(IGraphics& pGraphics, HISSTools_LICE_Vec_Lib *vecDraw, IRECT area)
+    void renderBackground(IGraphics& pGraphics, HISSTools_VecLib *vecDraw, IRECT area)
     {
         if (!mNoCaching)
         {
@@ -243,7 +243,7 @@ public:
 		setup(0, 0, 0, 0, hAlign, vAlign, name, type, designScheme);
 	}
 	
-	bool Draw(HISSTools_LICE_Vec_Lib *vecDraw)
+	bool Draw(HISSTools_VecLib *vecDraw)
 	{
 		if (mTextSD)
 			vecDraw->startShadow(mTextSD);
@@ -372,7 +372,7 @@ public:
 		setup(0, 0, 0, 0, 0, 0, hAlign, vAlign, name, type, designScheme);
 	}
 	
-	bool Draw(HISSTools_LICE_Vec_Lib *vecDraw)
+	bool Draw(HISSTools_VecLib *vecDraw)
 	{	
 		if (doDrawPanel())
 		{
@@ -538,7 +538,7 @@ public:
 	HISSTools_Text_Helper_Param(IControl *control, double x, double y, double w, double h, double pad, HTextAlign hAlign, VTextAlign vAlign, const char *name, const char *type, HISSTools_Design_Scheme *designScheme)
 	: HISSTools_Text_Helper_Panel(x, y, w, h, 0, 0, hAlign, vAlign, name, type, designScheme)
 	{			
-        double textHeight = HISSTools_LICE_Vec_Lib::getTextLineHeight(mTextTS);
+        double textHeight = HISSTools_VecLib::getTextLineHeight(mTextTS);
 		char concatenatedName[256];
 		
 		mControl = control;
@@ -607,7 +607,7 @@ public:
 		return false;
 	}
 	
-	void promptUserInput(HISSTools_LICE_Vec_Lib *vecDraw)
+	void promptUserInput(HISSTools_VecLib *vecDraw)
 	{
 		HISSTools_Bounds entryBounds;
 		IRECT iEntryBounds;
@@ -661,7 +661,7 @@ public:
 		mControl->PromptUserInput(iEntryBounds);
 	}
 	
-	bool promptUserInput(HISSTools_LICE_Vec_Lib *vecDraw, int x, int y)
+	bool promptUserInput(HISSTools_VecLib *vecDraw, int x, int y)
 	{
 		if (bounds().iBounds().Contains(x, y))
 		{
@@ -696,7 +696,7 @@ public:
 
 	}
 	
-	bool Draw(HISSTools_LICE_Vec_Lib *vecDraw)
+	bool Draw(HISSTools_VecLib *vecDraw)
 	{
 		IParam *param = mControl->GetParam();
 		
@@ -763,7 +763,7 @@ private:
 	
 	// Drawing Object
 	
-	HISSTools_LICE_Vec_Lib *mVecDraw;
+	HISSTools_VecLib *mVecDraw;
 	
 	// Text
 	
@@ -780,7 +780,7 @@ private:
 	
 public:
 	
-	HISSTools_Value(IPlugBaseGraphics* plug, int paramIdx, HISSTools_LICE_Vec_Lib *vecDraw, double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	HISSTools_Value(IPlugBaseGraphics* plug, int paramIdx, HISSTools_VecLib *vecDraw, double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
 	: IKnobControl(*plug, IRECT(), paramIdx), HISSTools_Control_Layers()
 	{
 		mVecDraw = vecDraw;
@@ -899,7 +899,7 @@ private:
 	
 	// Drawing Object
 	
-	HISSTools_LICE_Vec_Lib *mVecDraw;
+	HISSTools_VecLib *mVecDraw;
 	
 	// Positioning / Dimensions
 	
@@ -958,7 +958,7 @@ public:
 
 	// Constructor
 
-	HISSTools_Dial(IPlugBaseGraphics* plug, int paramIdx, HISSTools_LICE_Vec_Lib *vecDraw, double x, double y, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	HISSTools_Dial(IPlugBaseGraphics* plug, int paramIdx, HISSTools_VecLib *vecDraw, double x, double y, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
 	: IKnobControl(*plug, IRECT(), paramIdx), HISSTools_Control_Layers(), mInEdit(false)
 	{
 		mVecDraw = vecDraw;
@@ -1225,7 +1225,7 @@ private:
 		
 	// Drawing Object
 	
-	HISSTools_LICE_Vec_Lib *mVecDraw;
+	HISSTools_VecLib *mVecDraw;
 	
 	// Positioning / Dimensions
 	
@@ -1271,7 +1271,7 @@ public:
 	
 	// Constructor
 	
-	HISSTools_Button(IPlugBaseGraphics* plug, int paramIdx, HISSTools_LICE_Vec_Lib *vecDraw, double x, double y, double w = 0, double h = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	HISSTools_Button(IPlugBaseGraphics* plug, int paramIdx, HISSTools_VecLib *vecDraw, double x, double y, double w = 0, double h = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
 	: IControl(*plug, IRECT(), paramIdx), HISSTools_Control_Layers()
 	{		
 		mVecDraw = vecDraw;
@@ -1384,7 +1384,7 @@ private:
 	
 	// Drawing Object
 	
-	HISSTools_LICE_Vec_Lib *mVecDraw;
+	HISSTools_VecLib *mVecDraw;
 	
 	// Positioning / Dimensions
 	
@@ -1418,7 +1418,7 @@ private:
 	
 public:
 	
-	HISSTools_Switch(IPlugBaseGraphics* plug, int paramIdx, HISSTools_LICE_Vec_Lib *vecDraw, double x, double y, double w, double h, int nStates = 2, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	HISSTools_Switch(IPlugBaseGraphics* plug, int paramIdx, HISSTools_VecLib *vecDraw, double x, double y, double w, double h, int nStates = 2, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
 	: IControl(*plug, IRECT(), paramIdx), HISSTools_Control_Layers()
 	{
 		mVecDraw = vecDraw;
@@ -1565,7 +1565,7 @@ private:
 	
 	// Drawing Object
 	
-	HISSTools_LICE_Vec_Lib *mVecDraw;
+	HISSTools_VecLib *mVecDraw;
 	
 	// Size (Dimension)
 
@@ -1675,7 +1675,7 @@ public:
 	
 	// Constructor and Destructor
 	
-	HISSTools_Matrix(IPlugBaseGraphics* plug, int paramIdx, HISSTools_LICE_Vec_Lib *vecDraw, double x, double y, int xDim, int yDim, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, HISSTools_Design_Scheme *stateScheme = 0)
+	HISSTools_Matrix(IPlugBaseGraphics* plug, int paramIdx, HISSTools_VecLib *vecDraw, double x, double y, int xDim, int yDim, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, HISSTools_Design_Scheme *stateScheme = 0)
 	: IControl(*plug, IRECT(), paramIdx), HISSTools_Control_Layers()
 	{
 		mVecDraw = vecDraw;
@@ -1934,13 +1934,13 @@ private:
 	
 	// Drawing Object
 	
-	HISSTools_LICE_Vec_Lib *mVecDraw;
+	HISSTools_VecLib *mVecDraw;
 	
 public:
 	
 	// Constructors
 	
-	HISSTools_TextBlock(IPlugBaseGraphics* plug, HISSTools_LICE_Vec_Lib *vecDraw, double x, double y, double w, double h, const char* str = "", HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter, const char* type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	HISSTools_TextBlock(IPlugBaseGraphics* plug, HISSTools_VecLib *vecDraw, double x, double y, double w, double h, const char* str = "", HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter, const char* type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
 	: HISSTools_Text_Helper_Block(x, y, w, h, hAlign, vAlign, "TextBlock", type, designScheme), IControl(*plug, IRECT()), HISSTools_Control_Layers()
 	{
 		mVecDraw = vecDraw;
@@ -1977,7 +1977,7 @@ private:
 	
 	// Drawing Object
 	
-	HISSTools_LICE_Vec_Lib *mVecDraw;
+	HISSTools_VecLib *mVecDraw;
 	
 	// Positioning / Dimensions
 	
@@ -2021,7 +2021,7 @@ public:
 	
 	// Constructor
 	
-	HISSTools_Panel(IPlugBaseGraphics* plug, HISSTools_LICE_Vec_Lib *vecDraw, double x, double y, double w = 0, double h = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	HISSTools_Panel(IPlugBaseGraphics* plug, HISSTools_VecLib *vecDraw, double x, double y, double w = 0, double h = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
 	: IControl(*plug, IRECT()), HISSTools_Control_Layers()
 	{		
 		mVecDraw = vecDraw;
@@ -2102,7 +2102,7 @@ private:
 	
 	// Drawing Object
 	
-	HISSTools_LICE_Vec_Lib *mVecDraw;	
+	HISSTools_VecLib *mVecDraw;	
 	
 	// Positioning / Dimensions
 	
@@ -2127,7 +2127,7 @@ private:
 		
 public:
 	
-	HISSTools_Progress(IPlugBaseGraphics* plug, HISSTools_LICE_Vec_Lib *vecDraw, double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	HISSTools_Progress(IPlugBaseGraphics* plug, HISSTools_VecLib *vecDraw, double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
 	: IControl(*plug, IRECT()), HISSTools_Control_Layers(), mX(x), mY(y), mW(w), mH(h)
 	{ 	
 		mVecDraw = vecDraw;
@@ -2219,7 +2219,7 @@ private:
 		
 	// Drawing Object
 	
-	HISSTools_LICE_Vec_Lib *mVecDraw;	
+	HISSTools_VecLib *mVecDraw;	
 	
 	// Positioning / Dimensions
 	
@@ -2299,7 +2299,7 @@ private:
 	
 public:
 	
-	HISSTools_MeterTest(IPlugBaseGraphics* plug, HISSTools_LICE_Vec_Lib *vecDraw, double x, double y, double w, double h, bool flip = false, double minDB = -60, double maxDB = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	HISSTools_MeterTest(IPlugBaseGraphics* plug, HISSTools_VecLib *vecDraw, double x, double y, double w, double h, bool flip = false, double minDB = -60, double maxDB = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
 	: IControl(*plug, IRECT()), HISSTools_Control_Layers()
 	{ 	
 		mVecDraw = vecDraw;
@@ -2532,7 +2532,7 @@ public:
 	
 	// FIX - turn automation off (also for matrix)
 		
-	HISSTools_FileSelector(IPlugBaseGraphics* plug, int paramIdx, HISSTools_LICE_Vec_Lib *vecDraw, double x, double y, double w, double h, EFileAction action, char* dir = "", char* extensions = "", const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	HISSTools_FileSelector(IPlugBaseGraphics* plug, int paramIdx, HISSTools_VecLib *vecDraw, double x, double y, double w, double h, EFileAction action, char* dir = "", char* extensions = "", const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
 	: HISSTools_Button(plug, paramIdx, vecDraw, x, y, w, h, type, designScheme) , mFileAction(action), mDir(dir), mExtensions(extensions)
 	{
 		mValidReport = false;
