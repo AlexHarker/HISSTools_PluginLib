@@ -35,6 +35,7 @@ public:
 	
 	double getXOffset() const   { return mXOffset; }
 	double getYOffset() const   { return mYOffset; }
+    double getBlurSize() const  { return mBlurSize; }
 	
 	HISSTools_Color_Spec *getShadowColor()
 	{

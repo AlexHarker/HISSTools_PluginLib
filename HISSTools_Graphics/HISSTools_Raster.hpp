@@ -83,7 +83,18 @@ protected:
 	
 	void startShadow(HISSTools_Shadow *shadow)
 	{
+        Area clip;
+        
         mShadow = shadow;
+        cairo_save(mContext);
+        cairo_clip_extents(mContext, &clip.x1, &clip.y1, &clip.x2, &clip.y2);
+        cairo_reset_clip(mContext);
+        clip.x1 -= shadow->getXOffset() + (shadow->getBlurSize() + 4);
+        clip.x2 -= shadow->getXOffset() - (shadow->getBlurSize() + 4);
+        clip.y1 -= shadow->getYOffset() + (shadow->getBlurSize() + 4);
+        clip.y2 -= shadow->getYOffset() - (shadow->getBlurSize() + 4);
+        cairo_rectangle(mContext, clip.x1, clip.y1, clip.x2 - clip.x1, clip.y2 - clip.y1);
+        cairo_clip(mContext);
         cairo_push_group(mContext);
         
 		// Reset draw boundaries for shadow calculation
@@ -99,6 +110,7 @@ protected:
             return;
         
         cairo_pattern_t *shadowRender = cairo_pop_group(mContext);
+        cairo_restore(mContext);
         
         // Check there is a shadow specified (otherwise only render original image)
 
@@ -198,6 +210,8 @@ protected:
     
     void updateDrawBounds(double xLo, double xHi, double yLo, double yHi, bool useExtents)
     {
+        // FIX - account for clip!
+        
         mDrawArea.x1 = std::min(xLo, mDrawArea.x1);
         mDrawArea.x2 = std::max(xHi, mDrawArea.x2);
         mDrawArea.y1 = std::min(yLo, mDrawArea.y1);
