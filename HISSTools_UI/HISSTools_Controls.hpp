@@ -1881,9 +1881,13 @@ public:
 	void SetState(int x, int y, char state)
 	{
 		if (x >= 0 && x < mXDim && y >= 0  && y < mYDim)
-			mStates[y * mXDim + x] = state;
-		
-		SetDirty(false);
+        {
+            if (state != mStates[y * mXDim + x])
+            {
+                mStates[y * mXDim + x] = state;
+                SetDirty(false);
+            }
+        }
 	}
 	
 	unsigned char GetState(int x, int y)
