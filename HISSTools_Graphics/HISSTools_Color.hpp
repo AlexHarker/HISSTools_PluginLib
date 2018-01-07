@@ -164,11 +164,8 @@ private:
     bool mFlipVertical;
 };
 
-class HISSTools_LICE_HGradient : public HISSTools_LICE_HVGradient
+struct HISSTools_LICE_HGradient : public HISSTools_LICE_HVGradient
 {
-	
-public:
-	
     HISSTools_LICE_HGradient() : HISSTools_LICE_HVGradient() {}
     
     virtual void setRect(double xLo, double xHi, double yLo, double yHi, ColorOrientation CSOrientation)
@@ -178,11 +175,8 @@ public:
 };
 
 
-class HISSTools_LICE_VGradient : public HISSTools_LICE_HVGradient
-{
-
-public:
-    
+struct HISSTools_LICE_VGradient : public HISSTools_LICE_HVGradient
+{    
     HISSTools_LICE_VGradient() : HISSTools_LICE_HVGradient(false) {}
 
     virtual void setRect(double xLo, double xHi, double yLo, double yHi, ColorOrientation CSOrientation)

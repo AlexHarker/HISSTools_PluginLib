@@ -3,6 +3,7 @@
 #define __HISSTOOLS_BOUNDS__
 
 #include <IPlugStructs.h>
+#include <algorithm>
 
 class HISSTools_Bounds
 {
@@ -21,25 +22,18 @@ public:
 	
 	void include(HISSTools_Bounds inc)
 	{
-		if (inc.mX < mX)
-		{
-			mW = (mX + mW) - inc.mX;
-			mX = inc.mX;
-		}
-		if (inc.mY < mY)
-		{
-			mH = (mY + mH) - inc.mY;
-			mY = inc.mY;
-		}
-		if ((inc.mX + inc.mW) > (mX + mW))
-			mW = (inc.mX + inc.mW) - mX;
-		if ((inc.mY + inc.mH) > (mY + mH))
-			mH = (inc.mY + inc.mH) - mY;
+        double x = std::max(mX + mW, inc.mX + inc.mW);
+        double y = std::max(mY + mY, inc.mY + inc.mH);
+        
+        mX = std::min(mX, inc.mX);
+        mY = std::min(mY, inc.mY);
+        mW = x - mX;
+        mH = y - mY;
 	}
 	
 	void addThickness(double thickness)
 	{
-		thickness = thickness > 0 ? thickness : 0;
+        thickness = std::max(0.0, thickness);
 		
 		mX -= thickness * 0.5;
 		mY -= thickness * 0.5;
