@@ -26,39 +26,8 @@ class HISSTools_Raster
         double x1, x2, y1, y2;
     };
     
-private:
-
-    LICE_SysBitmap mTextBitmap;
-    
-    cairo_t *mContext;
-
-	// Boundaries
-	
-    int mWidth, mHeight;
-	Area mDrawArea;
-	Area mGradientArea;
-	
-	// Forced Gradient Bounds Flag
-	
-	bool mForceGradientBox;
-	ColorOrientation mCSOrientation; 
-	
-	// Color
-	
-	HISSTools_Color_Spec *mColor;
-	
-	// Shadow
-	
-	HISSTools_Shadow *mShadow;
-	
-    std::vector <unsigned char> mBlurTempAlpha1;
-    std::vector <unsigned char> mBlurTempAlpha2;
-
 protected:
-	
-	//////////////////////////////////////////////////////////////////////////////
-	//////////////////////////////////////////////////////////////////////////////
-	
+		
 	// Request clipping with negative values is equivalent to turning clipping off for that edge
 	
     HISSTools_Raster(cairo_t *cairo) : mContext(cairo), mShadow(NULL), mWidth(0), mHeight(0), mForceGradientBox(false), mCSOrientation(kCSOrientHorizontal)
@@ -79,11 +48,6 @@ protected:
         mContext = context;
         cairo_set_operator(mContext, CAIRO_OPERATOR_OVER);
     }
-		
-    cairo_t *getContext() const { return mContext; }
-    
-    HISSTools_Color_Spec *getColorSpec() const { return mColor; }
-
     
     void setClip()  { cairo_reset_clip(mContext); }
     
@@ -98,8 +62,8 @@ protected:
 	{
 		mColor = color;
                 
-        if (getContext())
-            mColor->setAsSource(getContext());
+        if (mContext)
+            mColor->setAsSource(mContext);
 	}
 	
 	void forceGradientBox()     { mForceGradientBox = false; }
@@ -120,7 +84,7 @@ protected:
 	void startShadow(HISSTools_Shadow *shadow)
 	{
         mShadow = shadow;
-        cairo_push_group(getContext());
+        cairo_push_group(mContext);
         
 		// Reset draw boundaries for shadow calculation
 		
@@ -134,7 +98,7 @@ protected:
         if (mDrawArea.x1 > mDrawArea.x2 || mDrawArea.y1 > mDrawArea.y2)
             return;
         
-        cairo_pattern_t *shadowRender = cairo_pop_group(getContext());
+        cairo_pattern_t *shadowRender = cairo_pop_group(mContext);
         
         // Check there is a shadow specified (otherwise only render original image)
 
@@ -187,8 +151,8 @@ protected:
         
 		if (renderImage)
         {
-            cairo_set_source(getContext(), shadowRender);
-            cairo_paint_with_alpha(getContext(), 1.0);
+            cairo_set_source(mContext, shadowRender);
+            cairo_paint_with_alpha(mContext, 1.0);
         }
 
         cairo_pattern_destroy(shadowRender);
@@ -252,6 +216,34 @@ protected:
         
         setColor(mColor);
     }
+    
+    cairo_t *mContext;
+
+private:
+    
+    LICE_SysBitmap mTextBitmap;
+    
+    // Boundaries
+    
+    int mWidth, mHeight;
+    Area mDrawArea;
+    Area mGradientArea;
+    
+    // Forced Gradient Bounds Flag
+    
+    bool mForceGradientBox;
+    ColorOrientation mCSOrientation;
+    
+    // Color
+    
+    HISSTools_Color_Spec *mColor;
+    
+    // Shadow
+    
+    HISSTools_Shadow *mShadow;
+    
+    std::vector <unsigned char> mBlurTempAlpha1;
+    std::vector <unsigned char> mBlurTempAlpha2;
 };
 
 #endif /* __HISSTOOLS_LICE_RASTER_CAIRO__ */

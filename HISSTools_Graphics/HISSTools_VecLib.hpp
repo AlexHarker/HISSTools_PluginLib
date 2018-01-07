@@ -36,7 +36,7 @@ public:
         HISSTools_Raster::setClip(rect.L, rect.T, rect.R, rect.B);
     }
     
-    cairo_t *getContext() const { return HISSTools_Raster::getContext(); }
+    cairo_t *getContext() const { return mContext; }
     
     void setContext(cairo_t *context, double scale)
     {
@@ -46,20 +46,18 @@ public:
     
     void startGroup()
     {
-        cairo_push_group(getContext());
+        cairo_push_group(mContext);
     }
     
     cairo_pattern_t *endGroup()
     {
-        return cairo_pop_group(getContext());
+        return cairo_pop_group(mContext);
     }
     
     void renderPattern(cairo_pattern_t *pattern)
     {
-        cairo_t *cr = getContext();
-
-        cairo_set_source(cr, pattern);
-        cairo_paint_with_alpha(cr, 1.0);
+        cairo_set_source(mContext, pattern);
+        cairo_paint_with_alpha(mContext, 1.0);
     }
     
     double getScale() const { return mScale; }
@@ -84,7 +82,7 @@ public:
     {
         double x, y;
         
-        cairo_get_current_point(getContext(), &x, &y);
+        cairo_get_current_point(mContext, &x, &y);
         
         return x;
     }
@@ -93,25 +91,24 @@ public:
     {
         double x, y;
         
-        cairo_get_current_point(getContext(), &x, &y);
+        cairo_get_current_point(mContext, &x, &y);
         
         return y;
     }
     
     void moveTo(double x, double y)
     {
-        cairo_move_to(getContext(), x, y);
+        cairo_move_to(mContext, x, y);
     }
     
     void lineTo(double x, double y)
     {
-        cairo_line_to(getContext(), x, y);
-        moveTo(x, y);
+        cairo_line_to(mContext, x, y);
     }
     
     void startMultiLine(double x, double y, double thickness)
     {
-        cairo_new_path(getContext());
+        cairo_new_path(mContext);
         setLineThickness(thickness);
         moveTo(x, y);
     }
@@ -141,12 +138,10 @@ public:
     
     void fillArc(double cx, double cy, double r, double begAng, double arcAng)
     {
-        cairo_t *cr = getContext();
-
-        cairo_new_path(cr);
+        cairo_new_path(mContext);
         arc(cx, cy, r, begAng, arcAng);
-        cairo_line_to(cr, cx, cy);
-        cairo_close_path(cr);
+        cairo_line_to(mContext, cx, cy);
+        cairo_close_path(mContext);
         fill();
     }
 
@@ -223,11 +218,9 @@ public:
     
     void line(double x1, double y1, double x2, double y2, double thickness)
     {
-        cairo_t *cr = getContext();
-        
-        cairo_set_line_width(cr, thickness);
-        cairo_move_to(cr, x1, y1);
-        cairo_line_to(cr, x2, y2);
+        cairo_set_line_width(mContext, thickness);
+        cairo_move_to(mContext, x1, y1);
+        cairo_line_to(mContext, x2, y2);
         stroke(true);
     }
     
@@ -256,13 +249,13 @@ private:
     void fill(bool useExtents = false)
     {
         updateDrawBounds(true, useExtents);
-        cairo_fill(getContext());
+        cairo_fill(mContext);
     }
     
     void stroke(bool useExtents = false)
     {
         updateDrawBounds(false, useExtents);
-        cairo_stroke(getContext());
+        cairo_stroke(mContext);
     }
     
     double sanitizeRadius(double r, double w, double h)
@@ -276,7 +269,7 @@ private:
 
     void setLineThickness(double thickness)
     {
-        cairo_set_line_width(getContext(), thickness);
+        cairo_set_line_width(mContext, thickness);
     }
 
     void arc(double cx, double cy, double r, double begAng, double arcAng)
@@ -284,13 +277,13 @@ private:
         begAng = (begAng - 0.25) * 2.0 * M_PI;
         arcAng = (arcAng * 2.0 * M_PI) + begAng;
         
-        cairo_arc(getContext(), cx, cy, r, begAng, arcAng);
+        cairo_arc(mContext, cx, cy, r, begAng, arcAng);
         setShapeGradient(cx - r, cx + r, cy - r, cy + r);
     }
     
     void rectangle(double x, double y, double w, double h)
     {
-        cairo_rectangle(getContext(), x, y, w, h);
+        cairo_rectangle(mContext, x, y, w, h);
         setShapeGradient(x, x + w, y, y + h);
     }
     
@@ -301,14 +294,12 @@ private:
         rbl = sanitizeRadius(rbl, w, h);
         rbr = sanitizeRadius(rbr, w, h);
         
-        cairo_t *cr = getContext();
-        
-        cairo_new_path(cr);
-        cairo_arc(cr, x + rtl, y + rtl, rtl, M_PI, 3.0 * M_PI / 2.0);
-        cairo_arc(cr, x + w - rtr, y + rtr, rtr, 3.0 * M_PI / 2.0, 0.0);
-        cairo_arc(cr, x + w - rbr, y + h - rbr, rbr, 0.0, M_PI / 2.0);
-        cairo_arc(cr, x + rbl, y + h - rbl, rbl, M_PI / 2.0, M_PI);
-        cairo_close_path(cr);
+        cairo_new_path(mContext);
+        cairo_arc(mContext, x + rtl, y + rtl, rtl, M_PI, 3.0 * M_PI / 2.0);
+        cairo_arc(mContext, x + w - rtr, y + rtr, rtr, 3.0 * M_PI / 2.0, 0.0);
+        cairo_arc(mContext, x + w - rbr, y + h - rbr, rbr, 0.0, M_PI / 2.0);
+        cairo_arc(mContext, x + rbl, y + h - rbl, rbl, M_PI / 2.0, M_PI);
+        cairo_close_path(mContext);
         setShapeGradient(x, x + w, y, y + h);
     }
     
@@ -316,28 +307,24 @@ private:
     {
         double xx = cx + sin(2.0 * PI * ang) * pr;
         double yy = cy - cos(2.0 * PI * ang) * pr;
-
-        cairo_t *cr = getContext();
         
         double begAng = (ang - pAng - 0.25) * 2.0 * M_PI;
         double arcAng = (pAng * 4.0 * M_PI) + begAng;
         
-        cairo_new_path(cr);
-        cairo_arc_negative(cr, cx, cy, r, begAng, arcAng);
-        cairo_line_to(cr, xx, yy);
-        cairo_close_path(cr);
+        cairo_new_path(mContext);
+        cairo_arc_negative(mContext, cx, cy, r, begAng, arcAng);
+        cairo_line_to(mContext, xx, yy);
+        cairo_close_path(mContext);
         // FIX - revise...
         setShapeGradient(cx - pr, cx + pr, cy - pr, cy + pr);
     }
     
     void triangle(double x1, double y1, double x2, double y2, double x3, double y3)
     {
-        cairo_t *cr = getContext();
-        
-        cairo_move_to(cr, x1, y1 );
-        cairo_line_to(cr, x2, y2);
-        cairo_line_to(cr, x3, y3);
-        cairo_close_path(cr);
+        cairo_move_to(mContext, x1, y1 );
+        cairo_line_to(mContext, x2, y2);
+        cairo_line_to(mContext, x3, y3);
+        cairo_close_path(mContext);
     }
     
     double mScale;
