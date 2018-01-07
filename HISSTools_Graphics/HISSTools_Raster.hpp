@@ -198,8 +198,8 @@ protected:
     {
         LICE_IBitmap *bitmap = &mTextBitmap;
         
-        int width = getWidth() * scale;
-        int height = getHeight() * scale;
+        int width = mWidth * scale;
+        int height = mHeight * scale;
         
         bitmap->resize(width, height);
         LICE_Clear(bitmap, 0);
@@ -252,19 +252,6 @@ protected:
         
         setColor(mColor);
     }
-    
-private:
-    
-    // Drop Shadow
-    
-    unsigned char getAlpha(int x, int y, unsigned char *data, int stride)
-    {
-        return data[y * stride + x];
-    }
-    
-    int getHeight() const   { return mHeight; }
-    int getWidth() const    { return mWidth; }
-    
 };
 
 #endif /* __HISSTOOLS_LICE_RASTER_CAIRO__ */
