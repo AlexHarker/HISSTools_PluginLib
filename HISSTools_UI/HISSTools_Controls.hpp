@@ -2560,7 +2560,7 @@ public:
 				mState = kFSSelecting;
 				SetDirty(false);
 				
-				mPlug.GetGUI()->PromptForFile(tempFile, mFileAction, &mDir, mExtensions.Get());
+				mPlug.GetGUI()->PromptForFile(tempFile, mDir, mFileAction, mExtensions.Get());
 				
 				mState = kFSDone;
 				

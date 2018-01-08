@@ -19,10 +19,7 @@ class HISSTools_VecLib
     {
         Area() : x1(0), x2(0), y1(0), y2(0) {}
         Area(double xL, double xH, double yL, double yH) : x1(xL), x2(xH), y1(yL), y2(yH) {}
-        
-        double clipX(double x) { return std::min(x2, std::max(x1, x)); }
-        double clipY(double y) { return std::min(y2, std::max(y1, y)); }
-        
+    
         double x1, x2, y1, y2;
     };
     
@@ -41,11 +38,16 @@ public:
     
     void setClip()  { cairo_reset_clip(mContext); }
     
-    void setClip(double xLo, double yLo, double xHi, double yHi)
+    void setClip(HISSTools_Bounds clip)
     {
         //cairo_reset_clip(mContext);
-        cairo_rectangle(mContext, xLo, yLo, xHi - xLo, yHi - yLo);
+        cairo_rectangle(mContext, clip.getX(), clip.getY(), clip.getWidth(), clip.getHeight());
         cairo_clip(mContext);
+    }
+    
+    void setClip(double xLo, double yLo, double xHi, double yHi)
+    {
+        setClip(HISSTools_Bounds(xLo, yLo, xHi - xLo, yHi - yLo));
     }
     
     void setClip(IRECT rect)
@@ -265,10 +267,10 @@ public:
         
         updateDrawBounds(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1, true);
         
-        Area clip(x, x + w, y, y + h);
+        HISSTools_Bounds clip(x, y, w, h);
         
         cairo_save(mContext);
-        setClip(clip.x1, clip.y1, clip.x2, clip.y2);
+        setClip(clip);
         int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
         cairo_surface_t *surface = cairo_image_surface_create_for_data((unsigned char *) bitmap->getBits(), CAIRO_FORMAT_ARGB32, width, height, stride);
         cairo_scale(mContext, 1.0/mScale, 1.0/mScale);
@@ -284,30 +286,25 @@ public:
     
     void startShadow(HISSTools_Shadow *shadow)
     {
-        Area clip;
-        
+        double x1, x2, y1, y2;
+
         mShadow = shadow;
+        mDrawArea = HISSTools_Bounds();
         cairo_save(mContext);
-        cairo_clip_extents(mContext, &clip.x1, &clip.y1, &clip.x2, &clip.y2);
+        cairo_clip_extents(mContext, &x1, &y1, &x2, &y2);
+        HISSTools_Bounds clip(x1, y1, x2 - x1, y2 - y1);
+        double enlargeBy = (shadow->getBlurSize() + 2) * 2;
+        clip.include(HISSTools_Bounds(clip.getX() - shadow->getXOffset(), clip.getY() - shadow->getYOffset(), clip.getWidth() + enlargeBy, clip.getHeight() + enlargeBy));
         cairo_reset_clip(mContext);
-        clip.x1 = std::min(clip.x1, clip.x1 - (shadow->getXOffset() + (shadow->getBlurSize() + 2)));
-        clip.x2 = std::max(clip.x2, clip.x2 - (shadow->getXOffset() - (shadow->getBlurSize() + 2)));
-        clip.y1 = std::min(clip.y1, clip.y1 - (shadow->getYOffset() + (shadow->getBlurSize() + 2)));
-        clip.y2 = std::max(clip.y2, clip.y2 - (shadow->getYOffset() - (shadow->getBlurSize() + 2)));
-        cairo_rectangle(mContext, clip.x1, clip.y1, clip.x2 - clip.x1, clip.y2 - clip.y1);
-        cairo_clip(mContext);
+        setClip(clip);
         cairo_push_group(mContext);
-        
-        // Reset draw boundaries for shadow calculation
-        
-        mDrawArea = Area(std::numeric_limits<double>::infinity(), 0, std::numeric_limits<double>::infinity(), 0);
     }
     
     void renderShadow(bool renderImage = true)
     {
         // Sanity Check
         
-        if (mDrawArea.x1 > mDrawArea.x2 || mDrawArea.y1 > mDrawArea.y2)
+        if (mDrawArea.isEmpty())
             return;
         
         cairo_pattern_t *shadowRender = cairo_pop_group(mContext);
@@ -321,12 +318,10 @@ public:
             
             int kernelSize = mShadow->getKernelSize();
             
-            int xLo = floor(mDrawArea.x1 * mScale);
-            int xHi = ceil(mDrawArea.x2 * mScale);
-            int yLo = floor(mDrawArea.y1 * mScale);
-            int yHi = ceil(mDrawArea.y2 * mScale);
-            int width = (xHi - xLo) + (2 * kernelSize - 1);
-            int height = (yHi - yLo) + (2 * kernelSize - 1);
+            IRECT draw = mDrawArea.iBounds(mScale);
+           
+            int width = (draw.R - draw.L) + (2 * kernelSize - 1);
+            int height = (draw.B - draw.T) + (2 * kernelSize - 1);
             int alphaSurfaceStride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, width);
             
             // Alloc and zero blur memory
@@ -341,7 +336,7 @@ public:
             cairo_surface_t *mask = cairo_image_surface_create_for_data(&mBlurTempAlpha1[0], CAIRO_FORMAT_A8, width, height, alphaSurfaceStride);
             cairo_t* maskContext = cairo_create(mask);
             cairo_scale(maskContext, mScale, mScale);
-            cairo_translate(maskContext, (kernelSize - 1 - xLo) / mScale, (kernelSize - 1 - yLo) / mScale);
+            cairo_translate(maskContext, (kernelSize - 1 - draw.L) / mScale, (kernelSize - 1 - draw.T) / mScale);
             cairo_set_source(maskContext, shadowRender);
             cairo_paint(maskContext);
             cairo_destroy(maskContext);
@@ -355,7 +350,7 @@ public:
             cairo_save(mContext);
             mShadow->getShadowColor()->setAsSource(mContext);
             cairo_scale(mContext, 1.0/mScale, 1.0/mScale);
-            cairo_mask_surface(mContext, mask, mShadow->getXOffset() * mScale + ((xLo - (kernelSize - 1))), mShadow->getYOffset() * mScale + ((yLo - (kernelSize - 1))));
+            cairo_mask_surface(mContext, mask, mShadow->getXOffset() * mScale + ((draw.L - (kernelSize - 1))), mShadow->getYOffset() * mScale + ((draw.T - (kernelSize - 1))));
             cairo_restore(mContext);
             cairo_surface_destroy(mask);
         }
@@ -470,10 +465,7 @@ private:
     {
         // FIX - account for clip!
         
-        mDrawArea.x1 = std::min(xLo, mDrawArea.x1);
-        mDrawArea.x2 = std::max(xHi, mDrawArea.x2);
-        mDrawArea.y1 = std::min(yLo, mDrawArea.y1);
-        mDrawArea.y2 = std::max(yHi, mDrawArea.y2);
+        mDrawArea.include(HISSTools_Bounds(xLo, yLo, xHi - xLo, yHi - yLo));
         
         if (useExtents)
             setShapeGradient(xLo, xHi, yLo, yHi);
@@ -481,11 +473,11 @@ private:
     
     void setShapeGradient(double xLo, double xHi, double yLo, double yHi)
     {
-        if (mForceGradientBox == false)
-            mColor->setRect(xLo, xHi, yLo, yHi, mCSOrientation);
-        else
+        if (mForceGradientBox)
             mColor->setRect(mGradientArea.x1, mGradientArea.x2, mGradientArea.y1, mGradientArea.y2, mCSOrientation);
-        
+        else
+            mColor->setRect(xLo, xHi, yLo, yHi, mCSOrientation);
+
         setColor(mColor);
     }
     
@@ -496,7 +488,7 @@ private:
     // Boundaries
     
     int mWidth, mHeight;
-    Area mDrawArea;
+    HISSTools_Bounds mDrawArea;
     Area mGradientArea;
     
     // Forced Gradient Bounds Flag

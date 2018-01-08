@@ -22,13 +22,18 @@ public:
 	
 	void include(HISSTools_Bounds inc)
 	{
-        double x = std::max(mX + mW, inc.mX + inc.mW);
-        double y = std::max(mY + mH, inc.mY + inc.mH);
+        if (!isEmpty())
+        {
+            double x = std::max(mX + mW, inc.mX + inc.mW);
+            double y = std::max(mY + mH, inc.mY + inc.mH);
         
-        mX = std::min(mX, inc.mX);
-        mY = std::min(mY, inc.mY);
-        mW = x - mX;
-        mH = y - mY;
+            mX = std::min(mX, inc.mX);
+            mY = std::min(mY, inc.mY);
+            mW = x - mX;
+            mH = y - mY;
+        }
+        else
+            *this = inc;
 	}
 	
 	void addThickness(double thickness)
@@ -41,12 +46,13 @@ public:
 		mH += thickness;
 	}
 	
-    IRECT iBounds() const       { return IRECT(floor(mX), floor(mY), ceil((mX + mW)), ceil((mY + mH))); }
+    IRECT iBounds(double scale = 1.0) const       { return IRECT(floor(mX * scale), floor(mY * scale), ceil((mX + mW) * scale), ceil((mY + mH) * scale)); }
     
 	double getX() const         { return mX; }
 	double getY() const         { return mY; }
 	double getWidth() const     { return mW; }
 	double getHeight() const    { return mH; }
+    bool isEmpty() const        { return !mW || !mH; }
     
 private:
     
