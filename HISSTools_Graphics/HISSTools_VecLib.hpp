@@ -3,44 +3,64 @@
 #ifndef __HISSTOOLS_VL__
 #define __HISSTOOLS_VL__
 
-#include "HISSTools_Raster.hpp"
+#include "HISSTools_Color.hpp"
+#include "HISSTools_Shadow.hpp"
+#include "HISSTools_LICE_Text.hpp"
 
+#include <algorithm>
+#include <vector>
 #include "cairo/cairo.h"
 
+static HISSTools_Color_Spec defaultColor;
 
-class HISSTools_VecLib : private HISSTools_Raster
+class HISSTools_VecLib
 {
-
+    struct Area
+    {
+        Area() : x1(0), x2(0), y1(0), y2(0) {}
+        Area(double xL, double xH, double yL, double yH) : x1(xL), x2(xH), y1(yL), y2(yH) {}
+        
+        double clipX(double x) { return std::min(x2, std::max(x1, x)); }
+        double clipY(double y) { return std::min(y2, std::max(y1, y)); }
+        
+        double x1, x2, y1, y2;
+    };
+    
 public:
 	
-	HISSTools_VecLib(cairo_t *cairo) : HISSTools_Raster(cairo), mScale(1.0)
-	{}
+    HISSTools_VecLib(cairo_t *cairo) : mContext(cairo), mShadow(NULL), mWidth(0), mHeight(0), mForceGradientBox(false), mCSOrientation(kCSOrientHorizontal), mScale(1.0)
+    {
+        setColor(&defaultColor);
+    }
     
     void setSize(int w, int h)
     {
-        HISSTools_Raster::setSize(w, h);
+        mWidth = w;
+        mHeight = h;
     }
+    
+    void setClip()  { cairo_reset_clip(mContext); }
     
     void setClip(double xLo, double yLo, double xHi, double yHi)
     {
-        HISSTools_Raster::setClip(xLo, yLo, xHi, yHi);
-    }
-    
-    void setClip()
-    {
-        HISSTools_Raster::setClip();
+        //cairo_reset_clip(mContext);
+        cairo_rectangle(mContext, xLo, yLo, xHi - xLo, yHi - yLo);
+        cairo_clip(mContext);
     }
     
     void setClip(IRECT rect)
     {
-        HISSTools_Raster::setClip(rect.L, rect.T, rect.R, rect.B);
+        setClip(rect.L, rect.T, rect.R, rect.B);
     }
     
     cairo_t *getContext() const { return mContext; }
-    
+
     void setContext(cairo_t *context, double scale)
     {
-        HISSTools_Raster::setContext(context);
+        // FIX - clip and other state etc. when pushing and popping?
+        
+        mContext = context;
+        cairo_set_operator(mContext, CAIRO_OPERATOR_OVER);
         mScale = scale;
     }
     
@@ -61,21 +81,28 @@ public:
     }
     
     double getScale() const { return mScale; }
-
-    void setColor(HISSTools_Color_Spec * color)
+    
+    void setColor(HISSTools_Color_Spec *color)
     {
-        HISSTools_Raster::setColor(color);
+        mColor = color;
+        
+        if (mContext)
+            mColor->setAsSource(mContext);
     }
     
-    void setColorOrientation(ColorOrientation orientation)
+    // Orientation allows gradient rotation ONLY for relevant Color Specs
+    
+    void setColorOrientation(ColorOrientation CSOrientation)
     {
-        HISSTools_Raster::setColorOrientation(orientation);
+        mCSOrientation = CSOrientation;
     }
     
-    void forceGradientBox() { HISSTools_Raster::forceGradientBox(); }
+    void forceGradientBox()     { mForceGradientBox = false; }
+    
     void forceGradientBox(double xLo, double yLo, double xHi, double yHi)
     {
-        HISSTools_Raster::forceGradientBox(xLo, yLo, xHi, yHi);
+        mGradientArea = Area(xLo, xHi, yLo, yHi);
+        mForceGradientBox = true;
     }
     
     double getX() const
@@ -226,7 +253,28 @@ public:
     
     void text(HISSTools_Text *pTxt, const char *str, double x, double y, double w, double h, HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter)
     {
-        HISSTools_Raster::text(pTxt, str, x, y, w, h, mScale, hAlign, vAlign);
+        LICE_IBitmap *bitmap = &mTextBitmap;
+        
+        int width = mWidth * mScale;
+        int height = mHeight * mScale;
+        
+        bitmap->resize(width, height);
+        LICE_Clear(bitmap, 0);
+        
+        HISSTools_LICE_Text::text(bitmap,pTxt, str, x, y, w, h, mScale, hAlign, vAlign);
+        
+        updateDrawBounds(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1, true);
+        
+        Area clip(x, x + w, y, y + h);
+        
+        cairo_save(mContext);
+        setClip(clip.x1, clip.y1, clip.x2, clip.y2);
+        int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
+        cairo_surface_t *surface = cairo_image_surface_create_for_data((unsigned char *) bitmap->getBits(), CAIRO_FORMAT_ARGB32, width, height, stride);
+        cairo_scale(mContext, 1.0/mScale, 1.0/mScale);
+        cairo_mask_surface(mContext, surface, 0, 0);
+        cairo_restore(mContext);
+        cairo_surface_destroy(surface);
     }
 
     static double getTextLineHeight(HISSTools_Text *pTxt)
@@ -236,12 +284,91 @@ public:
     
     void startShadow(HISSTools_Shadow *shadow)
     {
-        HISSTools_Raster::startShadow(shadow);
+        Area clip;
+        
+        mShadow = shadow;
+        cairo_save(mContext);
+        cairo_clip_extents(mContext, &clip.x1, &clip.y1, &clip.x2, &clip.y2);
+        cairo_reset_clip(mContext);
+        clip.x1 = std::min(clip.x1, clip.x1 - (shadow->getXOffset() + (shadow->getBlurSize() + 2)));
+        clip.x2 = std::max(clip.x2, clip.x2 - (shadow->getXOffset() - (shadow->getBlurSize() + 2)));
+        clip.y1 = std::min(clip.y1, clip.y1 - (shadow->getYOffset() + (shadow->getBlurSize() + 2)));
+        clip.y2 = std::max(clip.y2, clip.y2 - (shadow->getYOffset() - (shadow->getBlurSize() + 2)));
+        cairo_rectangle(mContext, clip.x1, clip.y1, clip.x2 - clip.x1, clip.y2 - clip.y1);
+        cairo_clip(mContext);
+        cairo_push_group(mContext);
+        
+        // Reset draw boundaries for shadow calculation
+        
+        mDrawArea = Area(std::numeric_limits<double>::infinity(), 0, std::numeric_limits<double>::infinity(), 0);
     }
     
     void renderShadow(bool renderImage = true)
     {
-        HISSTools_Raster::renderShadow(renderImage, getScale());
+        // Sanity Check
+        
+        if (mDrawArea.x1 > mDrawArea.x2 || mDrawArea.y1 > mDrawArea.y2)
+            return;
+        
+        cairo_pattern_t *shadowRender = cairo_pop_group(mContext);
+        cairo_restore(mContext);
+        
+        // Check there is a shadow specified (otherwise only render original image)
+        
+        if (mShadow)
+        {
+            mShadow->setScaling(mScale);
+            
+            int kernelSize = mShadow->getKernelSize();
+            
+            int xLo = floor(mDrawArea.x1 * mScale);
+            int xHi = ceil(mDrawArea.x2 * mScale);
+            int yLo = floor(mDrawArea.y1 * mScale);
+            int yHi = ceil(mDrawArea.y2 * mScale);
+            int width = (xHi - xLo) + (2 * kernelSize - 1);
+            int height = (yHi - yLo) + (2 * kernelSize - 1);
+            int alphaSurfaceStride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, width);
+            
+            // Alloc and zero blur memory
+            
+            mBlurTempAlpha1.resize(alphaSurfaceStride * height);
+            mBlurTempAlpha2.resize(alphaSurfaceStride * height);
+            std::fill(mBlurTempAlpha1.begin(), mBlurTempAlpha1.end(), 0);
+            std::fill(mBlurTempAlpha2.begin(), mBlurTempAlpha2.end(), 0);
+            
+            // Copy alpha values from the temp bitmap
+            
+            cairo_surface_t *mask = cairo_image_surface_create_for_data(&mBlurTempAlpha1[0], CAIRO_FORMAT_A8, width, height, alphaSurfaceStride);
+            cairo_t* maskContext = cairo_create(mask);
+            cairo_scale(maskContext, mScale, mScale);
+            cairo_translate(maskContext, (kernelSize - 1 - xLo) / mScale, (kernelSize - 1 - yLo) / mScale);
+            cairo_set_source(maskContext, shadowRender);
+            cairo_paint(maskContext);
+            cairo_destroy(maskContext);
+            
+            // Do blur
+            
+            mShadow->blur(&mBlurTempAlpha1[0], &mBlurTempAlpha2[0], width, height, alphaSurfaceStride);
+            
+            // Draw shadow in correct place and color
+            
+            cairo_save(mContext);
+            mShadow->getShadowColor()->setAsSource(mContext);
+            cairo_scale(mContext, 1.0/mScale, 1.0/mScale);
+            cairo_mask_surface(mContext, mask, mShadow->getXOffset() * mScale + ((xLo - (kernelSize - 1))), mShadow->getYOffset() * mScale + ((yLo - (kernelSize - 1))));
+            cairo_restore(mContext);
+            cairo_surface_destroy(mask);
+        }
+        
+        // Render pattern
+        
+        if (renderImage)
+        {
+            cairo_set_source(mContext, shadowRender);
+            cairo_paint_with_alpha(mContext, 1.0);
+        }
+        
+        cairo_pattern_destroy(shadowRender);
     }
     
 private:
@@ -326,6 +453,67 @@ private:
         cairo_line_to(mContext, x3, y3);
         cairo_close_path(mContext);
     }
+    
+    void updateDrawBounds(bool fill, bool useExtents)
+    {
+        double xLo, xHi, yLo, yHi;
+        
+        if (fill)
+            cairo_fill_extents(mContext, &xLo, &yLo, &xHi, &yHi);
+        else
+            cairo_stroke_extents(mContext, &xLo, &yLo, &xHi, &yHi);
+        
+        updateDrawBounds(xLo, xHi, yLo, yHi, useExtents);
+    }
+    
+    void updateDrawBounds(double xLo, double xHi, double yLo, double yHi, bool useExtents)
+    {
+        // FIX - account for clip!
+        
+        mDrawArea.x1 = std::min(xLo, mDrawArea.x1);
+        mDrawArea.x2 = std::max(xHi, mDrawArea.x2);
+        mDrawArea.y1 = std::min(yLo, mDrawArea.y1);
+        mDrawArea.y2 = std::max(yHi, mDrawArea.y2);
+        
+        if (useExtents)
+            setShapeGradient(xLo, xHi, yLo, yHi);
+    }
+    
+    void setShapeGradient(double xLo, double xHi, double yLo, double yHi)
+    {
+        if (mForceGradientBox == false)
+            mColor->setRect(xLo, xHi, yLo, yHi, mCSOrientation);
+        else
+            mColor->setRect(mGradientArea.x1, mGradientArea.x2, mGradientArea.y1, mGradientArea.y2, mCSOrientation);
+        
+        setColor(mColor);
+    }
+    
+    cairo_t *mContext;
+    
+    LICE_SysBitmap mTextBitmap;
+    
+    // Boundaries
+    
+    int mWidth, mHeight;
+    Area mDrawArea;
+    Area mGradientArea;
+    
+    // Forced Gradient Bounds Flag
+    
+    bool mForceGradientBox;
+    ColorOrientation mCSOrientation;
+    
+    // Color
+    
+    HISSTools_Color_Spec *mColor;
+    
+    // Shadow
+    
+    HISSTools_Shadow *mShadow;
+    
+    std::vector <unsigned char> mBlurTempAlpha1;
+    std::vector <unsigned char> mBlurTempAlpha2;
     
     double mScale;
 };
