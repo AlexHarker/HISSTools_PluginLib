@@ -1,7 +1,7 @@
 
 
-#ifndef __HISSTOOLS_VL__
-#define __HISSTOOLS_VL__
+#ifndef __HISSTOOLS_VECLIB__
+#define __HISSTOOLS_VECLIB__
 
 #include "HISSTools_Color.hpp"
 #include "HISSTools_Shadow.hpp"
@@ -510,4 +510,4 @@ private:
     double mScale;
 };
 
-#endif /* __HISSTOOLS_LICE_LVL_CAIRO__ */
+#endif /* __HISSTOOLS_VECLIB__ */
