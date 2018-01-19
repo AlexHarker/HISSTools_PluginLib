@@ -2,8 +2,6 @@
 #ifndef __HISSTOOLS_CONTROLS__
 #define __HISSTOOLS_CONTROLS__
 
-static int ConvertMouseDeltaToNative(int x) { return x; }
-
 #include <HISSTools_Graphics/HISSTools_VecLib.hpp>
 #include "HISSTools_Design_Scheme.hpp"
 #include <IControl.h>
@@ -661,7 +659,7 @@ public:
 		mControl->PromptUserInput(iEntryBounds);
 	}
 	
-	bool promptUserInput(HISSTools_VecLib *vecDraw, int x, int y)
+	bool promptUserInput(HISSTools_VecLib *vecDraw, float x, float y)
 	{
 		if (bounds().iBounds().Contains(x, y))
 		{
@@ -794,7 +792,7 @@ public:
 		mTextLabel = new HISSTools_Text_Helper_Block(x, y - mTextArea, w, mTextArea, kHAlignCenter, kVAlignTop, "ValueLabel", type, designScheme);
 		mTextLabel->setText((GetParam() != NULL && label) ? GetParam()->GetNameForHost() : "");
 
-		SetTargetArea(HISSTools_Bounds(x, y, w, h).iBounds());
+		SetTargetRECT(HISSTools_Bounds(x, y, w, h).iBounds());
 		
 		HISSTools_Bounds fullBoxBounds = mTextParam->bounds();
 		fullBoxBounds.include(mTextLabel->bounds());
@@ -807,7 +805,7 @@ public:
 		delete mTextLabel;
 	}
 	
-	void OnMouseDown(int x, int y, const IMouseMod& pMod)
+	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
 	{
 		if (pMod.S == true)
 		{
@@ -835,7 +833,7 @@ public:
 		SetDirty();
 	}
 	
-	void OnMouseUp(int x, int y, const IMouseMod& pMod)
+	void OnMouseUp(float x, float y, const IMouseMod& pMod) override
 	{
         if (mDrag == false)
         {
@@ -849,26 +847,26 @@ public:
         }
 	}
 	
-    void OnMouseDrag(int x, int y, int dX, int dY, const IMouseMod& pMod)
+    void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& pMod) override
     {
         mDrag = true;
     
         IKnobControl::OnMouseDrag(x, y, dX, dY, pMod);
     }
     
-	void OnMouseDblClick(int x, int y, const IMouseMod& pMod)
+	void OnMouseDblClick(float x, float y, const IMouseMod& pMod) override
 	{
         OnMouseDown(x, y, pMod);
 	}
     
-    virtual void SetValueFromUserInput(double value)
+    virtual void SetValueFromUserInput(double value) override
     {
         mDrag = false;
         mTextParam->hilite(false);
         IKnobControl::SetValueFromUserInput(value);
     }
 	
-	void Draw(IGraphics& pGraphics)
+	void Draw(IGraphics& pGraphics) override
 	{
 		mVecDraw->setContext((cairo_t *)pGraphics.GetData(), pGraphics.GetDisplayScale());
         mVecDraw->setClip(mRECT);
@@ -1028,7 +1026,7 @@ public:
 		fullBoxBounds.include(mPointerSD->getBlurBounds(ptrBoxBounds));
 		
 		mRECT = fullBoxBounds.iBounds();
-		SetTargetArea(dialBoxBounds.iBounds());
+		SetTargetRECT(dialBoxBounds.iBounds());
 	}	
 	
 	~HISSTools_Dial()
@@ -1053,7 +1051,7 @@ private:
 
 public:
 	
-	void OnMouseDown(int x, int y, const IMouseMod& pMod)
+	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
 	{
 		if (pMod.S == true)
 		{
@@ -1065,7 +1063,7 @@ public:
 		}
 	}
 	
-	void OnMouseDblClick(int x, int y, const IMouseMod& pMod)
+	void OnMouseDblClick(float x, float y, const IMouseMod& pMod) override
 	{
 		// FIX - Confirm best key combo...
 		
@@ -1079,7 +1077,7 @@ public:
 		mTextParam->promptUserInput(mVecDraw);
 	}
 	
-    virtual void SetValueFromUserInput(double value)
+    virtual void SetValueFromUserInput(double value) override
     {
         mInEdit = false;
         IControl::SetValueFromUserInput(value);
@@ -1091,12 +1089,12 @@ public:
 	 // FIX - better gearing??
 	 // FIX - click through options?
 	 
-	 void OnMouseDown(int x, int y, const IMouseMod& pMod)
+	 void OnMouseDown(float x, float y, const IMouseMod& pMod) override
 	 {
 	 OnMouseDrag(x, y, 0, 0, pMod);
 	 }
 	 
-	 void OnMouseDrag(int x, int y, int dX, int dY, const IMouseMod& pMod)
+	 void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& pMod) override
 	 {		
 	 IParam *param = GetParam();
 	 
@@ -1108,9 +1106,9 @@ public:
 	 double delta;
 	 
 	 if (mDirection == kVertical)
-	 delta = ConvertMouseDeltaToNative(-dY);
+	 delta = -dY;
 	 else
-	 delta = ConvertMouseDeltaToNative(dX);
+	 delta = dX;
 	 
 	 delta /= mGearing;
 	 delta = round(delta);
@@ -1125,7 +1123,7 @@ public:
 	
 	// Draw
 	
-	void Draw(IGraphics& pGraphics)
+	void Draw(IGraphics& pGraphics) override
 	{
 		IParam *param = GetParam();
 		double value, xIntersect, yIntersect;
@@ -1318,7 +1316,7 @@ public:
 		fullBounds.include(fullBounds);
 		
 		mRECT = (fullBounds.iBounds());
-		SetTargetArea(handleBounds.iBounds());
+		SetTargetRECT(handleBounds.iBounds());
 		
         mName = GetParam() != NULL ? GetParam()->GetNameForHost() : "";
         
@@ -1329,7 +1327,7 @@ public:
 	
 	// Mousing Functions
 	
-	void OnMouseDown(int x, int y, const IMouseMod& pMod)
+	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
 	{
 		mValue += 1.0;
 		mValue = mValue > 1.0 ? 0 : mValue;
@@ -1338,7 +1336,7 @@ public:
 
 	// Draw
 	
-	void Draw(IGraphics& pGraphics)
+	void Draw(IGraphics& pGraphics) override
 	{		
 		// FIX - Support Label Colour States / Outline Color States? - Multiple States?
 		
@@ -1465,19 +1463,19 @@ public:
 		fullBounds.include(boxBounds);
 		
 		mRECT = (fullBounds.iBounds());
-		SetTargetArea(boxBounds.iBounds());
+		SetTargetRECT(boxBounds.iBounds());
 	}
 	
 public:
 	
 	// Mousing Functions
 	
-	void OnMouseDown(int x, int y, const IMouseMod& pMod)
+	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
 	{
 		OnMouseDrag(x, y, 0, 0, pMod);
 	}
 	
-	void OnMouseDrag(int x, int y, int dX, int dY, const IMouseMod& pMod)
+	void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& pMod) override
 	{
         // FIX - retina support for position data!
         
@@ -1491,7 +1489,7 @@ public:
 	
 	// Draw
 	
-	void Draw(IGraphics& pGraphics)
+	void Draw(IGraphics& pGraphics) override
 	{		
 		mVecDraw->setContext((cairo_t *)pGraphics.GetData(), pGraphics.GetDisplayScale());
         mVecDraw->setClip(mRECT);
@@ -1751,7 +1749,7 @@ public:
 		fullBoxBounds.include(boxBoundsShadow);
 		
 		mRECT = (fullBoxBounds.iBounds());
-		SetTargetArea(boxBoundsOutline.iBounds());
+		SetTargetRECT(boxBoundsOutline.iBounds());
 		
 		mValidReport = false;
 	}
@@ -1763,7 +1761,7 @@ public:
 	
 	 // Mousing Functions
 	 
-	bool OnMousing(int x, int y, const IMouseMod& pMod, MousingAction action)
+	bool OnMousing(float x, float y, const IMouseMod& pMod, MousingAction action)
 	{
 		mMousing = action;
 		mPMod = pMod;
@@ -1778,33 +1776,33 @@ public:
 		return false;
 	}
 	
-	void OnMouseDown(int x, int y, const IMouseMod& pMod)
+	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
 	{
 		OnMousing(x, y, pMod, kMouseDown);
 	}
 	
-	void OnMouseUp(int x, int y, const IMouseMod& pMod)
+	void OnMouseUp(float x, float y, const IMouseMod& pMod) override
 	{
 		OnMousing(x, y, pMod, kMouseUp);
 	}
 	
-	void OnMouseDblClick(int x, int y, const IMouseMod& pMod)
+	void OnMouseDblClick(float x, float y, const IMouseMod& pMod) override
 	{
 		OnMousing(x, y, pMod, kMouseDblClick);
 	}
 	
-	void OnMouseDrag(int x, int y, int dX, int dY, const IMouseMod& pMod)
+	void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& pMod) override
 	{
 		OnMousing(x, y, pMod, kMouseDrag);
 	}
 	
-	void OnMouseWheel(int x, int y, const IMouseMod& pMod, int d)
+	void OnMouseWheel(float x, float y, const IMouseMod& pMod, float d) override
 	{
-        mMouseWheel = ConvertMouseDeltaToNative(d);
+        mMouseWheel = d;
 		OnMousing(x, y, pMod, kMouseWheel);
 	}
 	
-	void OnMouseOver(int x, int y, const IMouseMod& pMod)
+	void OnMouseOver(float x, float y, const IMouseMod& pMod) override
 	{
 		if (OnMousing(x, y, pMod, kMouseOver) == false)
 			OnMouseOut();
@@ -1812,7 +1810,7 @@ public:
 			SetDirty(false);
 	}
 	
-	virtual void OnMouseOut()
+	virtual void OnMouseOut() override
 	{
 		mMousing = kMouseOut;
 		mXPos = -1;
@@ -1825,7 +1823,7 @@ public:
 	
 	// Draw
 	
-	void Draw(IGraphics& pGraphics)
+	void Draw(IGraphics& pGraphics) override
 	{				
 		mVecDraw->setContext((cairo_t *)pGraphics.GetData(), pGraphics.GetDisplayScale());
         mVecDraw->setClip(mRECT);
@@ -2542,7 +2540,7 @@ public:
 		mValidReport = false;
 	}
 		
-	void OnMouseDown(int x, int y, const IMouseMod& pMod)
+	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
 	{
 		if (mPlug.GetGUI())
 		{
@@ -2575,7 +2573,7 @@ public:
 		}
 	}
 	
-	void Draw(IGraphics& pGraphics)
+	void Draw(IGraphics& pGraphics) override
 	{
 		switch (mState)
 		{
