@@ -6,7 +6,7 @@
 #include "HISSTools_Color.hpp"
 #include "HISSTools_Shadow.hpp"
 #include "HISSTools_LICE_Text.hpp"
-
+#include "IGraphics.h"
 #include <algorithm>
 #include <vector>
 #include "cairo/cairo.h"
@@ -25,9 +25,22 @@ class HISSTools_VecLib
     
 public:
 	
-    HISSTools_VecLib(cairo_t *cairo) : mContext(cairo), mShadow(NULL), mWidth(0), mHeight(0), mForceGradientBox(false), mCSOrientation(kCSOrientHorizontal), mScale(1.0)
+    HISSTools_VecLib(cairo_t *cairo) : mGraphics(nullptr), mContext(cairo), mShadow(NULL), mWidth(0), mHeight(0), mForceGradientBox(false), mCSOrientation(kCSOrientHorizontal), mScale(1.0)
     {
         setColor(&defaultColor);
+    }
+    
+    void setIGraphics(IGraphics* graphics)
+    {
+        double scale = graphics->GetDisplayScale();
+        mGraphics = graphics;
+        setSize(graphics->Width(), graphics->Height());
+        
+        // FIX - clip and other state etc. when pushing and popping?
+        
+        mContext = (cairo_t *)graphics->GetData();
+        cairo_set_operator(mContext, CAIRO_OPERATOR_OVER);
+        mScale = scale;
     }
     
     void setSize(int w, int h)
@@ -56,15 +69,6 @@ public:
     }
     
     cairo_t *getContext() const { return mContext; }
-
-    void setContext(cairo_t *context, double scale)
-    {
-        // FIX - clip and other state etc. when pushing and popping?
-        
-        mContext = context;
-        cairo_set_operator(mContext, CAIRO_OPERATOR_OVER);
-        mScale = scale;
-    }
     
     void startGroup()
     {
@@ -263,7 +267,7 @@ public:
         bitmap->resize(width, height);
         LICE_Clear(bitmap, 0);
         
-        HISSTools_LICE_Text::text(bitmap,pTxt, str, x, y, w, h, mScale, hAlign, vAlign);
+        HISSTools_LICE_Text::text(bitmap, pTxt, str, x, y, w, h, mScale, hAlign, vAlign);
         
         updateDrawBounds(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1, true);
         
@@ -399,7 +403,7 @@ private:
         begAng = (begAng - 0.25) * 2.0 * M_PI;
         arcAng = (arcAng * 2.0 * M_PI) + begAng;
         
-        cairo_arc(mContext, cx, cy, r, begAng, arcAng);
+        cairo_arc(mContext, cx, cy, r, std::min(begAng, arcAng), std::max(begAng, arcAng));
         setShapeGradient(cx - r, cx + r, cy - r, cy + r);
     }
     
@@ -480,6 +484,8 @@ private:
 
         setColor(mColor);
     }
+    
+    IGraphics* mGraphics;
     
     cairo_t *mContext;
     
