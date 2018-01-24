@@ -31,7 +31,7 @@ private:
     
 public:
 	
-    HISSTools_Control_Layers() : mBackground(NULL), mDrawBackground(true), mNoCaching(true)
+    HISSTools_Control_Layers() : mBackground(NULL), mDrawBackground(true), mNoCaching(false)
 	{}
     
     ~HISSTools_Control_Layers()
@@ -784,12 +784,16 @@ public:
 		mVecDraw = vecDraw;
         
 		// FIX - perhaps just inherit these??
-		
+
+        bool labelBelow = designScheme->getFlag("ValueLabelBelow", type);
         bool label = designScheme->getFlag("ValueDrawLabel", type);
 		mTextArea = designScheme->getDimension("ValueTextArea", type);
-		
+		        
 		mTextParam = new HISSTools_Text_Helper_Param(this, x, y, w, h, 1, kHAlignCenter, kVAlignCenter, "Value", type, designScheme);
-		mTextLabel = new HISSTools_Text_Helper_Block(x, y - mTextArea, w, mTextArea, kHAlignCenter, kVAlignTop, "ValueLabel", type, designScheme);
+        if (labelBelow)
+            mTextLabel = new HISSTools_Text_Helper_Block(x, y + h, w, mTextArea, kHAlignCenter, kVAlignBottom, "ValueLabel", type, designScheme);
+        else
+            mTextLabel = new HISSTools_Text_Helper_Block(x, y - mTextArea, w, mTextArea, kHAlignCenter, kVAlignTop, "ValueLabel", type, designScheme);
 		mTextLabel->setText((GetParam() != NULL && label) ? GetParam()->GetNameForHost() : "");
 
 		SetTargetRECT(HISSTools_Bounds(x, y, w, h).iBounds());
@@ -797,6 +801,9 @@ public:
 		HISSTools_Bounds fullBoxBounds = mTextParam->bounds();
 		fullBoxBounds.include(mTextLabel->bounds());
 		mRECT = fullBoxBounds.iBounds();
+        
+        SetMOWhenGrayed(true);
+        SetMEWhenGrayed(true);
 	}
 	
 	~HISSTools_Value()
@@ -868,7 +875,7 @@ public:
 	
 	void Draw(IGraphics& pGraphics) override
 	{
-		mVecDraw->setContext((cairo_t *)pGraphics.GetData(), pGraphics.GetDisplayScale());
+		mVecDraw->setIGraphics(&pGraphics);
         mVecDraw->setClip(mRECT);
 
         // Label
@@ -952,12 +959,17 @@ private:
 	HISSTools_Text_Helper_Block *mTextLabel;
 	HISSTools_Text_Helper_Param *mTextParam;
 	
+    // Values on when mouse is over
+    
+    bool mMouseOver;
+    bool mDrawValOnlyOnMO;
+    
 public:
 
 	// Constructor
 
 	HISSTools_Dial(IPlugBaseGraphics* plug, int paramIdx, HISSTools_VecLib *vecDraw, double x, double y, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
-	: IKnobControl(*plug, IRECT(), paramIdx), HISSTools_Control_Layers(), mInEdit(false)
+	: IKnobControl(*plug, IRECT(), paramIdx), HISSTools_Control_Layers(), mInEdit(false), mMouseOver(false)
 	{
 		mVecDraw = vecDraw;
         
@@ -1001,13 +1013,15 @@ public:
 		mPointerOutlineCS = designScheme->getColorSpec("DialPointerOutline", type);
 		mInactiveOverlayCS = designScheme->getColorSpec("DialInactiveOverlay", type);
 		
+        mDrawValOnlyOnMO = designScheme->getFlag("DialDrawValOnlyOnMO");
+        
 		// Text 
 				
 		mPromptHalfHeight = (0.5 * mVecDraw->getTextLineHeight(designScheme->getTextStyle("DialValue", type))) + designScheme->getDimension("DialPromptPadding", type);
 		mPromptRatio = designScheme->getDimension("DialPromptRatio", type);
 
 		double textPad = designScheme->getDimension("DialPromptPadding", type);
-        double halfWidth = mR;//mPromptRatio * mPointerCircRadius;
+        double halfWidth = mR;// * mPromptRatio;// * mPointerCircRadius;
 		//FIX - above
 		mTextParam = new HISSTools_Text_Helper_Param(this, mCx - halfWidth, mCy - mPromptHalfHeight, 2. * halfWidth, 2. * mPromptHalfHeight, textPad, kHAlignCenter, kVAlignCenter, "DialValue", type, designScheme);
 		mTextLabel = new HISSTools_Text_Helper_Block(mCx - mR, mCy + mR, 2 * mR, mTextArea, kHAlignCenter, kVAlignBottom, "DialLabel", type, designScheme);
@@ -1027,6 +1041,11 @@ public:
 		
 		mRECT = fullBoxBounds.iBounds();
 		SetTargetRECT(dialBoxBounds.iBounds());
+        
+        mText.mTextEntryBGColor = IColor(0, 0, 0, 0);
+        
+        SetMOWhenGrayed(true);
+        SetMEWhenGrayed(true);
 	}	
 	
 	~HISSTools_Dial()
@@ -1076,7 +1095,25 @@ public:
         mInEdit = true;
 		mTextParam->promptUserInput(mVecDraw);
 	}
-	
+    
+    void OnMouseOver(float x, float y, const IMouseMod& pMod) override
+    {
+        if (!mMouseOver)
+        {
+            mMouseOver = true;
+            SetDirty();
+        }
+    }
+
+    void OnMouseOut() override
+    {
+        if (mMouseOver)
+        {
+            mMouseOver = false;
+            SetDirty();
+        }
+    }
+    
     virtual void SetValueFromUserInput(double value) override
     {
         mInEdit = false;
@@ -1128,7 +1165,7 @@ public:
 		IParam *param = GetParam();
 		double value, xIntersect, yIntersect;
 		
-		mVecDraw->setContext((cairo_t *)pGraphics.GetData(), pGraphics.GetDisplayScale());
+        mVecDraw->setIGraphics(&pGraphics);
         mVecDraw->setClip(mRECT);
 
 		// Background
@@ -1193,7 +1230,7 @@ public:
 		}
 		else
         {
-            if (!mInEdit)
+            if (!mInEdit && !(mDrawValOnlyOnMO && !mMouseOver))
                 mTextParam->Draw(mVecDraw);
         }
 	}
@@ -1340,7 +1377,7 @@ public:
 	{		
 		// FIX - Support Label Colour States / Outline Color States? - Multiple States?
 		
-		mVecDraw->setContext((cairo_t *)pGraphics.GetData(), pGraphics.GetDisplayScale());
+        mVecDraw->setIGraphics(&pGraphics);
         mVecDraw->setClip(mRECT);
         
 		// Button Rectangle
@@ -1464,6 +1501,9 @@ public:
 		
 		mRECT = (fullBounds.iBounds());
 		SetTargetRECT(boxBounds.iBounds());
+        
+        SetMOWhenGrayed(true);
+        SetMEWhenGrayed(true);
 	}
 	
 public:
@@ -1491,7 +1531,7 @@ public:
 	
 	void Draw(IGraphics& pGraphics) override
 	{		
-		mVecDraw->setContext((cairo_t *)pGraphics.GetData(), pGraphics.GetDisplayScale());
+        mVecDraw->setIGraphics(&pGraphics);
         mVecDraw->setClip(mRECT);
 
 		// Calculate position (according to orientation)
@@ -1825,7 +1865,7 @@ public:
 	
 	void Draw(IGraphics& pGraphics) override
 	{				
-		mVecDraw->setContext((cairo_t *)pGraphics.GetData(), pGraphics.GetDisplayScale());
+        mVecDraw->setIGraphics(&pGraphics);
         mVecDraw->setClip(mRECT);
 
 		// Background (shadow boxes)
@@ -1952,7 +1992,7 @@ public:
 	
 	void Draw(IGraphics& pGraphics)
 	{
-		mVecDraw->setContext((cairo_t *)pGraphics.GetData(), pGraphics.GetDisplayScale());
+        mVecDraw->setIGraphics(&pGraphics);
         mVecDraw->setClip(mRECT);
         HISSTools_Text_Helper_Block::Draw(mVecDraw);
 	}
@@ -2069,7 +2109,7 @@ public:
 	
 	void Draw(IGraphics& pGraphics)
 	{				
-		mVecDraw->setContext((cairo_t *)pGraphics.GetData(), pGraphics.GetDisplayScale());
+        mVecDraw->setIGraphics(&pGraphics);
         mVecDraw->setClip(mRECT);
 
 		if (startBackground(pGraphics, mVecDraw, mRECT))
@@ -2156,7 +2196,7 @@ public:
 	
 	void Draw(IGraphics& pGraphics)
 	{				
-		mVecDraw->setContext((cairo_t *)pGraphics.GetData(), pGraphics.GetDisplayScale());
+        mVecDraw->setIGraphics(&pGraphics);
         mVecDraw->setClip(mRECT);
 		mVecDraw->setColorOrientation(mW < mH ? kCSOrientVertical : kCSOrientHorizontal);
         
@@ -2388,7 +2428,7 @@ public:
 	
 	void Draw(IGraphics& pGraphics)
 	{				
-		mVecDraw->setContext((cairo_t *)pGraphics.GetData(), pGraphics.GetDisplayScale());
+        mVecDraw->setIGraphics(&pGraphics);
         mVecDraw->setClip(mRECT);
 		mVecDraw->setColorOrientation(mW < mH ? kCSOrientVertical : kCSOrientHorizontal);
 
@@ -2535,7 +2575,7 @@ public:
 	// FIX - turn automation off (also for matrix)
 		
 	HISSTools_FileSelector(IPlugBaseGraphics* plug, int paramIdx, HISSTools_VecLib *vecDraw, double x, double y, double w, double h, EFileAction action, char* dir = "", char* extensions = "", const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
-	: HISSTools_Button(plug, paramIdx, vecDraw, x, y, w, h, type, designScheme) , mFileAction(action), mDir(dir), mExtensions(extensions)
+	: HISSTools_Button(plug, paramIdx, vecDraw, x, y, w, h, type, designScheme) , mState(kFSNone), mFileAction(action), mDir(dir), mExtensions(extensions)
 	{
 		mValidReport = false;
 	}
