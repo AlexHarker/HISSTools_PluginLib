@@ -3,7 +3,7 @@
 #ifndef __HISSTOOLS_DESIGN_SCHEME__
 #define __HISSTOOLS_DESIGN_SCHEME__
 
-#include <HISSTools_Graphics/HISSTools_Color.hpp>
+#include "../HISSTools_Graphics/HISSTools_Color.hpp"
 #include <wdlstring.h>
 #include <vector>
 #include <iostream>

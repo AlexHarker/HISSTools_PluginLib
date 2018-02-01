@@ -2,7 +2,7 @@
 #ifndef __HISSTOOLS_CONTROLS__
 #define __HISSTOOLS_CONTROLS__
 
-#include <HISSTools_Graphics/HISSTools_VecLib.hpp>
+#include "../HISSTools_Graphics/HISSTools_VecLib.hpp"
 #include "HISSTools_Design_Scheme.hpp"
 #include <IControl.h>
 #include <IControls.h>

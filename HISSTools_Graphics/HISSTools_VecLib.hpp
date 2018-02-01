@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <vector>
 #include "cairo/cairo.h"
+#include <cmath>
 
 static HISSTools_Color_Spec defaultColor;
 
