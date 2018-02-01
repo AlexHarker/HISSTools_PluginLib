@@ -2,7 +2,8 @@
 #ifndef __HISSTOOLS_BOUNDS__
 #define __HISSTOOLS_BOUNDS__
 
-#include <IPlugStructs.h>
+#include <IGraphicsConstants.h>
+#include <IGraphicsStructs.h>
 #include <algorithm>
 
 class HISSTools_Bounds

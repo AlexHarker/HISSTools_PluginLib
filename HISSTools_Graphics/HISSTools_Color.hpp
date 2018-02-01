@@ -4,6 +4,7 @@
 
 #include <lice.h>
 #include "cairo/cairo.h"
+#include <cmath>
 
 enum ColorOrientation { kCSOrientHorizontal, kCSOrientVertical };
 

@@ -5,6 +5,11 @@
 
 #include <lice.h>
 #include <lice_text.h>
+#include "IPlugStructs.h"
+#include "IGraphicsConstants.h"
+#include "mutex.h"
+#include "ptrlist.h"
+#include "swell.h"
 
 // HISSTools_Text is very similar to IText from IPlug (but does not require IPlug)
 
