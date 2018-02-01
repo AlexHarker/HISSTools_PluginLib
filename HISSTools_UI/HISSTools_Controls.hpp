@@ -1022,15 +1022,19 @@ public:
 
 		double textPad = designScheme->getDimension("DialPromptPadding", type);
         double halfWidth = mR;// * mPromptRatio;// * mPointerCircRadius;
+        double labelHalfWidth = mR * 1.2;
+        
 		//FIX - above
 		mTextParam = new HISSTools_Text_Helper_Param(this, mCx - halfWidth, mCy - mPromptHalfHeight, 2. * halfWidth, 2. * mPromptHalfHeight, textPad, kHAlignCenter, kVAlignCenter, "DialValue", type, designScheme);
-		mTextLabel = new HISSTools_Text_Helper_Block(mCx - mR, mCy + mR, 2 * mR, mTextArea, kHAlignCenter, kVAlignBottom, "DialLabel", type, designScheme);
+		mTextLabel = new HISSTools_Text_Helper_Block(mCx - labelHalfWidth, mCy + mR, 2 * labelHalfWidth, mTextArea, kHAlignCenter, kVAlignBottom, "DialLabel", type, designScheme);
 		mTextLabel->setText(GetParam() != NULL ? GetParam()->GetNameForHost() : "");
 								
 		// Calculate Areas (including shadows and thicknesses)
 		
-		HISSTools_Bounds fullBoxBounds(x, y, d, d + mTextArea);
-		HISSTools_Bounds dialBoxBounds(x, y, d, d);
+        HISSTools_Bounds labelBounds(mCx - labelHalfWidth, mCy + mR, 2 * labelHalfWidth, mTextArea);
+        HISSTools_Bounds dialBoxBounds(x, y, d, d);
+        HISSTools_Bounds fullBoxBounds = dialBoxBounds;
+        fullBoxBounds.include(labelBounds);
 		HISSTools_Bounds ptrBoxBounds(mCx - mPointerTipRadius, mCy - mPointerTipRadius, 2 * mPointerTipRadius, 2 * mPointerTipRadius);
 		
 		dialBoxBounds.addThickness(mOutlineTK);
