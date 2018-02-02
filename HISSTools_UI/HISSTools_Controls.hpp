@@ -370,7 +370,7 @@ public:
 		setup(0, 0, 0, 0, 0, 0, hAlign, vAlign, name, type, designScheme);
 	}
 	
-	bool Draw(HISSTools_VecLib *vecDraw)
+	bool Draw(HISSTools_VecLib *vecDraw, bool drawText)
 	{	
 		if (doDrawPanel())
 		{
@@ -390,7 +390,8 @@ public:
 				vecDraw->renderShadow();
 		}
 		
-		HISSTools_Text_Helper_Block::Draw(vecDraw);
+        if (drawText)
+            HISSTools_Text_Helper_Block::Draw(vecDraw);
 		
 		return true;
 	}
@@ -461,6 +462,7 @@ private:
 	bool mDrawSeparator;
 	bool mDrawTriangle;
 	bool mMenuFlipTriangle;
+    bool mInEdit;
 	
 	double mMenuTriangleTop;
 	double mMenuTriangleBtm;
@@ -486,6 +488,12 @@ private:
 		strcpy(text.mFont, mTextTS->mFont);
 		text.mSize = mTextTS->mSize;
 		
+        // FIX - HACKZ!!
+        
+#ifdef __APPLE__
+        text.mSize = ceil(powf(text.mSize, 0.94));
+#endif
+        
 		switch (mTextTS->mStyle)
 		{
 			case HISSTools_Text::kStyleNormal:
@@ -515,7 +523,7 @@ private:
 				text.mAlign = IText::kAlignFar;
 				break;
 		}
-		
+
 		mControl->SetText(text);
 	}
 	
@@ -534,7 +542,7 @@ public:
 	// Constructors
 	
 	HISSTools_Text_Helper_Param(IControl *control, double x, double y, double w, double h, double pad, HTextAlign hAlign, VTextAlign vAlign, const char *name, const char *type, HISSTools_Design_Scheme *designScheme)
-	: HISSTools_Text_Helper_Panel(x, y, w, h, 0, 0, hAlign, vAlign, name, type, designScheme)
+	: HISSTools_Text_Helper_Panel(x, y, w, h, 0, 0, hAlign, vAlign, name, type, designScheme), mInEdit(false)
 	{			
         double textHeight = HISSTools_VecLib::getTextLineHeight(mTextTS);
 		char concatenatedName[256];
@@ -605,11 +613,15 @@ public:
 		return false;
 	}
 	
+    void finishEdit() { mInEdit = false; }
+    
 	void promptUserInput(HISSTools_VecLib *vecDraw)
 	{
 		HISSTools_Bounds entryBounds;
 		IRECT iEntryBounds;
 		
+        mInEdit = true;
+        
 		// FIX - Widths ??
 		// FIX - Text Prompt Vertical Centering??
 		// FIX - Text Prompt - proper matching font....
@@ -629,6 +641,9 @@ public:
 		double promptLeft = mX + mLPad;
 		double promptWidth = mW - (mLPad + mRPad);
 
+        promptLeft += promptWidth * 0.2;
+        promptWidth *= 0.6;
+        
 		switch (mVAlign)
 		{
 			case kVAlignTop:
@@ -718,7 +733,7 @@ public:
 		// Draw Text (with Panel)
 		
 		setText(displayValue);
-		HISSTools_Text_Helper_Panel::Draw(vecDraw);
+		HISSTools_Text_Helper_Panel::Draw(vecDraw, !mInEdit);
 		
 		// Menu Separator 
 		
@@ -835,7 +850,6 @@ public:
         else
             mTextParam->hilite(true);
         
-        
         mDrag = false;
 		SetDirty();
 	}
@@ -848,10 +862,9 @@ public:
                 mTextParam->promptUserInput(mVecDraw);
         }
         else
-        {
             mTextParam->hilite(false);
-            SetDirty();
-        }
+            
+        SetDirty(false);
 	}
 	
     void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& pMod) override
@@ -869,6 +882,7 @@ public:
     virtual void SetValueFromUserInput(double value) override
     {
         mDrag = false;
+        mTextParam->finishEdit();
         mTextParam->hilite(false);
         IKnobControl::SetValueFromUserInput(value);
     }
@@ -932,7 +946,6 @@ private:
 	
 	double mPromptHalfHeight;
 	double mPromptRatio;
-    bool mInEdit;
 	
 	// Line Thicknesses
 	
@@ -969,7 +982,7 @@ public:
 	// Constructor
 
 	HISSTools_Dial(IPlugBaseGraphics* plug, int paramIdx, HISSTools_VecLib *vecDraw, double x, double y, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
-	: IKnobControl(*plug, IRECT(), paramIdx), HISSTools_Control_Layers(), mInEdit(false), mMouseOver(false)
+	: IKnobControl(*plug, IRECT(), paramIdx), HISSTools_Control_Layers(), mMouseOver(false)
 	{
 		mVecDraw = vecDraw;
         
@@ -1046,8 +1059,6 @@ public:
 		mRECT = fullBoxBounds.iBounds();
 		SetTargetRECT(dialBoxBounds.iBounds());
         
-        mText.mTextEntryBGColor = IColor(0, 0, 0, 0);
-        
         SetMOWhenGrayed(true);
         SetMEWhenGrayed(true);
 	}	
@@ -1096,8 +1107,8 @@ public:
 			return;
 		}
 		
-        mInEdit = true;
 		mTextParam->promptUserInput(mVecDraw);
+        SetDirty(false);
 	}
     
     void OnMouseOver(float x, float y, const IMouseMod& pMod) override
@@ -1120,7 +1131,7 @@ public:
     
     virtual void SetValueFromUserInput(double value) override
     {
-        mInEdit = false;
+        mTextParam->finishEdit();
         IControl::SetValueFromUserInput(value);
     }
     
@@ -1234,7 +1245,7 @@ public:
 		}
 		else
         {
-            if (!mInEdit && !(mDrawValOnlyOnMO && !mMouseOver))
+            if (!(mDrawValOnlyOnMO && !mMouseOver))
                 mTextParam->Draw(mVecDraw);
         }
 	}
