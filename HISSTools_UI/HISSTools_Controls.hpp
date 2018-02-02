@@ -1293,6 +1293,7 @@ private:
 	HISSTools_Color_Spec *mOffCS;
 	HISSTools_Color_Spec *mOutlineCS;
 	HISSTools_Color_Spec *mHandleLabelCS;
+    HISSTools_Color_Spec *mHandleLabelOffCS;
 	HISSTools_Color_Spec *mBackgroundLabelCS;
 	HISSTools_Color_Spec *mInactiveOverlayCS;
 	
@@ -1342,6 +1343,8 @@ public:
 		mOnCS = designScheme->getColorSpec("ButtonHandleOn", type);
 		mOffCS = designScheme->getColorSpec("ButtonHandleOff", type);
 		mHandleLabelCS = designScheme->getColorSpec("ButtonHandleLabel", type);
+        mHandleLabelOffCS = designScheme->getColorSpec("ButtonHandleLabelOff", type);
+        mHandleLabelOffCS = mHandleLabelOffCS ? mHandleLabelOffCS : mHandleLabelCS;
 		mOutlineCS = designScheme->getColorSpec("ButtonOutline", type);
 		mBackgroundLabelCS = designScheme->getColorSpec("ButtonBackgroundLabel", type);
 		mInactiveOverlayCS = designScheme->getColorSpec("ButtonInactiveOverlay", type);
@@ -1393,7 +1396,7 @@ public:
 		mVecDraw->frameRoundRect(mX, mY, mLabelMode ? mH : mW, mH, mRoundness, mOutlineTK);
 		mVecDraw->renderShadow();
 		
-		mVecDraw->setColor(mLabelMode == true ? mBackgroundLabelCS : mHandleLabelCS);
+        mVecDraw->setColor(mLabelMode == true ? mBackgroundLabelCS : mValue > 0.5 ? mHandleLabelCS : mHandleLabelOffCS);
 		mVecDraw->text(mTextStyle, mName, mLabelMode == true ? mX + mH + mTextPad : mX, mY, mLabelMode == true ? mW - (mH + mTextPad) : mW, mH, mLabelMode == true ?  kHAlignLeft : kHAlignCenter);
 
 		// Inactive

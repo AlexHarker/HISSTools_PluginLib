@@ -543,7 +543,8 @@ private:
 		addColorSpec("ButtonHandleLabel", handleTextCS);
 		addColorSpec("ButtonBackgroundLabel", labelTextCS);
 		addColorSpec("ButtonInactiveOverlay", inactiveOverlayCS);
-		
+        addColorSpec("ButtonHandleLabelOff", 0);
+
 		addColorSpec("SwitchHandleFill", onHandleFillCS);
 		addColorSpec("SwitchHandleOutline", buttonOutlineCS);
 		addColorSpec("SwitchBoxFill", boxFill);
