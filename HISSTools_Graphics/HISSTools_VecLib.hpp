@@ -26,9 +26,14 @@ class HISSTools_VecLib
     
 public:
 	
-    HISSTools_VecLib(cairo_t *cairo) : mGraphics(nullptr), mContext(cairo), mShadow(NULL), mWidth(0), mHeight(0), mForceGradientBox(false), mCSOrientation(kCSOrientHorizontal), mScale(1.0)
+    HISSTools_VecLib(cairo_t *cairo) : mGraphics(nullptr), mContext(cairo), mShadow(NULL), mWidth(0), mHeight(0), mForceGradientBox(false), mCSOrientation(kCSOrientHorizontal), mScale(1.0), mTextBitmap(NULL)
     {
         setColor(&defaultColor);
+    }
+    
+    ~HISSTools_VecLib()
+    {
+        delete mTextBitmap;
     }
     
     void setIGraphics(IGraphics* graphics)
@@ -260,12 +265,21 @@ public:
     
     void text(HISSTools_Text *pTxt, const char *str, double x, double y, double w, double h, HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter)
     {
-        LICE_IBitmap *bitmap = &mTextBitmap;
+        LICE_IBitmap *bitmap = mTextBitmap;
         
         int width = mWidth * mScale;
         int height = mHeight * mScale;
         
-        bitmap->resize(width, height);
+        // This allows the window to be any size...
+        
+        width = (width + 3 ) &~ 3;
+
+        if (!bitmap || bitmap->getWidth() != width || bitmap->getHeight() != height)
+        {
+            delete mTextBitmap;
+            bitmap = mTextBitmap = new LICE_SysBitmap(width, height);
+        }
+        
         LICE_Clear(bitmap, 0);
         
         HISSTools_LICE_Text::text(bitmap, pTxt, str, x, y, w, h, mScale, hAlign, vAlign);
@@ -490,7 +504,7 @@ private:
     
     cairo_t *mContext;
     
-    LICE_SysBitmap mTextBitmap;
+    LICE_SysBitmap *mTextBitmap;
     
     // Boundaries
     
