@@ -1721,7 +1721,7 @@ private:
 		if (mParamIdx >= 0)
 		{
 			mValidReport = true;
-            mPlug.OnParamChange(mParamIdx);//, IPlugBaseGraphics::kGUI);
+            mPlug.OnParamChange(mParamIdx, IPlugBase::kGUI);
 			mValidReport = false;
 		}
 	}
@@ -2583,7 +2583,7 @@ private:
 		if (mParamIdx >= 0)
 		{
 			mValidReport = true;
-            mPlug.OnParamChange(mParamIdx);//, IPlugBaseGraphics::kGUI);
+            mPlug.OnParamChange(mParamIdx, IPlugBase::kGUI);
 			mValidReport = false;
 		}
 	}
