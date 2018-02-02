@@ -2586,9 +2586,34 @@ public:
 	{
 		mValidReport = false;
 	}
-		
-	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
+
+    void OnMouseDown(float x, float y, const IMouseMod& pMod) override
+    {
+        mState = kFSSelecting;
+        SetDirty(false);
+    }
+    
+    void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& pMod) override
+    {
+        if (mRECT.Contains(x, y))
+        {
+            if (mState != kFSSelecting)
+                SetDirty(false);
+            mState = kFSSelecting;
+        }
+        else
+        {
+            if (mState != kFSNone)
+                SetDirty(false);
+            mState = kFSNone;
+        }
+    }
+
+	void OnMouseUp(float x, float y, const IMouseMod& pMod) override
 	{
+        if (!mRECT.Contains(x, y))
+            return;
+        
 		if (mPlug.GetGUI())
 		{
 			WDL_String tempFile;
@@ -2602,9 +2627,6 @@ public:
 			}
 			else 
 			{
-				mState = kFSSelecting;
-				SetDirty(false);
-				
 				mPlug.GetGUI()->PromptForFile(tempFile, mDir, mFileAction, mExtensions.Get());
 				
 				mState = kFSDone;
