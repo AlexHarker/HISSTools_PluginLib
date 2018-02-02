@@ -279,7 +279,7 @@ private:
 		
 		HISSTools_Shadow *shadowSpec1 = new HISSTools_Shadow(shadowCS1, 3, 3, 8);
 		HISSTools_Shadow *shadowSpec2 = new HISSTools_Shadow(shadowCS3, 4, 4, 6);
-		HISSTools_Shadow *shadowSpec3 = new HISSTools_Shadow(shadowCS4, 1, 3, 4);
+		HISSTools_Shadow *shadowSpec3 = new HISSTools_Shadow(shadowCS4, 2, 3, 4);
 		HISSTools_Shadow *shadowSpec4 = new HISSTools_Shadow(shadowCS3, 2, 2, 3);
 		HISSTools_Shadow *shadowSpec5 = new HISSTools_Shadow(shadowCS2, 2, 2, 8);
 		
