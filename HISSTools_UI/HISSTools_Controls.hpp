@@ -1322,7 +1322,7 @@ public:
 	
 	// Constructor
 	
-	HISSTools_Button(IPlugBaseGraphics* plug, int paramIdx, HISSTools_VecLib *vecDraw, double x, double y, double w = 0, double h = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	HISSTools_Button(IPlugBaseGraphics* plug, int paramIdx, HISSTools_VecLib *vecDraw, double x, double y, double w = 0, double h = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char *label = "")
 	: IControl(*plug, IRECT(), paramIdx), HISSTools_Control_Layers()
 	{		
 		mVecDraw = vecDraw;
@@ -1373,7 +1373,7 @@ public:
 		mRECT = (fullBounds.iBounds());
 		SetTargetRECT(handleBounds.iBounds());
 		
-        mName = GetParam() != NULL ? GetParam()->GetNameForHost() : "";
+        mName = GetParam() != NULL ? GetParam()->GetNameForHost() : label;
         
 		mDblAsSingleClick = true;
 	}
@@ -2578,7 +2578,7 @@ private:
 	
 private:
 
-	void reportToPlug()
+	virtual void reportToPlug()
 	{
 		if (mParamIdx >= 0)
 		{
@@ -2592,8 +2592,8 @@ public:
 	
 	// FIX - turn automation off (also for matrix)
 		
-	HISSTools_FileSelector(IPlugBaseGraphics* plug, int paramIdx, HISSTools_VecLib *vecDraw, double x, double y, double w, double h, EFileAction action, char* dir = "", char* extensions = "", const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
-	: HISSTools_Button(plug, paramIdx, vecDraw, x, y, w, h, type, designScheme) , mState(kFSNone), mFileAction(action), mDir(dir), mExtensions(extensions)
+	HISSTools_FileSelector(IPlugBaseGraphics* plug, int paramIdx, HISSTools_VecLib *vecDraw, double x, double y, double w, double h, EFileAction action, char* dir = "", char* extensions = "", const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char *label = "")
+	: HISSTools_Button(plug, paramIdx, vecDraw, x, y, w, h, type, designScheme, label) , mState(kFSNone), mFileAction(action), mDir(dir), mExtensions(extensions)
 	{
 		mValidReport = false;
 	}
