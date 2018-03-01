@@ -16,6 +16,8 @@ static HISSTools_Color_Spec defaultColor;
 
 class HISSTools_VecLib
 {
+    double radToDeg(double radians) { return (180.0 * (radians / PI)) + 90.0; }
+    
     struct Area
     {
         Area() : x1(0), x2(0), y1(0), y2(0) {}
@@ -137,17 +139,17 @@ public:
     
     void moveTo(double x, double y)
     {
-        cairo_move_to(mContext, x, y);
+        mGraphics->PathMoveTo(x, y);
     }
     
     void lineTo(double x, double y)
     {
-        cairo_line_to(mContext, x, y);
+        mGraphics->PathLineTo(x, y);
     }
     
     void startMultiLine(double x, double y, double thickness)
     {
-        cairo_new_path(mContext);
+        mGraphics->PathStart();
         setLineThickness(thickness);
         moveTo(x, y);
     }
@@ -159,28 +161,28 @@ public:
     
     void finishMultiLine()
     {
-        stroke();
+        stroke(cairo_get_line_width(mContext));
     }
     
     void circleIntersection(double cx, double cy, double ang, double r, double *retX, double *retY)
     {
-        *retX = sin(2.0 * ang * PI) * r + cx;
-        *retY = -cos(2.0 * ang * PI) * r + cy;
+        *retX = cos(2.0 * ang * PI) * r + cx;
+        *retY = sin(2.0 * ang * PI) * r + cy;
     }
     
     void frameArc(double cx, double cy, double r, double begAng, double arcAng, double thickness)
     {
         setLineThickness(thickness);
         arc(cx, cy, r, begAng, arcAng);
-        stroke();
+        stroke(thickness);
     }
     
     void fillArc(double cx, double cy, double r, double begAng, double arcAng)
     {
-        cairo_new_path(mContext);
+        mGraphics->PathStart();
         arc(cx, cy, r, begAng, arcAng);
-        cairo_line_to(mContext, cx, cy);
-        cairo_close_path(mContext);
+        mGraphics->PathLineTo(cx, cy);
+        mGraphics->PathClose();
         fill();
     }
 
@@ -216,7 +218,7 @@ public:
     {
         setLineThickness(thickness);
         rectangle(x, y, w, h);
-        stroke();
+        stroke(thickness);
     }
     
     void fillRoundRect(double x, double y, double w, double h, double rtl, double rtr, double rbl, double rbr)
@@ -229,7 +231,7 @@ public:
     {
         setLineThickness(thickness);
         roundedRectangle(x, y, w, h, rtl, rtr, rbl, rbr);
-        stroke();
+        stroke(thickness);
     }
     
     void fillRoundRect(double x, double y, double w, double h, double r)
@@ -252,15 +254,13 @@ public:
     {
         setLineThickness(thickness);
         cPointer(cx, cy, r, pr, ang, pAng);
-        stroke();
+        stroke(thickness);
     }
     
     void line(double x1, double y1, double x2, double y2, double thickness)
     {
-        cairo_set_line_width(mContext, thickness);
-        cairo_move_to(mContext, x1, y1);
-        cairo_line_to(mContext, x2, y2);
-        stroke(true);
+        mGraphics->PathLine(x1, y1, x2, y2);
+        stroke(thickness, true);
     }
     
     void text(HISSTools_Text *pTxt, const char *str, double x, double y, double w, double h, HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter)
@@ -393,9 +393,10 @@ private:
         cairo_fill(mContext);
     }
     
-    void stroke(bool useExtents = false)
+    void stroke(double thickness, bool useExtents = false)
     {
         updateDrawBounds(false, useExtents);
+        setLineThickness(thickness);
         cairo_stroke(mContext);
     }
     
@@ -415,16 +416,16 @@ private:
 
     void arc(double cx, double cy, double r, double begAng, double arcAng)
     {
-        begAng = (begAng - 0.25) * 2.0 * M_PI;
-        arcAng = (arcAng * 2.0 * M_PI) + begAng;
-        
-        cairo_arc(mContext, cx, cy, r, std::min(begAng, arcAng), std::max(begAng, arcAng));
+        begAng = begAng * 360.0;
+        arcAng = begAng + (arcAng * 360.0);
+
+        mGraphics->PathArc(cx, cy, r, std::min(begAng, arcAng), std::max(arcAng, begAng));
         setShapeGradient(cx - r, cx + r, cy - r, cy + r);
     }
     
     void rectangle(double x, double y, double w, double h)
     {
-        cairo_rectangle(mContext, x, y, w, h);
+        mGraphics->PathRect(IRECT(x, y, x + w, y + h));
         setShapeGradient(x, x + w, y, y + h);
     }
     
@@ -435,37 +436,35 @@ private:
         rbl = sanitizeRadius(rbl, w, h);
         rbr = sanitizeRadius(rbr, w, h);
         
-        cairo_new_path(mContext);
-        cairo_arc(mContext, x + rtl, y + rtl, rtl, M_PI, 3.0 * M_PI / 2.0);
-        cairo_arc(mContext, x + w - rtr, y + rtr, rtr, 3.0 * M_PI / 2.0, 0.0);
-        cairo_arc(mContext, x + w - rbr, y + h - rbr, rbr, 0.0, M_PI / 2.0);
-        cairo_arc(mContext, x + rbl, y + h - rbl, rbl, M_PI / 2.0, M_PI);
-        cairo_close_path(mContext);
+        mGraphics->PathStart();
+        mGraphics->PathArc(x + rtl, y + rtl, rtl, 180.0,  270.0);
+        mGraphics->PathArc(x + w - rtr, y + rtr, rtr, 270.0,  360.0);
+        mGraphics->PathArc(x + w - rbr, y + h - rbr, rbr, 0.0, 90.0);
+        mGraphics->PathArc(x + rbl, y + h - rbl, rbl, 90.0, 180.0);
+        mGraphics->PathClose();
         setShapeGradient(x, x + w, y, y + h);
     }
     
     void cPointer(double cx, double cy, double r, double pr, double ang, double pAng)
     {
-        double xx = cx + sin(2.0 * PI * ang) * pr;
-        double yy = cy - cos(2.0 * PI * ang) * pr;
+        double xx = cx + cos(2.0 * PI * ang) * pr;
+        double yy = cy + sin(2.0 * PI * ang) * pr;
         
-        double begAng = (ang - pAng - 0.25) * 2.0 * M_PI;
-        double arcAng = (pAng * 4.0 * M_PI) + begAng;
+        double begAng = (ang - pAng) * 360.0;
+        double arcAng = (pAng * 2.0 * 360.0) + begAng;
         
-        cairo_new_path(mContext);
-        cairo_arc_negative(mContext, cx, cy, r, begAng, arcAng);
-        cairo_line_to(mContext, xx, yy);
-        cairo_close_path(mContext);
+        mGraphics->PathStart();
+        mGraphics->PathArc(cx, cy, r, arcAng, begAng);
+        mGraphics->PathLineTo(xx, yy);
+        mGraphics->PathClose();
+
         // FIX - revise...
         setShapeGradient(cx - pr, cx + pr, cy - pr, cy + pr);
     }
     
     void triangle(double x1, double y1, double x2, double y2, double x3, double y3)
     {
-        cairo_move_to(mContext, x1, y1 );
-        cairo_line_to(mContext, x2, y2);
-        cairo_line_to(mContext, x3, y3);
-        cairo_close_path(mContext);
+        mGraphics->PathTriangle(x1, y1, x2, y2, x3, y3);
     }
     
     void updateDrawBounds(bool fill, bool useExtents)

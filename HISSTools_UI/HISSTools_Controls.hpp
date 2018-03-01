@@ -87,7 +87,7 @@ private:
 		{}
 	};
 	
-	IParam *mParam;
+	const IParam *mParam;
 	IControl *mTabControl;
 	std::vector<TabItem> mItems;
 	
@@ -121,7 +121,7 @@ public:
 	
 	// You should pass the inheriting class here, after constructing the control, which must be mapped to a valid parameter of the plug - the tabs are tied to the parameter, rather than the control
 	
-	HISSTools_Tabs (IControl *tabControl) 
+	HISSTools_Tabs(IControl *tabControl)
 	{		
 		mTabControl = tabControl;
 		mParam = tabControl->GetParam();
@@ -150,14 +150,14 @@ public:
 		mCurrentTabNumber = mParam ? clipTabNumber(mParam->Int() - mParam->GetMin()) : 0;
 		updateItems();
 	}
-	
+	/*
 	void setTabFromPlug(int tabNumber)
 	{
 		if (mParam)
 			mParam->Set(tabNumber + mParam->GetMin());
 			
 		tabSetDirty(false);
-	}
+	}*/
 	
 	// These functions should be declared in any inheriting classes, and should call the related tab versions
 	
@@ -607,7 +607,7 @@ public:
 		if (mControl->GetParam() == NULL)
 			return false;
 		
-		if (mControl->GetParam()->GetNDisplayTexts())
+		if (mControl->GetParam()->NDisplayTexts())
 			return true;
 		
 		return false;
@@ -711,28 +711,28 @@ public:
 	
 	bool Draw(HISSTools_VecLib *vecDraw)
 	{
-		IParam *param = mControl->GetParam();
+		const IParam *param = mControl->GetParam();
 		
-		char displayValue[256];
-		
+        WDL_String str;
+        
 		if (param == NULL)
 			return true;
 		
 		// Retrieve Value
 		
-		param->GetDisplayForHost(displayValue);
+		param->GetDisplayForHost(str);
 		
 		// If label is NULL don't add the space
 		
 		if (mShowUnits == true && *(param->GetLabelForHost()))
 		{
-			strcat(displayValue, " ");
-			strcat(displayValue, param->GetLabelForHost());
+			str.Append(" ");
+			str.Append(param->GetLabelForHost());
 		}
 		
 		// Draw Text (with Panel)
 		
-		setText(displayValue);
+		setText(str.Get());
 		HISSTools_Text_Helper_Panel::Draw(vecDraw, !mInEdit);
 		
 		// Menu Separator 
@@ -769,7 +769,7 @@ public:
 
 // FIX - do your own mousing later...
 
-class HISSTools_Value : public IKnobControl, public HISSTools_Control_Layers
+class HISSTools_Value : public IKnobControlBase, public HISSTools_Control_Layers
 {
 	
 private:
@@ -794,7 +794,7 @@ private:
 public:
 	
 	HISSTools_Value(IPlugBaseGraphics* plug, int paramIdx, HISSTools_VecLib *vecDraw, double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
-	: IKnobControl(*plug, IRECT(), paramIdx), HISSTools_Control_Layers()
+	: IKnobControlBase(*plug, IRECT(), paramIdx), HISSTools_Control_Layers()
 	{
 		mVecDraw = vecDraw;
         
@@ -871,7 +871,7 @@ public:
     {
         mDrag = true;
     
-        IKnobControl::OnMouseDrag(x, y, dX, dY, pMod);
+        IKnobControlBase::OnMouseDrag(x, y, dX, dY, pMod);
     }
     
 	void OnMouseDblClick(float x, float y, const IMouseMod& pMod) override
@@ -884,7 +884,7 @@ public:
         mDrag = false;
         mTextParam->finishEdit();
         mTextParam->hilite(false);
-        IKnobControl::SetValueFromUserInput(value);
+        IKnobControlBase::SetValueFromUserInput(value);
     }
 	
 	void Draw(IGraphics& pGraphics) override
@@ -911,7 +911,7 @@ public:
 
 // FIX - do your own mousing later...
 
-class HISSTools_Dial : public IKnobControl, public HISSTools_Control_Layers
+class HISSTools_Dial : public IKnobControlBase, public HISSTools_Control_Layers
 {
 	
 private:
@@ -982,7 +982,7 @@ public:
 	// Constructor
 
 	HISSTools_Dial(IPlugBaseGraphics* plug, int paramIdx, HISSTools_VecLib *vecDraw, double x, double y, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
-	: IKnobControl(*plug, IRECT(), paramIdx), HISSTools_Control_Layers(), mMouseOver(false)
+	: IKnobControlBase(*plug, IRECT(), paramIdx), HISSTools_Control_Layers(), mMouseOver(false)
 	{
 		mVecDraw = vecDraw;
         
@@ -1177,7 +1177,7 @@ public:
 	
 	void Draw(IGraphics& pGraphics) override
 	{
-		IParam *param = GetParam();
+		const IParam *param = GetParam();
 		double value, xIntersect, yIntersect;
 		
         mVecDraw->setIGraphics(&pGraphics);
@@ -1720,8 +1720,10 @@ private:
 	{
 		if (mParamIdx >= 0)
 		{
+            IPlugBase *plug = dynamic_cast<IPlugBase *>(&mDelegate);
+            
 			mValidReport = true;
-            mPlug.OnParamChange(mParamIdx, IPlugBase::kGUI);
+            plug->OnParamChange(mParamIdx, kGUI);
 			mValidReport = false;
 		}
 	}
@@ -2582,8 +2584,10 @@ private:
 	{
 		if (mParamIdx >= 0)
 		{
+            IPlugBase *plug = dynamic_cast<IPlugBase *>(&mDelegate);
+            
 			mValidReport = true;
-            mPlug.OnParamChange(mParamIdx, IPlugBase::kGUI);
+            plug->OnParamChange(mParamIdx, kGUI);
 			mValidReport = false;
 		}
 	}
@@ -2625,7 +2629,7 @@ public:
         if (!mRECT.Contains(x, y))
             return;
         
-		if (mPlug.GetGUI())
+		if (GetUI())
 		{
 			WDL_String tempFile;
 
@@ -2638,7 +2642,7 @@ public:
 			}
 			else 
 			{
-				mPlug.GetGUI()->PromptForFile(tempFile, mDir, mFileAction, mExtensions.Get());
+				GetUI()->PromptForFile(tempFile, mDir, mFileAction, mExtensions.Get());
 				
 				mState = kFSDone;
 				

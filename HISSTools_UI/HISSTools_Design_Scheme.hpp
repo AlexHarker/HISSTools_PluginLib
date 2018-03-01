@@ -230,7 +230,7 @@ private:
 		
 		addDimension("DialRefValue", 0.0);
 		addDimension("DialRefValue", "bipolar", 0.5);
-		addDimension("DialStartAngle", 0.58);
+		addDimension("DialStartAngle", 0.33);
 		addDimension("DialThrowAngle", 0.84);
 		
 		// Dial Pointer Appearance
