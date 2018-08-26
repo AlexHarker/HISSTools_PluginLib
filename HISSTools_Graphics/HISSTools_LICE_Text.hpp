@@ -7,9 +7,6 @@
 #include <lice_text.h>
 #include "IPlugStructs.h"
 #include "IGraphicsConstants.h"
-#include "mutex.h"
-#include "ptrlist.h"
-#include "swell.h"
 
 // HISSTools_Text is very similar to IText from IPlug (but does not require IPlug)
 
@@ -50,6 +47,11 @@ struct HISSTools_Text
 	}
 };
 
+#ifndef USE_CAIRO_TEXT
+
+#include "mutex.h"
+#include "ptrlist.h"
+#include "swell.h"
 
 // HISSTools_FontStorage is very similar to FontStorage from IPlug (but does not require IPlug)
 
@@ -211,5 +213,7 @@ struct HISSTools_LICE_Text
 		return font;
 	}
 };
+
+#endif
 
 #endif /* __HISSTOOLS_LICE_TEXT__ */

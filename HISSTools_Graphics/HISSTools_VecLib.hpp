@@ -5,12 +5,14 @@
 
 #include "HISSTools_Color.hpp"
 #include "HISSTools_Shadow.hpp"
-#include "HISSTools_LICE_Text.hpp"
 #include "IGraphics.h"
 #include <algorithm>
 #include <vector>
 #include "cairo/cairo.h"
 #include <cmath>
+
+#define USE_CAIRO_TEXT
+#include "HISSTools_LICE_Text.hpp"
 
 static HISSTools_Color_Spec defaultColor;
 
@@ -118,7 +120,7 @@ public:
         mGradientArea = Area(xLo, xHi, yLo, yHi);
         mForceGradientBox = true;
     }
-    
+    /*
     double getX() const
     {
         double x, y;
@@ -135,7 +137,7 @@ public:
         cairo_get_current_point(mContext, &x, &y);
         
         return y;
-    }
+    }*/
    
     void startMultiLine(double x, double y, double thickness)
     {
@@ -255,21 +257,16 @@ public:
     
     void text(HISSTools_Text *pTxt, const char *str, double x, double y, double w, double h, HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter)
     {
-        bool useCairoText = true;
+#ifdef USE_CAIRO_TEXT
+        HISSTools_Color color = mColor->getColor();
+        IColor textColor(color.a * 255.0, color.r * 255.0, color.g * 255.0, color.b * 255.0);
         
-        if (useCairoText)
-        {
-            HISSTools_Color color = mColor->getColor();
-            IColor textColor(color.a * 255.0, color.r * 255.0, color.g * 255.0, color.b * 255.0);
+        IText textSpec(pTxt->mSize, textColor, pTxt->mFont, (IText::EStyle) pTxt->mStyle, (IText::EAlign) hAlign, (IText::EVAlign) vAlign, 0, IText::kQualityAntiAliased);
+        IRECT rect(x, y, x + w, y + h);
+        mGraphics->DrawText(textSpec, str, rect);
             
-            IText textSpec(pTxt->mSize, textColor, pTxt->mFont, (IText::EStyle) pTxt->mStyle, (IText::EAlign) hAlign, (IText::EVAlign) vAlign, 0, IText::kQualityAntiAliased);
-            IRECT rect(x, y, x + w, y + h);
-            mGraphics->DrawText(textSpec, str, rect);
-            
-            updateDrawBounds(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1, true);
-            return;
-        }
-        
+        updateDrawBounds(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1, true);
+#else
         LICE_IBitmap *bitmap = mTextBitmap;
         
         int width = mWidth * mScale;
@@ -300,11 +297,16 @@ public:
         cairo_mask_surface(mContext, surface, 0, 0);
         cairo_restore(mContext);
         cairo_surface_destroy(surface);
+#endif
     }
 
     static double getTextLineHeight(HISSTools_Text *pTxt)
     {
+#ifdef USE_CAIRO_TEXT
+        return pTxt->mSize;
+#else
         return HISSTools_LICE_Text::getTextLineHeight(pTxt);
+#endif
     }
     
     void startShadow(HISSTools_Shadow *shadow)
