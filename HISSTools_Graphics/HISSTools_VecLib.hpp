@@ -46,7 +46,7 @@ public:
         
         // FIX - clip and other state etc. when pushing and popping?
         
-        mContext = (cairo_t *)graphics->GetData();
+        mContext = (cairo_t *)graphics->GetDrawContext();
         cairo_set_operator(mContext, CAIRO_OPERATOR_OVER);
         mScale = scale;
     }
@@ -62,7 +62,7 @@ public:
     void setClip(HISSTools_Bounds clip)
     {
         //cairo_reset_clip(mContext);
-        cairo_rectangle(mContext, clip.getX(), clip.getY(), clip.getWidth(), clip.getHeight());
+        cairo_rectangle(mContext, clip.mRECT.L, clip.mRECT.T, clip.mRECT.W(), clip.mRECT.H());
         cairo_clip(mContext);
     }
     
@@ -136,27 +136,17 @@ public:
         
         return y;
     }
-    
-    void moveTo(double x, double y)
-    {
-        mGraphics->PathMoveTo(x, y);
-    }
-    
-    void lineTo(double x, double y)
-    {
-        mGraphics->PathLineTo(x, y);
-    }
-    
+   
     void startMultiLine(double x, double y, double thickness)
     {
         mGraphics->PathStart();
         setLineThickness(thickness);
-        moveTo(x, y);
+        mGraphics->PathMoveTo(x, y);
     }
     
     void continueMultiLine(double x, double y)
     {
-        lineTo(x, y);
+        mGraphics->PathLineTo(x, y);
     }
     
     void finishMultiLine()
@@ -265,6 +255,21 @@ public:
     
     void text(HISSTools_Text *pTxt, const char *str, double x, double y, double w, double h, HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter)
     {
+        bool useCairoText = true;
+        
+        if (useCairoText)
+        {
+            HISSTools_Color color = mColor->getColor();
+            IColor textColor(color.a * 255.0, color.r * 255.0, color.g * 255.0, color.b * 255.0);
+            
+            IText textSpec(pTxt->mSize, textColor, pTxt->mFont, (IText::EStyle) pTxt->mStyle, (IText::EAlign) hAlign, (IText::EVAlign) vAlign, 0, IText::kQualityAntiAliased);
+            IRECT rect(x, y, x + w, y + h);
+            mGraphics->DrawText(textSpec, str, rect);
+            
+            updateDrawBounds(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1, true);
+            return;
+        }
+        
         LICE_IBitmap *bitmap = mTextBitmap;
         
         int width = mWidth * mScale;
@@ -281,11 +286,10 @@ public:
         }
         
         LICE_Clear(bitmap, 0);
-        
         HISSTools_LICE_Text::text(bitmap, pTxt, str, x, y, w, h, mScale, hAlign, vAlign);
         
         updateDrawBounds(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1, true);
-        
+
         HISSTools_Bounds clip(x, y, w, h);
         
         cairo_save(mContext);
@@ -313,7 +317,7 @@ public:
         cairo_clip_extents(mContext, &x1, &y1, &x2, &y2);
         HISSTools_Bounds clip(x1, y1, x2 - x1, y2 - y1);
         double enlargeBy = (shadow->getBlurSize() + 2) * 2;
-        clip.include(HISSTools_Bounds(clip.getX() - shadow->getXOffset(), clip.getY() - shadow->getYOffset(), clip.getWidth() + enlargeBy, clip.getHeight() + enlargeBy));
+        clip.include(HISSTools_Bounds(clip.mRECT.L - shadow->getXOffset(), clip.mRECT.T - shadow->getYOffset(), clip.mRECT.W() + enlargeBy, clip.mRECT.W() + enlargeBy));
         cairo_reset_clip(mContext);
         setClip(clip);
         cairo_push_group(mContext);
@@ -323,7 +327,7 @@ public:
     {
         // Sanity Check
         
-        if (mDrawArea.isEmpty())
+        if (mDrawArea.mRECT.Empty())
             return;
         
         cairo_pattern_t *shadowRender = cairo_pop_group(mContext);
@@ -337,7 +341,9 @@ public:
             
             int kernelSize = mShadow->getKernelSize();
             
-            IRECT draw = mDrawArea.iBounds(mScale);
+            HISSTools_Bounds bounds = mDrawArea;
+            bounds.mRECT.Scale(mScale);
+            IRECT draw = bounds.iBounds();
            
             int width = (draw.R - draw.L) + (2 * kernelSize - 1);
             int height = (draw.B - draw.T) + (2 * kernelSize - 1);

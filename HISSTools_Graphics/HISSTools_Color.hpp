@@ -58,6 +58,7 @@ public:
     
     virtual ~HISSTools_Color_Spec(){}
     
+    HISSTools_Color getColor() const { return mColor; }
     
     virtual void setAsSource(cairo_t *cr)
     {

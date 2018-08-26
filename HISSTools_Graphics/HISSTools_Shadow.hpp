@@ -31,7 +31,7 @@ public:
         blurSwap(io, temp, height, width, height, stride, kernelSize, mNorm);
     }
     
-	int getKernelSize() const   { return mBlurKernel.size(); }
+	int getKernelSize() const   { return (int) mBlurKernel.size(); }
 	
 	double getXOffset() const   { return mXOffset; }
 	double getYOffset() const   { return mYOffset; }
@@ -44,10 +44,10 @@ public:
 			
 	HISSTools_Bounds getBlurBounds(HISSTools_Bounds currentBounds)
 	{                
-		double x = currentBounds.getX() + mXOffset - (mBlurSize - 1);
-		double y = currentBounds.getY() + mYOffset - (mBlurSize - 1);
-		double width = currentBounds.getWidth() + 2 * (mBlurSize - 1);
-		double height = currentBounds.getHeight() + 2 * (mBlurSize - 1);
+        double x = currentBounds.mRECT.L + mXOffset - (mBlurSize - 1);
+		double y = currentBounds.mRECT.T + mYOffset - (mBlurSize - 1);
+		double width = currentBounds.mRECT.W() + 2 * (mBlurSize - 1);
+		double height = currentBounds.mRECT.H() + 2 * (mBlurSize - 1);
 		
 		currentBounds.include(HISSTools_Bounds(x, y, width, height));
 		
