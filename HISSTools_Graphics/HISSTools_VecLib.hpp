@@ -174,7 +174,8 @@ public:
 
     void fillCircle(double cx, double cy, double r)
     {
-        fillArc(cx, cy, r, 0.0, 1.0);
+        mGraphics->PathCircle(cx, cy, r);
+        fill(true);
     }
     
     void frameCircle(double cx, double cy, double r, double thickness)
