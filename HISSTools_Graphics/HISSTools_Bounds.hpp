@@ -9,9 +9,9 @@
 struct HISSTools_Bounds
 {
     HISSTools_Bounds() {}
-    
     HISSTools_Bounds(double x, double y, double w, double h) : mRECT(w > 0 ? x : x - w, h > 0 ? y : y - h, w > 0 ? x + w : x, h > 0 ? y + h : y) {}
-	
+    HISSTools_Bounds(const IRECT rect) : mRECT(rect) {}
+
     void include(HISSTools_Bounds inc)      { mRECT = mRECT.Union(inc.mRECT); }
 	void addThickness(double thickness)     { mRECT.Pad(std::max(0.0, thickness) * 0.5); }
 	
