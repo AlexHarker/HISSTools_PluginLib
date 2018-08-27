@@ -25,33 +25,53 @@ const int HT_FONT_LEN = 32;
 enum HTextAlign { kHAlignLeft, kHAlignCenter, kHAlignRight };
 enum VTextAlign { kVAlignTop, kVAlignCenter, kVAlignBottom };
 
+#ifndef USE_IGRAPHICS_TEXT
+
 struct HISSTools_Text
 {
 	char mFont[HT_FONT_LEN];
-	int mSize, mCachedSize;
+	int mSize;
 	enum EStyle { kStyleNormal, kStyleBold, kStyleItalic } mStyle;
-	LICE_IFont *mCached;
 	
 	HISSTools_Text(int size = HT_DEFAULT_TEXT_SIZE, char* font = 0, EStyle style = kStyleNormal)
-	:	mSize(size), mCachedSize(0), mStyle(style), mCached(0)
+	: mSize(size), mStyle(style)
 	{
 		strcpy(mFont, (font ? font : HT_DEFAULT_FONT));     
 	}
 	
-	HISSTools_Text() 
-	:	mSize(HT_DEFAULT_TEXT_SIZE), mCachedSize(0), mStyle(kStyleNormal), mCached(0)
+	HISSTools_Text() : mSize(HT_DEFAULT_TEXT_SIZE), mStyle(kStyleNormal)
 	{
 		strcpy(mFont, HT_DEFAULT_FONT);     
 	}
 };
 
-#ifndef USE_IGRAPHICS_TEXT
+#else
 
 #include <lice.h>
 #include <lice_text.h>
 #include "mutex.h"
 #include "ptrlist.h"
 #include "swell.h"
+
+struct HISSTools_Text
+{
+    char mFont[HT_FONT_LEN];
+    int mSize, mCachedSize;
+    enum EStyle { kStyleNormal, kStyleBold, kStyleItalic } mStyle;
+    LICE_IFont *mCached;
+    
+    HISSTools_Text(int size = HT_DEFAULT_TEXT_SIZE, char* font = 0, EStyle style = kStyleNormal)
+    :    mSize(size), mCachedSize(0), mStyle(style), mCached(0)
+    {
+        strcpy(mFont, (font ? font : HT_DEFAULT_FONT));
+    }
+    
+    HISSTools_Text()
+    :    mSize(HT_DEFAULT_TEXT_SIZE), mCachedSize(0), mStyle(kStyleNormal), mCached(0)
+    {
+        strcpy(mFont, HT_DEFAULT_FONT);
+    }
+};
 
 // HISSTools_FontStorage is very similar to FontStorage from IPlug (but does not require IPlug)
 

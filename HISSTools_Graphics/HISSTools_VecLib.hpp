@@ -53,8 +53,6 @@ public:
         
         // FIX - clip and other state etc. when pushing and popping?
         
-        cairo_set_operator(getContext(), CAIRO_OPERATOR_OVER);
-        
 #ifndef USE_IGRAPHICS_TEXT
         mWidth = graphics->Width();
         mHeight = graphics->Height();
@@ -65,7 +63,6 @@ public:
     
     void setClip(HISSTools_Bounds clip)
     {
-        //cairo_reset_clip(getContext());
         cairo_rectangle(getContext(), clip.mRECT.L, clip.mRECT.T, clip.mRECT.W(), clip.mRECT.H());
         cairo_clip(getContext());
     }
@@ -115,24 +112,6 @@ public:
         mGradientArea = Area(xLo, xHi, yLo, yHi);
         mForceGradientBox = true;
     }
-    /*
-    double getX() const
-    {
-        double x, y;
-        
-        cairo_get_current_point(mContext, &x, &y);
-        
-        return x;
-    }
-    
-    double getY() const
-    {
-        double x, y;
-        
-        cairo_get_current_point(mContext, &x, &y);
-        
-        return y;
-    }*/
    
     void startMultiLine(double x, double y, double thickness)
     {
@@ -283,7 +262,7 @@ public:
         setClip(clip);
         int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
         cairo_surface_t *surface = cairo_image_surface_create_for_data((unsigned char *) bitmap->getBits(), CAIRO_FORMAT_ARGB32, width, height, stride);
-        cairo_scale(getContext(), 1.0/scale, 1.0/scale);
+        mGraphics->PathTransformScale(1.0/scale);
         cairo_mask_surface(getContext(), surface, 0, 0);
         mGraphics->PathStateRestore();
         cairo_surface_destroy(surface);
@@ -367,11 +346,11 @@ public:
             // Draw shadow in correct place and color
             
             mGraphics->PathStateSave();
+            mGraphics->PathTransformScale(1.0/scale);
             mShadow->getShadowColor()->setAsSource(getContext());
-            cairo_scale(getContext(), 1.0/scale, 1.0/scale);
             cairo_mask_surface(getContext(), mask, mShadow->getXOffset() * scale + ((draw.L - (kernelSize - 1))), mShadow->getYOffset() * scale + ((draw.T - (kernelSize - 1))));
-            mGraphics->PathStateRestore();
             cairo_surface_destroy(mask);
+            mGraphics->PathStateRestore();
         }
         
         // Render pattern
