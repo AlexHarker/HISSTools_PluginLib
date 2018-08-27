@@ -2,7 +2,8 @@
 #ifndef __HISSTOOLS_COLOR_SPEC__
 #define __HISSTOOLS_COLOR_SPEC__
 
-#include <lice.h>
+#include <IGraphicsStructs.h>
+//#include "lice.h"
 #include "cairo/cairo.h"
 #include <cmath>
 
@@ -46,7 +47,7 @@ public:
         mColor.a = 1;
     }
     
-    HISSTools_Color_Spec (HISSTools_Color color)
+    HISSTools_Color_Spec(HISSTools_Color color)
     {
         mColor = clampColor(color);
     }
@@ -58,29 +59,20 @@ public:
     
     virtual ~HISSTools_Color_Spec(){}
     
-    HISSTools_Color getColor() const { return mColor; }
+    IColor getColor() const { return IColor(mColor.a * 255.0, mColor.r * 255.0, mColor.g * 255.0, mColor.b * 255.0); }
+    
+    virtual IPattern getPattern() const { return IPattern(getColor()); }
     
     virtual void setAsSource(cairo_t *cr)
     {
         cairo_set_source_rgba(cr, mColor.r, mColor.g, mColor.b, mColor.a);
     }
     
-    virtual void setRect(double xLo, double xHi, double yLo, double yHi, ColorOrientation CSOrientation)
-    {
-        mXLo = xLo;
-        mXHi = xHi;
-        mYLo = yLo;
-        mYHi = yHi;
-        mOrientation = CSOrientation;
-    }
+    virtual void setRect(double xLo, double xHi, double yLo, double yHi, ColorOrientation CSOrientation) {}
     
 protected:
     
     HISSTools_Color mColor;
-    
-    double mXLo, mXHi, mYLo, mYHi;
-    
-    ColorOrientation mOrientation;
     
     double clampValue(double x)
     {
@@ -119,7 +111,7 @@ public:
         cairo_pattern_destroy(mPattern);
     }
 	
-    virtual void setAsSource(cairo_t *cr)
+    virtual void setAsSource(cairo_t *cr) override
     {
         cairo_set_source(cr, mPattern);
     }
@@ -131,9 +123,8 @@ public:
         cairo_pattern_add_color_stop_rgba(mPattern, stop, color.r, color.g, color.b, color.a);
     }
     
-    virtual void setRect(double xLo, double xHi, double yLo, double yHi, ColorOrientation CSOrientation)
+    virtual void setRect(double xLo, double xHi, double yLo, double yHi, ColorOrientation CSOrientation) override
     {
-        HISSTools_Color_Spec::setRect(xLo, xHi, yLo, yHi, CSOrientation);
         cairo_matrix_t matrix;
 
         if (CSOrientation == kCSOrientHorizontal)
@@ -160,6 +151,26 @@ public:
         cairo_pattern_set_matrix(mPattern, &matrix);
     }
     
+    IPattern getPattern() const override
+    {
+        cairo_matrix_t matrix;
+        int count;
+        
+        IPattern pattern(0.0, 0.0, 1.0, 0.0);
+        cairo_pattern_get_matrix(mPattern, &matrix);
+        pattern.SetTransform(matrix.xx, matrix.yx, matrix.xy, matrix.yy, matrix.x0, matrix.y0);
+        cairo_pattern_get_color_stop_count(mPattern, &count);
+        
+        for (int i = 0; i < count; i++)
+        {
+            double offset, r, g, b, a;
+            cairo_pattern_get_color_stop_rgba(mPattern, i, &offset, &r, &g, &b, &a);
+            pattern.AddStop(IColor(a * 255.0, r * 255.0, g * 255.0, b * 255.0), offset);
+        }
+
+        return pattern;
+    }
+
 private:
     
     cairo_pattern_t *mPattern;

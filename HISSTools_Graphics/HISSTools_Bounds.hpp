@@ -15,7 +15,7 @@ struct HISSTools_Bounds
     void include(HISSTools_Bounds inc)      { mRECT = mRECT.Union(inc.mRECT); }
 	void addThickness(double thickness)     { mRECT.Pad(std::max(0.0, thickness) * 0.5); }
 	
-    IRECT iBounds() const       { return IRECT(floor(mRECT.L), floor(mRECT.T), ceil(mRECT.R), ceil(mRECT.B)); }
+    IRECT iBounds() const                   { return IRECT(floor(mRECT.L), floor(mRECT.T), ceil(mRECT.R), ceil(mRECT.B)); }
     
     IRECT mRECT;
 };

@@ -3,8 +3,6 @@
 #ifndef __HISSTOOLS_LICE_TEXT__
 #define __HISSTOOLS_LICE_TEXT__
 
-#include <lice.h>
-#include <lice_text.h>
 #include "IPlugStructs.h"
 #include "IGraphicsConstants.h"
 
@@ -47,8 +45,10 @@ struct HISSTools_Text
 	}
 };
 
-#ifndef USE_CAIRO_TEXT
+#ifndef USE_IGRAPHICS_TEXT
 
+#include <lice.h>
+#include <lice_text.h>
 #include "mutex.h"
 #include "ptrlist.h"
 #include "swell.h"
