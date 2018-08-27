@@ -30,11 +30,13 @@ class HISSTools_VecLib
     
 public:
 	
-    HISSTools_VecLib() : mGraphics(nullptr), mShadow(NULL), mWidth(0), mHeight(0), mForceGradientBox(false), mCSOrientation(kCSOrientHorizontal), mScale(1.0)
+    HISSTools_VecLib() : mGraphics(nullptr), mShadow(NULL), mForceGradientBox(false), mCSOrientation(kCSOrientHorizontal)
     {
         setColor(&defaultColor);
 #ifndef USE_IGRAPHICS_TEXT
         mTextBitmap = nullptr;
+        mWidth = 0;
+        mHeight = 0;
 #endif
     }
     
@@ -47,20 +49,16 @@ public:
     
     void setIGraphics(IGraphics* graphics)
     {
-        double scale = graphics->GetDisplayScale();
         mGraphics = graphics;
-        setSize(graphics->Width(), graphics->Height());
         
         // FIX - clip and other state etc. when pushing and popping?
         
         cairo_set_operator(getContext(), CAIRO_OPERATOR_OVER);
-        mScale = scale;
-    }
-    
-    void setSize(int w, int h)
-    {
-        mWidth = w;
-        mHeight = h;
+        
+#ifndef USE_IGRAPHICS_TEXT
+        mWidth = graphics->Width();
+        mHeight = graphics->Height();
+#endif
     }
     
     void setClip()  { cairo_reset_clip(getContext()); }
@@ -97,8 +95,6 @@ public:
         cairo_set_source(getContext(), pattern);
         cairo_paint_with_alpha(getContext(), 1.0);
     }
-    
-    double getScale() const { return mScale; }
     
     void setColor(HISSTools_Color_Spec *color)
     {
@@ -259,10 +255,11 @@ public:
             
         updateDrawBounds(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1, true);
 #else
+        double scale = mGraphics->GetDisplayScale();
         LICE_IBitmap *bitmap = mTextBitmap;
         
-        int width = mWidth * mScale;
-        int height = mHeight * mScale;
+        int width = mWidth * scale;
+        int height = mHeight * scale;
         
         // This allows the window to be any size...
         
@@ -275,7 +272,7 @@ public:
         }
         
         LICE_Clear(bitmap, 0);
-        HISSTools_LICE_Text::text(bitmap, pTxt, str, x, y, w, h, mScale, hAlign, vAlign);
+        HISSTools_LICE_Text::text(bitmap, pTxt, str, x, y, w, h, scale, hAlign, vAlign);
         
         updateDrawBounds(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1, true);
 
@@ -285,7 +282,7 @@ public:
         setClip(clip);
         int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
         cairo_surface_t *surface = cairo_image_surface_create_for_data((unsigned char *) bitmap->getBits(), CAIRO_FORMAT_ARGB32, width, height, stride);
-        cairo_scale(getContext(), 1.0/mScale, 1.0/mScale);
+        cairo_scale(getContext(), 1.0/scale, 1.0/scale);
         cairo_mask_surface(getContext(), surface, 0, 0);
         cairo_restore(getContext());
         cairo_surface_destroy(surface);
@@ -331,12 +328,14 @@ public:
         
         if (mShadow)
         {
-            mShadow->setScaling(mScale);
+            double scale = mGraphics->GetDisplayScale();
+            mShadow->setScaling(scale);
             
             int kernelSize = mShadow->getKernelSize();
             
             HISSTools_Bounds bounds = mDrawArea;
-            bounds.mRECT.Scale(mScale);
+            bounds.mRECT.Scale(scale
+                               );
             IRECT draw = bounds.iBounds();
            
             int width = (draw.R - draw.L) + (2 * kernelSize - 1);
@@ -354,8 +353,8 @@ public:
             
             cairo_surface_t *mask = cairo_image_surface_create_for_data(&mBlurTempAlpha1[0], CAIRO_FORMAT_A8, width, height, alphaSurfaceStride);
             cairo_t* maskContext = cairo_create(mask);
-            cairo_scale(maskContext, mScale, mScale);
-            cairo_translate(maskContext, (kernelSize - 1 - draw.L) / mScale, (kernelSize - 1 - draw.T) / mScale);
+            cairo_scale(maskContext, scale, scale);
+            cairo_translate(maskContext, (kernelSize - 1 - draw.L) / scale, (kernelSize - 1 - draw.T) / scale);
             cairo_set_source(maskContext, shadowRender);
             cairo_paint(maskContext);
             cairo_destroy(maskContext);
@@ -368,8 +367,8 @@ public:
             
             cairo_save(getContext());
             mShadow->getShadowColor()->setAsSource(getContext());
-            cairo_scale(getContext(), 1.0/mScale, 1.0/mScale);
-            cairo_mask_surface(getContext(), mask, mShadow->getXOffset() * mScale + ((draw.L - (kernelSize - 1))), mShadow->getYOffset() * mScale + ((draw.T - (kernelSize - 1))));
+            cairo_scale(getContext(), 1.0/scale, 1.0/scale);
+            cairo_mask_surface(getContext(), mask, mShadow->getXOffset() * scale + ((draw.L - (kernelSize - 1))), mShadow->getYOffset() * scale + ((draw.T - (kernelSize - 1))));
             cairo_restore(getContext());
             cairo_surface_destroy(mask);
         }
@@ -493,12 +492,12 @@ private:
     IGraphics* mGraphics;
     
 #ifndef USE_IGRAPHICS_TEXT
+    int mWidth, mHeight;
     LICE_SysBitmap *mTextBitmap;
 #endif
     
     // Boundaries
     
-    int mWidth, mHeight;
     HISSTools_Bounds mDrawArea;
     Area mGradientArea;
     
@@ -519,8 +518,6 @@ private:
     
     std::vector <unsigned char> mBlurTempAlpha1;
     std::vector <unsigned char> mBlurTempAlpha2;
-    
-    double mScale;
 };
 
 #endif /* __HISSTOOLS_VECLIB__ */
