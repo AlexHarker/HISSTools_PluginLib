@@ -3,7 +3,7 @@
 #ifndef __HISSTOOLS_VECLIB__
 #define __HISSTOOLS_VECLIB__
 
-#include "IGraphics.h"
+#include "IGraphicsPathBase.h"
 #include "HISSTools_Shadow.hpp"
 #include "HISSTools_Color.hpp"
 #include <algorithm>
@@ -49,7 +49,7 @@ public:
     
     void setIGraphics(IGraphics* graphics)
     {
-        mGraphics = graphics;
+        mGraphics = dynamic_cast<IGraphicsPathBase*>(graphics);
         
         // FIX - clip and other state etc. when pushing and popping?
         
@@ -279,13 +279,13 @@ public:
 
         HISSTools_Bounds clip(x, y, w, h);
         
-        cairo_save(getContext());
+        mGraphics->PathStateSave();
         setClip(clip);
         int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
         cairo_surface_t *surface = cairo_image_surface_create_for_data((unsigned char *) bitmap->getBits(), CAIRO_FORMAT_ARGB32, width, height, stride);
         cairo_scale(getContext(), 1.0/scale, 1.0/scale);
         cairo_mask_surface(getContext(), surface, 0, 0);
-        cairo_restore(getContext());
+        mGraphics->PathStateRestore();
         cairo_surface_destroy(surface);
 #endif
     }
@@ -305,7 +305,7 @@ public:
         
         mShadow = shadow;
         mDrawArea = HISSTools_Bounds();
-        cairo_save(getContext());
+        mGraphics->PathStateSave();
         cairo_clip_extents(getContext(), &x1, &y1, &x2, &y2);
         HISSTools_Bounds clip(x1, y1, x2 - x1, y2 - y1);
         double enlargeBy = (shadow->getBlurSize() + 2) * 2;
@@ -323,8 +323,8 @@ public:
             return;
         
         cairo_pattern_t *shadowRender = endGroup();
-        cairo_restore(getContext());
-        
+        mGraphics->PathStateRestore();
+
         // Check there is a shadow specified (otherwise only render original image)
         
         if (mShadow)
@@ -366,11 +366,11 @@ public:
             
             // Draw shadow in correct place and color
             
-            cairo_save(getContext());
+            mGraphics->PathStateSave();
             mShadow->getShadowColor()->setAsSource(getContext());
             cairo_scale(getContext(), 1.0/scale, 1.0/scale);
             cairo_mask_surface(getContext(), mask, mShadow->getXOffset() * scale + ((draw.L - (kernelSize - 1))), mShadow->getYOffset() * scale + ((draw.T - (kernelSize - 1))));
-            cairo_restore(getContext());
+            mGraphics->PathStateRestore();
             cairo_surface_destroy(mask);
         }
         
@@ -490,7 +490,7 @@ private:
     
     cairo_t *getContext() const { return mGraphics ? (cairo_t *) mGraphics->GetDrawContext() : nullptr; }
     
-    IGraphics* mGraphics;
+    IGraphicsPathBase* mGraphics;
     
 #ifndef USE_IGRAPHICS_TEXT
     int mWidth, mHeight;
