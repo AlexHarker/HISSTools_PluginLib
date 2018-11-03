@@ -59,12 +59,14 @@ public:
 #endif
     }
     
-    void setClip()  { cairo_reset_clip(getContext()); }
+    void setClip()
+    {
+        mGraphics->PathClipRegion();
+    }
     
     void setClip(HISSTools_Bounds clip)
     {
-        cairo_rectangle(getContext(), clip.mRECT.L, clip.mRECT.T, clip.mRECT.W(), clip.mRECT.H());
-        cairo_clip(getContext());
+        mGraphics->PathClipRegion(clip.mRECT);
     }
     
     void setClip(double xLo, double yLo, double xHi, double yHi)
@@ -116,7 +118,6 @@ public:
     void startMultiLine(double x, double y, double thickness)
     {
         mMultiLineThickness = thickness;
-        mGraphics->PathStart();
         mGraphics->PathMoveTo(x, y);
     }
     
@@ -144,7 +145,7 @@ public:
     
     void fillArc(double cx, double cy, double r, double begAng, double arcAng)
     {
-        mGraphics->PathStart();
+        mGraphics->PathClear();
         arc(cx, cy, r, begAng, arcAng);
         mGraphics->PathLineTo(cx, cy);
         mGraphics->PathClose();
@@ -284,26 +285,27 @@ public:
         
         mShadow = shadow;
         mDrawArea = HISSTools_Bounds();
-        mGraphics->PathStateSave();
+        cairo_save(getContext());
         cairo_clip_extents(getContext(), &x1, &y1, &x2, &y2);
         HISSTools_Bounds clip(x1, y1, x2 - x1, y2 - y1);
         double enlargeBy = (shadow->getBlurSize() + 2) * 2;
         clip.include(HISSTools_Bounds(clip.mRECT.L - shadow->getXOffset(), clip.mRECT.T - shadow->getYOffset(), clip.mRECT.W() + enlargeBy, clip.mRECT.W() + enlargeBy));
-        setClip();
-        setClip(clip);
+        cairo_reset_clip(getContext());
+        cairo_rectangle(getContext(), clip.mRECT.L, clip.mRECT.T, clip.mRECT.W(), clip.mRECT.H());
+        cairo_clip(getContext());
         startGroup();
     }
     
     void renderShadow(bool renderImage = true)
     {
+        cairo_pattern_t *shadowRender = endGroup();
+        cairo_restore(getContext());
+        
         // Sanity Check
         
         if (mDrawArea.mRECT.Empty())
             return;
         
-        cairo_pattern_t *shadowRender = endGroup();
-        mGraphics->PathStateRestore();
-
         // Check there is a shadow specified (otherwise only render original image)
         
         if (mShadow)
@@ -345,12 +347,12 @@ public:
             
             // Draw shadow in correct place and color
             
-            mGraphics->PathStateSave();
+            mGraphics->PathTransformSave();
             mGraphics->PathTransformScale(1.0/scale);
             mShadow->getShadowColor()->setAsSource(getContext());
             cairo_mask_surface(getContext(), mask, mShadow->getXOffset() * scale + ((draw.L - (kernelSize - 1))), mShadow->getYOffset() * scale + ((draw.T - (kernelSize - 1))));
             cairo_surface_destroy(mask);
-            mGraphics->PathStateRestore();
+            mGraphics->PathTransformRestore();
         }
         
         // Render pattern
@@ -386,7 +388,7 @@ private:
 
     void arc(double cx, double cy, double r, double begAng, double arcAng)
     {
-        begAng = begAng * 360.0;
+        begAng = begAng * 360.0 + 90.f;
         arcAng = begAng + (arcAng * 360.0);
 
         mGraphics->PathArc(cx, cy, r, std::min(begAng, arcAng), std::max(arcAng, begAng));
@@ -406,11 +408,11 @@ private:
         rbl = sanitizeRadius(rbl, w, h);
         rbr = sanitizeRadius(rbr, w, h);
         
-        mGraphics->PathStart();
-        mGraphics->PathArc(x + rtl, y + rtl, rtl, 180.0,  270.0);
-        mGraphics->PathArc(x + w - rtr, y + rtr, rtr, 270.0,  360.0);
-        mGraphics->PathArc(x + w - rbr, y + h - rbr, rbr, 0.0, 90.0);
-        mGraphics->PathArc(x + rbl, y + h - rbl, rbl, 90.0, 180.0);
+        mGraphics->PathMoveTo(x, y + rtl);
+        mGraphics->PathArc(x + rtl, y + rtl, rtl, 270.0,  360.0);
+        mGraphics->PathArc(x + w - rtr, y + rtr, rtr, 0.0,  90.0);
+        mGraphics->PathArc(x + w - rbr, y + h - rbr, rbr, 90.0, 180.0);
+        mGraphics->PathArc(x + rbl, y + h - rbl, rbl, 180.0, 270.0);
         mGraphics->PathClose();
         setShapeGradient(x, x + w, y, y + h);
     }
@@ -420,10 +422,10 @@ private:
         double xx = cx + cos(2.0 * PI * ang) * pr;
         double yy = cy + sin(2.0 * PI * ang) * pr;
         
-        double begAng = (ang - pAng) * 360.0;
+        double begAng = (ang - pAng) * 360.0 + 90.f;
         double arcAng = (pAng * 2.0 * 360.0) + begAng;
         
-        mGraphics->PathStart();
+        mGraphics->PathClear();
         mGraphics->PathArc(cx, cy, r, arcAng, begAng);
         mGraphics->PathLineTo(xx, yy);
         mGraphics->PathClose();
