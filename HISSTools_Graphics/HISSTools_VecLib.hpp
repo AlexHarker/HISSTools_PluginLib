@@ -316,8 +316,7 @@ public:
             int kernelSize = mShadow->getKernelSize();
             
             HISSTools_Bounds bounds = mDrawArea;
-            bounds.mRECT.Scale(scale
-                               );
+            bounds.mRECT.Scale(scale);
             IRECT draw = bounds.iBounds();
            
             int width = (draw.R - draw.L) + (2 * kernelSize - 1);
