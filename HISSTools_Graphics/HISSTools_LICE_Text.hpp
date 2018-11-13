@@ -29,20 +29,20 @@ enum VTextAlign { kVAlignTop, kVAlignCenter, kVAlignBottom };
 
 struct HISSTools_Text
 {
-	char mFont[HT_FONT_LEN];
-	int mSize;
-	enum EStyle { kStyleNormal, kStyleBold, kStyleItalic } mStyle;
-	
-	HISSTools_Text(int size = HT_DEFAULT_TEXT_SIZE, char* font = 0, EStyle style = kStyleNormal)
-	: mSize(size), mStyle(style)
-	{
-		strcpy(mFont, (font ? font : HT_DEFAULT_FONT));     
-	}
-	
-	HISSTools_Text() : mSize(HT_DEFAULT_TEXT_SIZE), mStyle(kStyleNormal)
-	{
-		strcpy(mFont, HT_DEFAULT_FONT);     
-	}
+    char mFont[HT_FONT_LEN];
+    int mSize;
+    enum EStyle { kStyleNormal, kStyleBold, kStyleItalic } mStyle;
+    
+    HISSTools_Text(int size = HT_DEFAULT_TEXT_SIZE, char* font = 0, EStyle style = kStyleNormal)
+    : mSize(size), mStyle(style)
+    {
+        strcpy(mFont, (font ? font : HT_DEFAULT_FONT));
+    }
+    
+    HISSTools_Text() : mSize(HT_DEFAULT_TEXT_SIZE), mStyle(kStyleNormal)
+    {
+        strcpy(mFont, HT_DEFAULT_FONT);
+    }
 };
 
 #else
@@ -78,56 +78,56 @@ struct HISSTools_Text
 class HISSTools_FontStorage
 {
 public:
-	
-	struct FontKey
-	{
-		int size;
-		HISSTools_Text::EStyle style;
-		char face[FONT_LEN];
-		LICE_IFont* font;
-	};
-	
-	WDL_PtrList<FontKey> m_fonts;
-	WDL_Mutex m_mutex;
-	
-	LICE_IFont* find(HISSTools_Text *pTxt)
-	{
-		WDL_MutexLock lock(&m_mutex);
-		int i = 0, n = m_fonts.GetSize();
-		for (i = 0; i < n; ++i)
-		{
-			FontKey* key = m_fonts.Get(i);
-			if (key->size == pTxt->mCachedSize && key->style == pTxt->mStyle && !strcmp(key->face, pTxt->mFont))
-				return key->font;
-		}
-		return 0;
-	}
-	
-	void add(LICE_IFont* font, HISSTools_Text *pTxt)
-	{
-		WDL_MutexLock lock(&m_mutex);
-		FontKey* key = m_fonts.Add(new FontKey);
-		key->size = pTxt->mSize;
-		key->style = pTxt->mStyle;
-		strcpy(key->face, pTxt->mFont);
-		key->font = font;
-	}
-	
-	~HISSTools_FontStorage()
-	{
-		int i, n = m_fonts.GetSize();
-		for (i = 0; i < n; ++i)
-		{
-			delete(m_fonts.Get(i)->font);
-		}
-		m_fonts.Empty(true);
-	}
+    
+    struct FontKey
+    {
+        int size;
+        HISSTools_Text::EStyle style;
+        char face[FONT_LEN];
+        LICE_IFont* font;
+    };
+    
+    WDL_PtrList<FontKey> m_fonts;
+    WDL_Mutex m_mutex;
+    
+    LICE_IFont* find(HISSTools_Text *pTxt)
+    {
+        WDL_MutexLock lock(&m_mutex);
+        int i = 0, n = m_fonts.GetSize();
+        for (i = 0; i < n; ++i)
+        {
+            FontKey* key = m_fonts.Get(i);
+            if (key->size == pTxt->mCachedSize && key->style == pTxt->mStyle && !strcmp(key->face, pTxt->mFont))
+                return key->font;
+        }
+        return 0;
+    }
+    
+    void add(LICE_IFont* font, HISSTools_Text *pTxt)
+    {
+        WDL_MutexLock lock(&m_mutex);
+        FontKey* key = m_fonts.Add(new FontKey);
+        key->size = pTxt->mSize;
+        key->style = pTxt->mStyle;
+        strcpy(key->face, pTxt->mFont);
+        key->font = font;
+    }
+    
+    ~HISSTools_FontStorage()
+    {
+        int i, n = m_fonts.GetSize();
+        for (i = 0; i < n; ++i)
+        {
+            delete(m_fonts.Get(i)->font);
+        }
+        m_fonts.Empty(true);
+    }
 };
 
 static HISSTools_FontStorage HISSTools_fontCache;
-	
+
 // Drawing routines are also taken from IPlug, in order that we can know what the drawing rect for text is (for shadows)
-// Fix - Clip Text or add option to do so...	
+// Fix - Clip Text or add option to do so...
 
 struct HISSTools_LICE_Text
 {
@@ -172,15 +172,15 @@ struct HISSTools_LICE_Text
         return true;
     }
     
-	static double getTextLineHeight(HISSTools_Text *pTxt)
-	{
-		LICE_IFont* font = checkFont(pTxt, 1.0);
-		
-		if (!font)
+    static double getTextLineHeight(HISSTools_Text *pTxt)
+    {
+        LICE_IFont* font = checkFont(pTxt, 1.0);
+        
+        if (!font)
             return 0;
-		
-		return font->GetLineHeight();
-	}
+        
+        return font->GetLineHeight();
+    }
     
     static LICE_IFont* checkFont(HISSTools_Text *pTxt, double scale)
     {
@@ -191,49 +191,50 @@ struct HISSTools_LICE_Text
             pTxt->mCachedSize = pTxt->mSize * scale;
             font = cacheFont(pTxt);
         }
-                
+        
         return font;
     }
-
-	static LICE_IFont *cacheFont(HISSTools_Text *pTxt)
-	{
-		LICE_CachedFont *font = (LICE_CachedFont *) HISSTools_fontCache.find(pTxt);
-		
-		if (!font)
-		{
-			font = new LICE_CachedFont;
-			int h = pTxt->mCachedSize;
-			int wt = (pTxt->mStyle == HISSTools_Text::kStyleBold ? FW_BOLD : FW_NORMAL);
-			int it = (pTxt->mStyle == HISSTools_Text::kStyleItalic ? TRUE : FALSE);
-
+    
+    static LICE_IFont *cacheFont(HISSTools_Text *pTxt)
+    {
+        LICE_CachedFont *font = (LICE_CachedFont *) HISSTools_fontCache.find(pTxt);
+        
+        if (!font)
+        {
+            font = new LICE_CachedFont;
+            int h = pTxt->mCachedSize;
+            int wt = (pTxt->mStyle == HISSTools_Text::kStyleBold ? FW_BOLD : FW_NORMAL);
+            int it = (pTxt->mStyle == HISSTools_Text::kStyleItalic ? TRUE : FALSE);
+            
 #ifdef __APPLE__
-			bool resized = FALSE;
-			
-		Resize:
-			if (h < 2) h = 2;
+            bool resized = FALSE;
+            
+        Resize:
+            if (h < 2) h = 2;
 #endif
-			HFONT hFont = CreateFont(h, 0, 0, 0, wt, it, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH, pTxt->mFont);
-			if (!hFont)
-			{
-				delete(font);
-				return 0;
-			}
-			font->SetFromHFont(hFont, LICE_FONT_FLAG_OWNS_HFONT | LICE_FONT_FLAG_FORCE_NATIVE);
+            HFONT hFont = CreateFont(h, 0, 0, 0, wt, it, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, DEFAULT_PITCH, pTxt->mFont);
+            if (!hFont)
+            {
+                delete(font);
+                return 0;
+            }
+            font->SetFromHFont(hFont, LICE_FONT_FLAG_OWNS_HFONT | LICE_FONT_FLAG_FORCE_NATIVE);
 #ifdef __APPLE__
-			if (!resized && font->GetLineHeight() != h)
-			{
-				h = int((double)(h * h) / (double)font->GetLineHeight() + 0.5);
-				resized = TRUE;
-				goto Resize;
-			}
+            if (!resized && font->GetLineHeight() != h)
+            {
+                h = int((double)(h * h) / (double)font->GetLineHeight() + 0.5);
+                resized = TRUE;
+                goto Resize;
+            }
 #endif
-			HISSTools_fontCache.add(font, pTxt);
-		}
-		pTxt->mCached = font;
-		return font;
-	}
+            HISSTools_fontCache.add(font, pTxt);
+        }
+        pTxt->mCached = font;
+        return font;
+    }
 };
 
 #endif
 
 #endif /* __HISSTOOLS_LICE_TEXT__ */
+

@@ -11,19 +11,19 @@
 
 class HISSTools_Shadow
 {
-	
+    
 public:
-		
-	HISSTools_Shadow(HISSTools_Color_Spec *shadowColor, double xOffset, double yOffset, double blurSize)
+    
+    HISSTools_Shadow(HISSTools_Color_Spec *shadowColor, double xOffset, double yOffset, double blurSize)
     : mXOffset(xOffset), mYOffset(yOffset), mBlurSize(blurSize), mShadowColor(shadowColor)
-	{
+    {
         setScaling(1.0);
     }
-	
+    
     void blur(unsigned char *io, unsigned char *temp, int width, int height, int stride)
     {
         int kernelSize = getKernelSize();
-
+        
         if (height < kernelSize || width < kernelSize || kernelSize < 2)
             return;
         
@@ -31,28 +31,28 @@ public:
         blurSwap(io, temp, height, width, height, stride, kernelSize, mNorm);
     }
     
-	int getKernelSize() const   { return (int) mBlurKernel.size(); }
-	
-	double getXOffset() const   { return mXOffset; }
-	double getYOffset() const   { return mYOffset; }
+    int getKernelSize() const   { return (int) mBlurKernel.size(); }
+    
+    double getXOffset() const   { return mXOffset; }
+    double getYOffset() const   { return mYOffset; }
     double getBlurSize() const  { return mBlurSize; }
-	
-	HISSTools_Color_Spec *getShadowColor()
-	{
-		return mShadowColor;
-	}
-			
-	HISSTools_Bounds getBlurBounds(HISSTools_Bounds currentBounds)
-	{                
+    
+    HISSTools_Color_Spec *getShadowColor()
+    {
+        return mShadowColor;
+    }
+    
+    HISSTools_Bounds getBlurBounds(HISSTools_Bounds currentBounds)
+    {
         double x = currentBounds.mRECT.L + mXOffset - (mBlurSize - 1);
-		double y = currentBounds.mRECT.T + mYOffset - (mBlurSize - 1);
-		double width = currentBounds.mRECT.W() + 2 * (mBlurSize - 1);
-		double height = currentBounds.mRECT.H() + 2 * (mBlurSize - 1);
-		
-		currentBounds.include(HISSTools_Bounds(x, y, width, height));
-		
-		return currentBounds;
-	}
+        double y = currentBounds.mRECT.T + mYOffset - (mBlurSize - 1);
+        double width = currentBounds.mRECT.W() + 2 * (mBlurSize - 1);
+        double height = currentBounds.mRECT.H() + 2 * (mBlurSize - 1);
+        
+        currentBounds.include(HISSTools_Bounds(x, y, width, height));
+        
+        return currentBounds;
+    }
     
     void setScaling(double scale)
     {
@@ -106,10 +106,10 @@ private:
             mBlurKernel.resize(kernelSize);
             
             double blurConst = 4.5 / (kernelSize * kernelSize);
-                
+            
             for (int i = 0; i < kernelSize; i++)
                 mBlurKernel[i] = round(255.0 * exp(-(i * i) * blurConst));
-                
+            
             mNorm = mBlurKernel[0];
             for (int i = 1; i < kernelSize; i++)
                 mNorm += mBlurKernel[i] + mBlurKernel[i];
@@ -127,3 +127,4 @@ private:
 };
 
 #endif /* __HISSTOOLS_LICE_SHADOW__ */
+

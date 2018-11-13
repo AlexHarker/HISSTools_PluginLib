@@ -11,8 +11,8 @@ enum ColorOrientation { kCSOrientHorizontal, kCSOrientVertical };
 
 struct HISSTools_Color
 {
-	HISSTools_Color() : r(0), g(0), b(0), a(0) {}
-	HISSTools_Color(double R, double G, double B, double A) : r(R), g(G), b(B), a(A)
+    HISSTools_Color() : r(0), g(0), b(0), a(0) {}
+    HISSTools_Color(double R, double G, double B, double A) : r(R), g(G), b(B), a(A)
     {
         // FIX - issues with super-luminescence - where does this happen?
         
@@ -96,7 +96,7 @@ protected:
 
 class HISSTools_LICE_HVGradient : public HISSTools_Color_Spec
 {
-	
+    
 public:
     
     HISSTools_LICE_HVGradient(bool flipVertical = true)
@@ -110,14 +110,14 @@ public:
     {
         cairo_pattern_destroy(mPattern);
     }
-	
+    
     virtual void setAsSource(cairo_t *cr) override
     {
         cairo_set_source(cr, mPattern);
     }
     
-	void addStop(HISSTools_Color color, double stop)
-	{
+    void addStop(HISSTools_Color color, double stop)
+    {
         color = clampColor(color);
         
         cairo_pattern_add_color_stop_rgba(mPattern, stop, color.r, color.g, color.b, color.a);
@@ -126,7 +126,7 @@ public:
     virtual void setRect(double xLo, double xHi, double yLo, double yHi, ColorOrientation CSOrientation) override
     {
         cairo_matrix_t matrix;
-
+        
         if (CSOrientation == kCSOrientHorizontal)
         {
             cairo_matrix_init_translate(&matrix, -xLo, 0.0);
@@ -135,7 +135,7 @@ public:
         else
         {
             cairo_matrix_init_rotate(&matrix, -M_PI / 2.0);
-
+            
             if (mFlipVertical)
             {
                 cairo_matrix_scale(&matrix, 1.0, -1.0 / (yHi - yLo));
@@ -167,10 +167,10 @@ public:
             cairo_pattern_get_color_stop_rgba(mPattern, i, &offset, &r, &g, &b, &a);
             pattern.AddStop(IColor(a * 255.0, r * 255.0, g * 255.0, b * 255.0), offset);
         }
-
+        
         return pattern;
     }
-
+    
 private:
     
     cairo_pattern_t *mPattern;
@@ -189,9 +189,9 @@ struct HISSTools_LICE_HGradient : public HISSTools_LICE_HVGradient
 
 
 struct HISSTools_LICE_VGradient : public HISSTools_LICE_HVGradient
-{    
+{
     HISSTools_LICE_VGradient() : HISSTools_LICE_HVGradient(false) {}
-
+    
     virtual void setRect(double xLo, double xHi, double yLo, double yHi, ColorOrientation CSOrientation)
     {
         HISSTools_LICE_HVGradient::setRect(xLo, xHi, yLo, yHi, kCSOrientVertical);
@@ -200,3 +200,4 @@ struct HISSTools_LICE_VGradient : public HISSTools_LICE_HVGradient
 
 
 #endif /* __HISSTools_Color_Spec__ */
+

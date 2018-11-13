@@ -24,12 +24,12 @@ class HISSTools_VecLib
     {
         Area() : x1(0), x2(0), y1(0), y2(0) {}
         Area(double xL, double xH, double yL, double yH) : x1(xL), x2(xH), y1(yL), y2(yH) {}
-    
+        
         double x1, x2, y1, y2;
     };
     
 public:
-	
+    
     HISSTools_VecLib() : mGraphics(nullptr), mShadow(NULL), mForceGradientBox(false), mCSOrientation(kCSOrientHorizontal)
     {
         setColor(&defaultColor);
@@ -114,7 +114,7 @@ public:
         mGradientArea = Area(xLo, xHi, yLo, yHi);
         mForceGradientBox = true;
     }
-   
+    
     void startMultiLine(double x, double y, double thickness)
     {
         mMultiLineThickness = thickness;
@@ -151,7 +151,7 @@ public:
         mGraphics->PathClose();
         fill();
     }
-
+    
     void fillCircle(double cx, double cy, double r)
     {
         mGraphics->PathCircle(cx, cy, r);
@@ -208,7 +208,7 @@ public:
     {
         frameRoundRect(x, y, w, h, r, r, r, r, thickness);
     }
-
+    
     void fillCPointer(double cx, double cy, double r, double pr, double ang, double pAng)
     {
         cPointer(cx, cy, r, pr, ang, pAng);
@@ -233,7 +233,7 @@ public:
         IText textSpec(pTxt->mSize, mColor->getColor(), pTxt->mFont, (IText::EStyle) pTxt->mStyle, (IText::EAlign) hAlign, (IText::EVAlign) vAlign, 0, IText::kQualityAntiAliased);
         IRECT rect(x, y, x + w, y + h);
         mGraphics->DrawText(textSpec, str, rect);
-            
+        
         updateDrawBounds(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1, true);
 #else
         double scale = mGraphics->GetDisplayScale();
@@ -245,7 +245,7 @@ public:
         // This allows the window to be any size...
         
         width = (width + 3 ) &~ 3;
-
+        
         if (!bitmap || bitmap->getWidth() != width || bitmap->getHeight() != height)
         {
             delete mTextBitmap;
@@ -256,7 +256,7 @@ public:
         HISSTools_LICE_Text::text(bitmap, pTxt, str, x, y, w, h, scale, hAlign, vAlign);
         
         updateDrawBounds(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1, true);
-
+        
         HISSTools_Bounds clip(x, y, w, h);
         
         mGraphics->PathStateSave();
@@ -269,7 +269,7 @@ public:
         cairo_surface_destroy(surface);
 #endif
     }
-
+    
     static double getTextLineHeight(HISSTools_Text *pTxt)
     {
 #ifdef USE_IGRAPHICS_TEXT
@@ -318,7 +318,7 @@ public:
             HISSTools_Bounds bounds = mDrawArea;
             bounds.mRECT.Scale(scale);
             IRECT draw = bounds.iBounds();
-           
+            
             int width = (draw.R - draw.L) + (2 * kernelSize - 1);
             int height = (draw.B - draw.T) + (2 * kernelSize - 1);
             int alphaSurfaceStride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, width);
@@ -384,12 +384,12 @@ private:
         
         return r;
     }
-
+    
     void arc(double cx, double cy, double r, double begAng, double arcAng)
     {
         begAng = begAng * 360.0 + 90.f;
         arcAng = begAng + (arcAng * 360.0);
-
+        
         mGraphics->PathArc(cx, cy, r, std::min(begAng, arcAng), std::max(arcAng, begAng));
         setShapeGradient(cx - r, cx + r, cy - r, cy + r);
     }
@@ -428,7 +428,7 @@ private:
         mGraphics->PathArc(cx, cy, r, arcAng, begAng);
         mGraphics->PathLineTo(xx, yy);
         mGraphics->PathClose();
-
+        
         // FIX - revise...
         setShapeGradient(cx - pr, cx + pr, cy - pr, cy + pr);
     }
@@ -502,3 +502,4 @@ private:
 };
 
 #endif /* __HISSTOOLS_VECLIB__ */
+
