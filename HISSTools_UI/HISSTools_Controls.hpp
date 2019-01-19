@@ -4,10 +4,11 @@
 
 #include "../HISSTools_Graphics/HISSTools_VecLib.hpp"
 #include "HISSTools_Design_Scheme.hpp"
+#include <vector>
+
 #include <IPlugAPIBase.h>
 #include <IControl.h>
 #include <IControls.h>
-#include <vector>
 
 const double TEXT_PROMPT_PADDING = 1.;
 
@@ -26,45 +27,43 @@ class HISSTools_Control_Layers
 
 private:
 	
-    cairo_pattern_t *mBackground;
-	bool mDrawBackground;
-    bool mNoCaching;
+    ILayerPtr mBackground;
+    const static bool sNoCaching = true;
     
 public:
 	
-    HISSTools_Control_Layers() : mBackground(NULL), mDrawBackground(true), mNoCaching(false)
+    HISSTools_Control_Layers()
 	{}
-    
-    ~HISSTools_Control_Layers()
-    {
-        if (mBackground)
-            cairo_pattern_destroy(mBackground);
-    }
 	
-    bool startBackground(IGraphics& pGraphics, HISSTools_VecLib *vecDraw, IRECT area)
+    bool startBackground(IGraphics& graphics, HISSTools_VecLib& vecDraw, IRECT area)
     {
-        if (mDrawBackground && !mNoCaching)
-            vecDraw->startGroup();
+        if (sNoCaching)
+            return true;
         
-        return mDrawBackground || mNoCaching;
-    }
-    
-    void renderBackground(IGraphics& pGraphics, HISSTools_VecLib *vecDraw, IRECT area)
-    {
-        if (!mNoCaching)
+        if (!graphics.CheckLayer(mBackground))
         {
-            if (!mBackground)
-                mBackground = vecDraw->endGroup();
-            if (mBackground)
-                vecDraw->renderPattern(mBackground);
+            vecDraw.startGroup(area);
+            return true;
         }
         
-        mDrawBackground = false;
+        return false;
+    }
+    
+    void renderBackground(IGraphics& graphics, HISSTools_VecLib& vecDraw, IRECT area)
+    {
+        if (!sNoCaching)
+        {
+            if (!graphics.CheckLayer(mBackground))
+                mBackground = vecDraw.endGroup();
+            if (mBackground)
+                vecDraw.renderGroup(mBackground);
+        }
     }
    
 	void redrawBackground()
 	{
-		mDrawBackground = true;
+		if (mBackground)
+            mBackground->Invalidate();
 	}
 };
 
@@ -122,17 +121,23 @@ public:
 	
 	// You should pass the inheriting class here, after constructing the control, which must be mapped to a valid parameter of the plug - the tabs are tied to the parameter, rather than the control
 	
-	HISSTools_Tabs(IControl *tabControl)
+    HISSTools_Tabs(IControl *tabControl) : mParam(nullptr)
 	{		
 		mTabControl = tabControl;
-		mParam = tabControl->GetParam();
-		
+
 		// N.B. - mMaxTabNumber is one lass than the number of actual tabs (zero referenced)
 
 		mMaxTabNumber = mParam != NULL ? round(mParam->GetRange()) : 0;
 		tabSetDirty(false);
 	}
 	
+    // Call this from OnInit in the inheriting class
+    
+    void init()
+    {
+        mParam = mTabControl->GetParam();
+    }
+    
 	void attachControl(IControl *control, int tabNumber)
 	{
 		mItems.push_back(TabItem(control, clipTabNumber(tabNumber)));
@@ -174,11 +179,12 @@ class HISSTools_Invisible_Tabs : public IControl, public HISSTools_Tabs
     
 public:
 	
-	HISSTools_Invisible_Tabs(IGEditorDelegate& delegate, int paramInx) : IControl(delegate, IRECT(), paramInx), HISSTools_Tabs(this) {}
+	HISSTools_Invisible_Tabs(int paramInx) : IControl(IRECT(), paramInx), HISSTools_Tabs(this) {}
 	
-	void Draw(IGraphics& pGraphics)         { }
-	void Hide(bool hide)                    { tabHide(hide); }
-	void SetDirty(bool pushParamToPlug)     { tabSetDirty(pushParamToPlug); }
+    void OnInit() override                           { init(); }
+	void Draw(IGraphics& g) override                 { }
+	void Hide(bool hide) override                    { tabHide(hide); }
+	void SetDirty(bool pushParamToPlug) override     { tabSetDirty(pushParamToPlug); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -242,16 +248,16 @@ public:
 		setup(0, 0, 0, 0, hAlign, vAlign, name, type, designScheme);
 	}
 	
-	bool Draw(HISSTools_VecLib *vecDraw)
+	bool Draw(HISSTools_VecLib& vecDraw)
 	{
 		if (mTextSD)
-			vecDraw->startShadow(mTextSD);
+			vecDraw.startShadow(mTextSD, IRECT(mX, mY, mX + mW, mY + mH));
 			
-		vecDraw->setColor(mTextCS);
-		vecDraw->text(mTextTS, mStr.Get(), mX, mY, mW, mH, mHAlign, mVAlign);
+		vecDraw.setColor(mTextCS);
+		vecDraw.text(mTextTS, mStr.Get(), mX, mY, mW, mH, mHAlign, mVAlign);
 
 		if (mTextSD)
-			vecDraw->renderShadow();
+			vecDraw.renderShadow();
 		
 		return true;
 	}
@@ -349,12 +355,12 @@ protected:
     
     bool doDrawOutline()
     {
-        return (mPanelOutlineTK && mPanelOutlineCS != NULL);
+        return (mPanelOutlineTK && mPanelOutlineCS != nullptr);
     }
 				
     bool doDrawPanel()
     {
-        return ((mPanelFillCS != NULL) || doDrawOutline());
+        return ((mPanelFillCS != nullptr) || doDrawOutline());
     }
 
 public:
@@ -371,24 +377,24 @@ public:
 		setup(0, 0, 0, 0, 0, 0, hAlign, vAlign, name, type, designScheme);
 	}
 	
-	bool Draw(HISSTools_VecLib *vecDraw, bool drawText)
+	bool Draw(HISSTools_VecLib& vecDraw, bool drawText)
 	{	
 		if (doDrawPanel())
 		{
 			if (mPanelSD)
-				vecDraw->startShadow(mPanelSD);
+				vecDraw.startShadow(mPanelSD, IRECT(mX, mY, mX + mW, mY + mH));
 		
-			vecDraw->setColor(mPanelFillCS);		
-			vecDraw->fillRoundRect(mX, mY, mW, mH, mPanelRoundness);
+			vecDraw.setColor(mPanelFillCS);
+			vecDraw.fillRoundRect(mX, mY, mW, mH, mPanelRoundness);
 			
 			if (doDrawOutline())
 			{	
-				vecDraw->setColor(mPanelOutlineCS);		
-				vecDraw->frameRoundRect(mX, mY, mW, mH, mPanelRoundness, mPanelOutlineTK);
+				vecDraw.setColor(mPanelOutlineCS);
+				vecDraw.frameRoundRect(mX, mY, mW, mH, mPanelRoundness, mPanelOutlineTK);
 			}
 
 			if (mPanelSD)
-				vecDraw->renderShadow();
+				vecDraw.renderShadow();
 		}
 		
         if (drawText)
@@ -413,7 +419,7 @@ public:
 
 	void resize(double x, double y, double w, double h)
 	{
-		mX = w > 0 ? x: x + w;
+		mX = w > 0 ? x : x + w;
 		mY = h > 0 ? y : y + h;
 		mW = fabs(w);
 		mH = fabs(h);
@@ -577,7 +583,9 @@ public:
 		//changePadding(wPad, hPad);
 		changePadding(0, hPad);
         
-		if (drawMenuTriangle && menuParam() == true)
+        //FIX - whether menuParam needs to be called here or not
+        
+		if (drawMenuTriangle)// && menuParam() == true)
 		{
 			mDrawTriangle = true;
 			sprintf(concatenatedName, "%sDrawSeparator", name);
@@ -599,13 +607,13 @@ public:
 			mMenuTriangleR = mMenuTriangleL + menuTriangleWidth;
 			mMenuTriangleC = mMenuTriangleL + (menuTriangleWidth / 2.0);
 			
-			changePadding(wPad + (mMenuFlipTriangle == true ? separatorWidth: 0), wPad + (mMenuFlipTriangle == true ? 0 : separatorWidth), hPad);
+			changePadding(wPad + (mMenuFlipTriangle ? separatorWidth : 0), wPad + (mMenuFlipTriangle ? 0 : separatorWidth), hPad);
 		}
 	}
 	
 	bool menuParam()
 	{
-		if (mControl->GetParam() == NULL)
+		if (mControl->GetParam() == nullptr)
 			return false;
 		
 		if (mControl->GetParam()->NDisplayTexts())
@@ -616,7 +624,7 @@ public:
 	
     void finishEdit() { mInEdit = false; }
     
-	void promptUserInput(HISSTools_VecLib *vecDraw)
+	void promptUserInput()
 	{
 		HISSTools_Bounds entryBounds;
 		IRECT iEntryBounds;
@@ -629,10 +637,10 @@ public:
 		// FIX - Prompt Menus - Centering for text and box
 		// FIX - Prompt Menus - font....
 		
-		if (mControl->GetParam() == NULL)
+		if (mControl->GetParam() == nullptr)
 			return;
 		
-		double textHeight = vecDraw->getTextLineHeight(mTextTS);
+		double textHeight = mTextTS->mSize;
 		double promptHeight = (menuParam() == true) ? 0 : textHeight + (2.0 * mTextHPad);
 
 		// FIX - Set Padding, rather than variable???
@@ -675,13 +683,13 @@ public:
 		mControl->PromptUserInput(iEntryBounds);
 	}
 	
-	bool promptUserInput(HISSTools_VecLib *vecDraw, float x, float y)
+	bool promptUserInput(float x, float y)
 	{
 		if (bounds().iBounds().Contains(x, y))
 		{
 			if (!mDrawSeparator || (mMenuFlipTriangle == (x < mSeparatorX)))
 			{
-				promptUserInput(vecDraw);
+				promptUserInput();
 				return true;
 			}
 		}
@@ -710,20 +718,20 @@ public:
 
 	}
 	
-	bool Draw(HISSTools_VecLib *vecDraw)
+	bool Draw(HISSTools_VecLib& vecDraw)
 	{
 		const IParam *param = mControl->GetParam();
 		
         WDL_String str;
         
-		if (param == NULL)
+		if (param == nullptr)
 			return true;
 		
 		// Retrieve Value
 		
 		param->GetDisplayForHost(str);
 		
-		// If label is NULL don't add the space
+		// If label is nullptr don't add the space
 		
 		if (mShowUnits == true && *(param->GetLabelForHost()))
 		{
@@ -740,8 +748,8 @@ public:
 		
 		if (mDrawSeparator && doDrawOutline())
 		{
-			vecDraw->setColor(mPanelOutlineCS);
-			vecDraw->line(mSeparatorX, mY, mSeparatorX, mY + mH, mPanelOutlineTK);
+            vecDraw.setColor(mPanelOutlineCS);
+            vecDraw.line(mSeparatorX, mY, mSeparatorX, mY + mH, mPanelOutlineTK);
 		}
 				
 		// Menu Triangle
@@ -749,13 +757,13 @@ public:
 		if (mDrawTriangle)
 		{
 			if (mTextSD)
-				vecDraw->startShadow(mTextSD);
+                vecDraw.startShadow(mTextSD, IRECT(mX, mY, mX + mW, mY + mH));
 		 
-			vecDraw->setColor(mTextCS);
-			vecDraw->fillTriangle(mMenuTriangleL, mMenuTriangleTop, mMenuTriangleC, mMenuTriangleBtm, mMenuTriangleR, mMenuTriangleTop);
+            vecDraw.setColor(mTextCS);
+            vecDraw.fillTriangle(mMenuTriangleL, mMenuTriangleTop, mMenuTriangleC, mMenuTriangleBtm, mMenuTriangleR, mMenuTriangleTop);
 		 
 			if (mTextSD)
-				vecDraw->renderShadow();
+                vecDraw.renderShadow();
 		}
 		
 		return true;
@@ -775,10 +783,6 @@ class HISSTools_Value : public IKnobControlBase, public HISSTools_Control_Layers
 	
 private:
 	
-	// Drawing Object
-	
-	HISSTools_VecLib *mVecDraw;
-	
 	// Text
 	
 	HISSTools_Text_Helper_Param *mTextParam;
@@ -794,11 +798,9 @@ private:
 	
 public:
 	
-	HISSTools_Value(IGEditorDelegate& delegate, int paramIdx, HISSTools_VecLib *vecDraw, double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
-	: IKnobControlBase(delegate, IRECT(), paramIdx), HISSTools_Control_Layers()
+	HISSTools_Value(int paramIdx, double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	: IKnobControlBase(IRECT(), paramIdx), HISSTools_Control_Layers()
 	{
-		mVecDraw = vecDraw;
-        
 		// FIX - perhaps just inherit these??
 
         bool labelBelow = designScheme->getFlag("ValueLabelBelow", type);
@@ -806,16 +808,19 @@ public:
 		mTextArea = designScheme->getDimension("ValueTextArea", type);
 		        
 		mTextParam = new HISSTools_Text_Helper_Param(this, x, y, w, h, 1, kHAlignCenter, kVAlignCenter, "Value", type, designScheme);
-        if (labelBelow)
+        
+        if (label && labelBelow)
             mTextLabel = new HISSTools_Text_Helper_Block(x, y + h, w, mTextArea, kHAlignCenter, kVAlignBottom, "ValueLabel", type, designScheme);
-        else
+        else if (label)
             mTextLabel = new HISSTools_Text_Helper_Block(x, y - mTextArea, w, mTextArea, kHAlignCenter, kVAlignTop, "ValueLabel", type, designScheme);
-		mTextLabel->setText((GetParam() != NULL && label) ? GetParam()->GetNameForHost() : "");
+        else
+            mTextLabel = nullptr;
 
 		SetTargetRECT(HISSTools_Bounds(x, y, w, h).iBounds());
 		
 		HISSTools_Bounds fullBoxBounds = mTextParam->bounds();
-		fullBoxBounds.include(mTextLabel->bounds());
+		if (mTextLabel)
+            fullBoxBounds.include(mTextLabel->bounds());
 		mRECT = fullBoxBounds.iBounds();
         
         SetMOWhenGrayed(true);
@@ -828,6 +833,12 @@ public:
 		delete mTextLabel;
 	}
 	
+    void OnInit() override
+    {
+        if (mTextLabel)
+            mTextLabel->setText((GetParam() != nullptr) ? GetParam()->GetNameForHost() : "");
+    }
+    
 	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
 	{
 		if (pMod.S == true)
@@ -842,7 +853,7 @@ public:
 
 		if (mTextParam->menuParam() == true)
 		{
-			if (mTextParam->promptUserInput(mVecDraw, x, y) == false && GetParam())
+			if (mTextParam->promptUserInput(x, y) == false && GetParam())
 			{
 				mValue = round(mValue * (GetParam()->GetRange()) + 1) / (GetParam()->GetRange());
 				mValue = mValue > 1.0 ? 0 : mValue;
@@ -860,7 +871,7 @@ public:
         if (mDrag == false)
         {
             if (mTextParam->menuParam() == false)
-                mTextParam->promptUserInput(mVecDraw);
+                mTextParam->promptUserInput();
         }
         else
             mTextParam->hilite(false);
@@ -888,18 +899,19 @@ public:
         IKnobControlBase::SetValueFromUserInput(value);
     }
 	
-	void Draw(IGraphics& pGraphics) override
+	void Draw(IGraphics& g) override
 	{
-		mVecDraw->setIGraphics(&pGraphics);
-        mVecDraw->setClip(mRECT);
+        HISSTools_VecLib vecDraw(g);
 
         // Label
         
-		if (startBackground(pGraphics, mVecDraw, mRECT))
-			mTextLabel->Draw(mVecDraw);
-		
-		renderBackground(pGraphics, mVecDraw, mRECT);
-		mTextParam->Draw(mVecDraw);
+        if (mTextLabel)
+        {
+            if (startBackground(g, vecDraw, mRECT))
+                mTextLabel->Draw(vecDraw);
+            renderBackground(g, vecDraw, mRECT);
+        }
+		mTextParam->Draw(vecDraw);
 	}
 };
 
@@ -916,10 +928,6 @@ class HISSTools_Dial : public IKnobControlBase, public HISSTools_Control_Layers
 {
 	
 private:
-	
-	// Drawing Object
-	
-	HISSTools_VecLib *mVecDraw;
 	
 	// Positioning / Dimensions
 	
@@ -982,11 +990,9 @@ public:
 
 	// Constructor
 
-	HISSTools_Dial(IGEditorDelegate& delegate, int paramIdx, HISSTools_VecLib *vecDraw, double x, double y, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
-	: IKnobControlBase(delegate, IRECT(), paramIdx), HISSTools_Control_Layers(), mMouseOver(false)
+	HISSTools_Dial(int paramIdx, double x, double y, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	: IKnobControlBase(IRECT(), paramIdx), HISSTools_Control_Layers(), mMouseOver(false)
 	{
-		mVecDraw = vecDraw;
-        
 		// Calculate Measurements
 		
 		double d = designScheme->getDimension("DialDiameter", type);
@@ -1031,7 +1037,7 @@ public:
         
 		// Text 
 				
-		mPromptHalfHeight = (0.5 * mVecDraw->getTextLineHeight(designScheme->getTextStyle("DialValue", type))) + designScheme->getDimension("DialPromptPadding", type);
+		mPromptHalfHeight = (0.5 * designScheme->getTextStyle("DialValue", type)->mSize) + designScheme->getDimension("DialPromptPadding", type);
 		mPromptRatio = designScheme->getDimension("DialPromptRatio", type);
 
 		double textPad = designScheme->getDimension("DialPromptPadding", type);
@@ -1041,8 +1047,7 @@ public:
 		//FIX - above
 		mTextParam = new HISSTools_Text_Helper_Param(this, mCx - halfWidth, mCy - mPromptHalfHeight, 2. * halfWidth, 2. * mPromptHalfHeight, textPad, kHAlignCenter, kVAlignCenter, "DialValue", type, designScheme);
 		mTextLabel = new HISSTools_Text_Helper_Block(mCx - labelHalfWidth, mCy + mR, 2 * labelHalfWidth, mTextArea, kHAlignCenter, kVAlignBottom, "DialLabel", type, designScheme);
-		mTextLabel->setText(GetParam() != NULL ? GetParam()->GetNameForHost() : "");
-								
+        
 		// Calculate Areas (including shadows and thicknesses)
 		
         HISSTools_Bounds labelBounds(mCx - labelHalfWidth, mCy + mR, 2 * labelHalfWidth, mTextArea);
@@ -1070,6 +1075,11 @@ public:
 		delete mTextParam;
 	}
 	
+    void OnInit() override
+    {
+        mTextLabel->setText(GetParam() != nullptr ? GetParam()->GetNameForHost() : "");
+    }
+    
 private:
 		
 	void setPointerAppearance(double pointerCircRatio, double pointerTipRatio, double pointerAngle)
@@ -1108,7 +1118,7 @@ public:
 			return;
 		}
 		
-		mTextParam->promptUserInput(mVecDraw);
+		mTextParam->promptUserInput();
         SetDirty(false);
 	}
     
@@ -1176,37 +1186,36 @@ public:
 	
 	// Draw
 	
-	void Draw(IGraphics& pGraphics) override
+	void Draw(IGraphics& g) override
 	{
 		const IParam *param = GetParam();
 		double value, xIntersect, yIntersect;
 		
-        mVecDraw->setIGraphics(&pGraphics);
-        mVecDraw->setClip(mRECT);
+        HISSTools_VecLib vecDraw(g);
 
 		// Background
 		
-		if (startBackground(pGraphics, mVecDraw, mRECT))
+		if (startBackground(g, vecDraw, mRECT))
 		{
 			// Background Circles
 			
-			mVecDraw->startShadow(mOutlineSD);
-			mVecDraw->setColor(mOutlineCS);
-			mVecDraw->frameCircle(mCx, mCy, mR, mOutlineTK);
-			mVecDraw->renderShadow();
-			mVecDraw->setColor(mCircleFillCS);
-			mVecDraw->fillCircle(mCx, mCy, mR);
+			vecDraw.startShadow(mOutlineSD, mRECT);
+			vecDraw.setColor(mOutlineCS);
+			vecDraw.frameCircle(mCx, mCy, mR, mOutlineTK);
+			vecDraw.renderShadow();
+			vecDraw.setColor(mCircleFillCS);
+			vecDraw.fillCircle(mCx, mCy, mR);
 			
 			// Label
 			
-			mTextLabel->Draw(mVecDraw);
+			mTextLabel->Draw(vecDraw);
 		}
 				
-		renderBackground(pGraphics, mVecDraw, mRECT);
+		renderBackground(g, vecDraw, mRECT);
 		
 		// Round positions for integer parameters
 		
-		if (param != NULL && param->Type() != IParam::kTypeDouble && param->Type() != IParam::kTypeNone)
+		if (param != nullptr && param->Type() != IParam::kTypeDouble && param->Type() != IParam::kTypeNone)
 			value = (param->Int() - param->GetMin()) / param->GetRange();
 		else 
 			value = mValue;
@@ -1219,35 +1228,35 @@ public:
 		
 		// Indicator Arc
 		
-		mVecDraw->setColor(mIndicatorCS);
-		mVecDraw->fillArc(mCx, mCy, mR, iBaseAng, iDiffAng);
+		vecDraw.setColor(mIndicatorCS);
+		vecDraw.fillArc(mCx, mCy, mR, iBaseAng, iDiffAng);
 		
 		// Pointer Line
 		
-		mVecDraw->setColor(mOutlineCS);
-		mVecDraw->circleIntersection(mCx, mCy, iPntrAng, mR, &xIntersect, &yIntersect);
-		mVecDraw->line(mCx, mCy, xIntersect, yIntersect, mPointerTK);
+		vecDraw.setColor(mOutlineCS);
+		vecDraw.circleIntersection(mCx, mCy, iPntrAng, mR, &xIntersect, &yIntersect);
+		vecDraw.line(mCx, mCy, xIntersect, yIntersect, mPointerTK);
 		
 		// Pointer
 		
-		mVecDraw->startShadow(mPointerSD);
-		mVecDraw->setColor(mPointerFillCS);
-		mVecDraw->fillCPointer(mCx, mCy, mPointerCircRadius, mPointerTipRadius, iPntrAng, mPointerAngle);
-		mVecDraw->setColor(mPointerOutlineCS);
-		mVecDraw->frameCPointer(mCx, mCy, mPointerCircRadius, mPointerTipRadius, iPntrAng, mPointerAngle, mPointerOutlineTK);
-		mVecDraw->renderShadow();
+		vecDraw.startShadow(mPointerSD, mRECT);
+		vecDraw.setColor(mPointerFillCS);
+		vecDraw.fillCPointer(mCx, mCy, mPointerCircRadius, mPointerTipRadius, iPntrAng, mPointerAngle);
+		vecDraw.setColor(mPointerOutlineCS);
+		vecDraw.frameCPointer(mCx, mCy, mPointerCircRadius, mPointerTipRadius, iPntrAng, mPointerAngle, mPointerOutlineTK);
+		vecDraw.renderShadow();
         
 		if (IsGrayed() == true)
 		{
 			// Inactive Overlay
 			
-			mVecDraw->setColor(mInactiveOverlayCS);
-			mVecDraw->fillCircle(mCx, mCy, mR);
+			vecDraw.setColor(mInactiveOverlayCS);
+			vecDraw.fillCircle(mCx, mCy, mR);
 		}
 		else
         {
             if (!(mDrawValOnlyOnMO && !mMouseOver))
-                mTextParam->Draw(mVecDraw);
+                mTextParam->Draw(vecDraw);
         }
 	}
 	
@@ -1273,10 +1282,6 @@ class HISSTools_Button: public IControl, public HISSTools_Control_Layers
 {
 	
 private:
-		
-	// Drawing Object
-	
-	HISSTools_VecLib *mVecDraw;
 	
 	// Positioning / Dimensions
 	
@@ -1323,11 +1328,9 @@ public:
 	
 	// Constructor
 	
-	HISSTools_Button(IGEditorDelegate& delegate, int paramIdx, HISSTools_VecLib *vecDraw, double x, double y, double w = 0, double h = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char *label = "")
-	: IControl(delegate, IRECT(), paramIdx), HISSTools_Control_Layers()
-	{		
-		mVecDraw = vecDraw;
-        
+	HISSTools_Button(int paramIdx, double x, double y, double w = 0, double h = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char *label = "")
+	: IControl(IRECT(), paramIdx), HISSTools_Control_Layers()
+	{
 		// Dimensions
 		
         mX = x;
@@ -1374,13 +1377,19 @@ public:
 		mRECT = (fullBounds.iBounds());
 		SetTargetRECT(handleBounds.iBounds());
 		
-        mName = GetParam() != NULL ? GetParam()->GetNameForHost() : label;
+        mName = label;
         
 		mDblAsSingleClick = true;
 	}
 	
 public:
 	
+    void OnInit() override
+    {
+        if (GetParam() != nullptr)
+            mName = GetParam()->GetNameForHost();
+    }
+    
 	// Mousing Functions
 	
 	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
@@ -1392,24 +1401,23 @@ public:
 
 	// Draw
 	
-	void Draw(IGraphics& pGraphics) override
-	{		
+	void Draw(IGraphics& g) override
+	{
+        HISSTools_VecLib vecDraw(g);
+        
 		// FIX - Support Label Colour States / Outline Color States? - Multiple States?
-		
-        mVecDraw->setIGraphics(&pGraphics);
-        mVecDraw->setClip(mRECT);
         
 		// Button Rectangle
 		
-		mVecDraw->startShadow(mShadow);
-		mVecDraw->setColor(mValue > 0.5 ? mOnCS : mOffCS);
-		mVecDraw->fillRoundRect(mX, mY, mLabelMode ? mH : mW, mH, mRoundness);
-		mVecDraw->setColor(mOutlineCS);
-		mVecDraw->frameRoundRect(mX, mY, mLabelMode ? mH : mW, mH, mRoundness, mOutlineTK);
-		mVecDraw->renderShadow();
+		vecDraw.startShadow(mShadow, mRECT);
+		vecDraw.setColor(mValue > 0.5 ? mOnCS : mOffCS);
+		vecDraw.fillRoundRect(mX, mY, mLabelMode ? mH : mW, mH, mRoundness);
+		vecDraw.setColor(mOutlineCS);
+		vecDraw.frameRoundRect(mX, mY, mLabelMode ? mH : mW, mH, mRoundness, mOutlineTK);
+		vecDraw.renderShadow();
 		
-        mVecDraw->setColor(mLabelMode == true ? mBackgroundLabelCS : mValue > 0.5 ? mHandleLabelCS : mHandleLabelOffCS);
-		mVecDraw->text(mTextStyle, mName, mLabelMode == true ? mX + mH + mTextPad : mX, mY, mLabelMode == true ? mW - (mH + mTextPad) : mW, mH, mLabelMode == true ?  kHAlignLeft : kHAlignCenter);
+        vecDraw.setColor(mLabelMode == true ? mBackgroundLabelCS : mValue > 0.5 ? mHandleLabelCS : mHandleLabelOffCS);
+		vecDraw.text(mTextStyle, mName, mLabelMode == true ? mX + mH + mTextPad : mX, mY, mLabelMode == true ? mW - (mH + mTextPad) : mW, mH, mLabelMode == true ?  kHAlignLeft : kHAlignCenter);
 
 		// Inactive
 		
@@ -1417,8 +1425,8 @@ public:
 		{
 			// Inactive Overlay
 			
-			mVecDraw->setColor(mInactiveOverlayCS);
-			mVecDraw->fillRoundRect(mX, mY, mLabelMode ? mH : mW, mH, mRoundness);
+			vecDraw.setColor(mInactiveOverlayCS);
+			vecDraw.fillRoundRect(mX, mY, mLabelMode ? mH : mW, mH, mRoundness);
 		}
 	}
 };
@@ -1435,11 +1443,7 @@ class HISSTools_Switch : public IControl, public HISSTools_Control_Layers
 {
 	
 private:
-	
-	// Drawing Object
-	
-	HISSTools_VecLib *mVecDraw;
-	
+
 	// Positioning / Dimensions
 	
 	double mX;
@@ -1472,11 +1476,9 @@ private:
 	
 public:
 	
-	HISSTools_Switch(IGEditorDelegate& delegate, int paramIdx, HISSTools_VecLib *vecDraw, double x, double y, double w, double h, int nStates = 2, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
-	: IControl(delegate, IRECT(), paramIdx), HISSTools_Control_Layers()
+	HISSTools_Switch(int paramIdx, double x, double y, double w, double h, int nStates = 2, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	: IControl(IRECT(), paramIdx), HISSTools_Control_Layers()
 	{
-		mVecDraw = vecDraw;
-        
 		// Dimensions
 		
 		mX = x;
@@ -1548,10 +1550,9 @@ public:
 	
 	// Draw
 	
-	void Draw(IGraphics& pGraphics) override
-	{		
-        mVecDraw->setIGraphics(&pGraphics);
-        mVecDraw->setClip(mRECT);
+	void Draw(IGraphics& g) override
+	{
+        HISSTools_VecLib vecDraw(g);
 
 		// Calculate position (according to orientation)
 		
@@ -1570,32 +1571,32 @@ public:
 
 		// Background
 		
-		if (startBackground(pGraphics, mVecDraw, mRECT))
+		if (startBackground(g, vecDraw, mRECT))
 		{
 			// Background Rectangle
 		
-			mVecDraw->setColor(mBoxFillCS);
-			mVecDraw->fillRoundRect(mX, mY, mW, mH, mRoundness);
-			mVecDraw->setColor(mBoxOutlineCS);
-			mVecDraw->frameRoundRect(mX, mY, mW, mH, mRoundness, mBoxOutlineTK);
+			vecDraw.setColor(mBoxFillCS);
+			vecDraw.fillRoundRect(mX, mY, mW, mH, mRoundness);
+			vecDraw.setColor(mBoxOutlineCS);
+			vecDraw.frameRoundRect(mX, mY, mW, mH, mRoundness, mBoxOutlineTK);
 		}
 		
-		renderBackground(pGraphics, mVecDraw, mRECT);
+		renderBackground(g, vecDraw, mRECT);
 		
 		// Handle
 		
-		mVecDraw->setColor(mHandleFillCS);
-		mVecDraw->startShadow(mShadow);
-		mVecDraw->fillRoundRect(xPos, yPos, mS, mS, mRoundness);
-		mVecDraw->setColor(mHandleOutlineCS);
-		mVecDraw->frameRoundRect(xPos, yPos, mS, mS, mRoundness, mHandleTK);
-		mVecDraw->renderShadow();
+		vecDraw.setColor(mHandleFillCS);
+		vecDraw.startShadow(mShadow, mRECT);
+		vecDraw.fillRoundRect(xPos, yPos, mS, mS, mRoundness);
+		vecDraw.setColor(mHandleOutlineCS);
+		vecDraw.frameRoundRect(xPos, yPos, mS, mS, mRoundness, mHandleTK);
+		vecDraw.renderShadow();
 		
 		// Fix - Labels (Control Name and Value)
 		// Label
 		
-		//mVecDraw->setColor(textColor);
-		//mVecDraw->text(&txt, "Load", mRECT.L, mRECT.R, mRECT.T, mRECT.B);
+		//vecDraw.setColor(textColor);
+		//vecDraw.text(&txt, "Load", mRECT.L, mRECT.R, mRECT.T, mRECT.B);
 		
 		// Inactive
 		
@@ -1603,8 +1604,8 @@ public:
 		{
 			// Inactive Overlay
 			
-			mVecDraw->setColor(mInactiveOverlayCS);
-			mVecDraw->fillRoundRect(mX, mY, mW, mH, mRoundness);
+			vecDraw.setColor(mInactiveOverlayCS);
+			vecDraw.fillRoundRect(mX, mY, mW, mH, mRoundness);
 		}
 	}
 };
@@ -1619,10 +1620,6 @@ class HISSTools_Matrix : public IControl, public HISSTools_Control_Layers
 {
 	
 private:
-	
-	// Drawing Object
-	
-	HISSTools_VecLib *mVecDraw;
 	
 	// Size (Dimension)
 
@@ -1719,6 +1716,8 @@ private:
 	
 	void reportToPlug()
 	{
+        // TODO - FIX
+        /*
 		if (mParamIdx >= 0)
 		{
             IPlugAPIBase *plug = dynamic_cast<IPlugAPIBase *>(&mDelegate);
@@ -1727,6 +1726,7 @@ private:
             plug->OnParamChange(mParamIdx, kUI);
 			mValidReport = false;
 		}
+        */
 	}
 	
 	
@@ -1734,11 +1734,9 @@ public:
 	
 	// Constructor and Destructor
 	
-	HISSTools_Matrix(IGEditorDelegate& delegate, int paramIdx, HISSTools_VecLib *vecDraw, double x, double y, int xDim, int yDim, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, HISSTools_Design_Scheme *stateScheme = 0)
-	: IControl(delegate, IRECT(), paramIdx), HISSTools_Control_Layers()
+	HISSTools_Matrix(int paramIdx, double x, double y, int xDim, int yDim, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, HISSTools_Design_Scheme *stateScheme = 0)
+	: IControl(IRECT(), paramIdx), HISSTools_Control_Layers()
 	{
-		mVecDraw = vecDraw;
-        
 		// Dimensions
 		
 		mXDim = xDim;
@@ -1884,17 +1882,16 @@ public:
 	
 	// Draw
 	
-	void Draw(IGraphics& pGraphics) override
-	{				
-        mVecDraw->setIGraphics(&pGraphics);
-        mVecDraw->setClip(mRECT);
-
+	void Draw(IGraphics& g) override
+	{
+        HISSTools_VecLib vecDraw(g);
+        
 		// Background (shadow boxes)
 		
-		if (startBackground(pGraphics, mVecDraw, mRECT))
+		if (startBackground(g, vecDraw, mRECT))
 		{		
-			mVecDraw->startShadow(mShadow);
-			mVecDraw->setColor(mOutlineCS);
+			vecDraw.startShadow(mShadow, mRECT);
+			vecDraw.setColor(mOutlineCS);
 			
 			for (int i = 0; i < mXDim; i++)
 			{
@@ -1904,14 +1901,14 @@ public:
 				{
 					double sy = mY + j * mUnit;
 					
-					mVecDraw->frameRoundRect(sx, sy, mS, mS, mRoundness, mHandleEmptyOutlineTK);
+					vecDraw.frameRoundRect(sx, sy, mS, mS, mRoundness, mHandleEmptyOutlineTK);
 				}
 			}
 			
-			mVecDraw->renderShadow(false);
+			vecDraw.renderShadow(false);
 		}
 		
-		renderBackground(pGraphics, mVecDraw, mRECT);
+		renderBackground(g, vecDraw, mRECT);
 
 		// Matrix fills
 		
@@ -1923,17 +1920,17 @@ public:
 			{
 				double sy = mY + j * mUnit;
 								
-				mVecDraw->setColor(mStateCS[mStates[j * mXDim + i] % mNStates]);   
-				mVecDraw->fillRoundRect(sx, sy, mS, mS, mRoundness);
-				mVecDraw->setColor(mOutlineCS);
-				mVecDraw->frameRoundRect(sx, sy, mS, mS, mRoundness, mHandleFilledOutlineTK);
+				vecDraw.setColor(mStateCS[mStates[j * mXDim + i] % mNStates]);
+				vecDraw.fillRoundRect(sx, sy, mS, mS, mRoundness);
+				vecDraw.setColor(mOutlineCS);
+				vecDraw.frameRoundRect(sx, sy, mS, mS, mRoundness, mHandleFilledOutlineTK);
 			}
 		}
 
 		if (mXHilite > -1 && mYHilite > -1)
 		{
-			mVecDraw->setColor(mHiliteCS);
-			mVecDraw->frameRoundRect(mX + mXPos * mUnit, mY + mYPos * mUnit, mS, mS, mRoundness, mHiliteTK);
+			vecDraw.setColor(mHiliteCS);
+			vecDraw.frameRoundRect(mX + mXPos * mUnit, mY + mYPos * mUnit, mS, mS, mRoundness, mHiliteTK);
 		}
 	}
 	
@@ -1993,29 +1990,21 @@ public:
 class HISSTools_TextBlock : public HISSTools_Text_Helper_Block, public IControl, public HISSTools_Control_Layers
 {
 	
-private:
-	
-	// Drawing Object
-	
-	HISSTools_VecLib *mVecDraw;
-	
 public:
 	
 	// Constructors
 	
-	HISSTools_TextBlock(IGEditorDelegate& delegate, HISSTools_VecLib *vecDraw, double x, double y, double w, double h, const char* str = "", HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter, const char* type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
-	: HISSTools_Text_Helper_Block(x, y, w, h, hAlign, vAlign, "TextBlock", type, designScheme), IControl(delegate, IRECT()), HISSTools_Control_Layers()
+	HISSTools_TextBlock(double x, double y, double w, double h, const char* str = "", HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter, const char* type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	: HISSTools_Text_Helper_Block(x, y, w, h, hAlign, vAlign, "TextBlock", type, designScheme), IControl(IRECT()), HISSTools_Control_Layers()
 	{
-		mVecDraw = vecDraw;
 		setText(str);
 		mRECT = bounds().iBounds();
 	}
 	
-	void Draw(IGraphics& pGraphics)
+	void Draw(IGraphics& g)
 	{
-        mVecDraw->setIGraphics(&pGraphics);
-        mVecDraw->setClip(mRECT);
-        HISSTools_Text_Helper_Block::Draw(mVecDraw);
+        HISSTools_VecLib vecDraw(g);
+        HISSTools_Text_Helper_Block::Draw(vecDraw);
 	}
 	
 	void setText(const char *str)
@@ -2037,11 +2026,7 @@ class HISSTools_Panel: public IControl, public HISSTools_Control_Layers
 {
 	
 private:
-	
-	// Drawing Object
-	
-	HISSTools_VecLib *mVecDraw;
-	
+
 	// Positioning / Dimensions
 	
 	double mX;
@@ -2084,11 +2069,9 @@ public:
 	
 	// Constructor
 	
-	HISSTools_Panel(IGEditorDelegate& delegate, HISSTools_VecLib *vecDraw, double x, double y, double w = 0, double h = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
-	: IControl(delegate, IRECT()), HISSTools_Control_Layers()
-	{		
-		mVecDraw = vecDraw;
-        
+	HISSTools_Panel(double x, double y, double w = 0, double h = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	: IControl(IRECT()), HISSTools_Control_Layers()
+	{
 		// Dimenasions
 		
 		mX = x;
@@ -2128,27 +2111,26 @@ public:
 	
 	// Draw
 	
-	void Draw(IGraphics& pGraphics)
-	{				
-        mVecDraw->setIGraphics(&pGraphics);
-        mVecDraw->setClip(mRECT);
+	void Draw(IGraphics& g)
+	{
+        HISSTools_VecLib vecDraw(g);
 
-		if (startBackground(pGraphics, mVecDraw, mRECT))
+		if (startBackground(g, vecDraw, mRECT))
 		{
-			mVecDraw->startShadow(mShadow);
-			mVecDraw->setColor(mPanelCS);
-			mVecDraw->fillRoundRect(mX, mY, mW, mH, mRoundnessTL, mRoundnessTR, mRoundnessBL, mRoundnessBR);
+			vecDraw.startShadow(mShadow, mRECT);
+			vecDraw.setColor(mPanelCS);
+			vecDraw.fillRoundRect(mX, mY, mW, mH, mRoundnessTL, mRoundnessTR, mRoundnessBL, mRoundnessBR);
 			if (mDrawOutline)
 			{				
-				mVecDraw->setColor(mOutlineCS);
-				mVecDraw->frameRoundRect(mX, mY, mW, mH, mRoundnessTL, mRoundnessTR, mRoundnessBL, mRoundnessBR, mOutlineTK);
+				vecDraw.setColor(mOutlineCS);
+				vecDraw.frameRoundRect(mX, mY, mW, mH, mRoundnessTL, mRoundnessTR, mRoundnessBL, mRoundnessBR, mOutlineTK);
 			}
-			mVecDraw->renderShadow();
+			vecDraw.renderShadow();
 		}
 		
 		// Background
 		
-		renderBackground(pGraphics, mVecDraw, mRECT);
+		renderBackground(g, vecDraw, mRECT);
 	}
 };
 
@@ -2162,11 +2144,7 @@ class HISSTools_Progress : public IControl, public HISSTools_Control_Layers
 {
 	
 private:
-	
-	// Drawing Object
-	
-	HISSTools_VecLib *mVecDraw;	
-	
+    
 	// Positioning / Dimensions
 	
 	double mX;
@@ -2190,11 +2168,9 @@ private:
 		
 public:
 	
-	HISSTools_Progress(IGEditorDelegate& delegate, HISSTools_VecLib *vecDraw, double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
-	: IControl(delegate, IRECT()), HISSTools_Control_Layers(), mX(x), mY(y), mW(w), mH(h)
-	{ 	
-		mVecDraw = vecDraw;
-        
+	HISSTools_Progress(double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	: IControl(IRECT()), HISSTools_Control_Layers(), mX(x), mY(y), mW(w), mH(h)
+	{
 		// Get Appearance
 		
 		mOutlineTK = designScheme->getDimension("ProgressOutline", type);
@@ -2215,53 +2191,53 @@ public:
 	~HISSTools_Progress() {}
 	
 	
-	void Draw(IGraphics& pGraphics)
-	{				
-        mVecDraw->setIGraphics(&pGraphics);
-        mVecDraw->setClip(mRECT);
-		mVecDraw->setColorOrientation(mW < mH ? kCSOrientVertical : kCSOrientHorizontal);
+	void Draw(IGraphics& g)
+	{
+        HISSTools_VecLib vecDraw(g);
+
+		vecDraw.setColorOrientation(mW < mH ? kCSOrientVertical : kCSOrientHorizontal);
         
 		// Parameters
 				
-		if (startBackground(pGraphics, mVecDraw, mRECT))
+		if (startBackground(g, vecDraw, mRECT))
 		{
-			mVecDraw->setColor(mBackgroundCS);
-			mVecDraw->fillRect(mX, mY, mW, mH);
+			vecDraw.setColor(mBackgroundCS);
+			vecDraw.fillRect(mX, mY, mW, mH);
 			
 			// Frame Rectangle
 			
-			mVecDraw->startShadow(mShadow);
-			mVecDraw->setColor(mOutlineCS);
-			mVecDraw->frameRect(mX, mY, mW, mH, mOutlineTK);
-			mVecDraw->renderShadow();
+			vecDraw.startShadow(mShadow, mRECT);
+			vecDraw.setColor(mOutlineCS);
+			vecDraw.frameRect(mX, mY, mW, mH, mOutlineTK);
+			vecDraw.renderShadow();
 		}
 		
-		renderBackground(pGraphics, mVecDraw, mRECT);
+		renderBackground(g, vecDraw, mRECT);
 		
 		// Meter Rectangles
 		
-		mVecDraw->forceGradientBox(mX, mY, mX + mW, mY + mH);
+		vecDraw.forceGradientBox(mX, mY, mX + mW, mY + mH);
 		
 		// Progress
 		
-		mVecDraw->setColor(mProgressCS);
+		vecDraw.setColor(mProgressCS);
 
 		if (mW < mH)
-			mVecDraw->fillRect(mX, mY + mH * (1 - mValue), mW, mH * mValue);
+			vecDraw.fillRect(mX, mY + mH * (1 - mValue), mW, mH * mValue);
 		else 
-			mVecDraw->fillRect(mX, mY, mW * mValue, mH);
+			vecDraw.fillRect(mX, mY, mW * mValue, mH);
 			
-		mVecDraw->forceGradientBox();
+		vecDraw.forceGradientBox();
 		
 		// Outline Again
 		// FIX - Draw ALL PROPERLY
 		
-		mVecDraw->setColor(mOutlineCS);
-		mVecDraw->frameRect(mX, mY, mW, mH, mOutlineTK);
+		vecDraw.setColor(mOutlineCS);
+		vecDraw.frameRect(mX, mY, mW, mH, mOutlineTK);
 		
 		// Reset Orientation (default is always horizontal)
 		
-		mVecDraw->setColorOrientation(kCSOrientHorizontal);
+		vecDraw.setColorOrientation(kCSOrientHorizontal);
 	}
 };
 
@@ -2279,11 +2255,7 @@ class HISSTools_MeterTest : public IControl, public HISSTools_Control_Layers
 {
 	
 private:
-		
-	// Drawing Object
-	
-	HISSTools_VecLib *mVecDraw;	
-	
+
 	// Positioning / Dimensions
 	
 	double mX;
@@ -2346,27 +2318,25 @@ private:
 		return size;
 	}
 	
-	void horzTick(double x1, double x2, double y, double h, double normPosition, double thickness)
+	void horzTick(HISSTools_VecLib& vecDraw, double x1, double x2, double y, double h, double normPosition, double thickness)
 	{
 		double yPos =  y + h * (1 - normPosition);
 		
-		mVecDraw->line(x1, yPos, x2, yPos, thickness);
+		vecDraw.line(x1, yPos, x2, yPos, thickness);
 	}
 	
-	void vertTick(double y1, double y2, double x, double w, double normPosition, double thickness)
+	void vertTick(HISSTools_VecLib& vecDraw, double y1, double y2, double x, double w, double normPosition, double thickness)
 	{
 		double xPos =  x + w * normPosition;
 		
-		mVecDraw->line(xPos, y1, xPos, y2, thickness);
+		vecDraw.line(xPos, y1, xPos, y2, thickness);
 	}
 	
 public:
 	
-	HISSTools_MeterTest(IGEditorDelegate& delegate, HISSTools_VecLib *vecDraw, double x, double y, double w, double h, bool flip = false, double minDB = -60, double maxDB = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
-	: IControl(delegate, IRECT()), HISSTools_Control_Layers()
-	{ 	
-		mVecDraw = vecDraw;
-        
+	HISSTools_MeterTest(double x, double y, double w, double h, bool flip = false, double minDB = -60, double maxDB = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	: IControl(IRECT()), HISSTools_Control_Layers()
+	{
 		// Dimensions
 		
 		// Parameters
@@ -2446,48 +2416,47 @@ public:
 		SetDirty(false);
 	}
 	
-	void Draw(IGraphics& pGraphics)
-	{				
-        mVecDraw->setIGraphics(&pGraphics);
-        mVecDraw->setClip(mRECT);
-		mVecDraw->setColorOrientation(mW < mH ? kCSOrientVertical : kCSOrientHorizontal);
+	void Draw(IGraphics& g)
+	{
+        HISSTools_VecLib vecDraw(g);
+		vecDraw.setColorOrientation(mW < mH ? kCSOrientVertical : kCSOrientHorizontal);
 
 		// Parameters
 		
 		int nTicks = 10;
 		
-		if (startBackground(pGraphics, mVecDraw, mRECT))
+		if (startBackground(g, vecDraw, mRECT))
 		{
-			mVecDraw->setColor(mBackgroundCS);
-			mVecDraw->fillRect(mX, mY, mW, mH);
+			vecDraw.setColor(mBackgroundCS);
+			vecDraw.fillRect(mX, mY, mW, mH);
 		
 			// Frame Rectangle
 		
-			mVecDraw->startShadow(mShadow);
-			mVecDraw->setColor(mOutlineCS);
-			mVecDraw->frameRect(mX, mY, mW, mH, mOutlineTK);
-			mVecDraw->renderShadow();
+			vecDraw.startShadow(mShadow, mRECT);
+			vecDraw.setColor(mOutlineCS);
+			vecDraw.frameRect(mX, mY, mW, mH, mOutlineTK);
+			vecDraw.renderShadow();
 		}
 		
-		renderBackground(pGraphics, mVecDraw, mRECT);
+		renderBackground(g, vecDraw, mRECT);
 		
 		// Meter Rectangles
 		
-		mVecDraw->forceGradientBox(mX, mY, mX + mW, mY + mH);
+		vecDraw.forceGradientBox(mX, mY, mX + mW, mY + mH);
 
 		// VU 1
 		
 		if (mVU1Size > 0)
 		{
 			if (mPeak)
-				mVecDraw->setColor(mVU1PeakCS);
+				vecDraw.setColor(mVU1PeakCS);
 			else
-				mVecDraw->setColor(mVU1CS);
+				vecDraw.setColor(mVU1CS);
 		
 			if (mW < mH)
-				mVecDraw->fillRect(mX, mY + mH * (1 - mVU1Size), mW, mH * mVU1Size);
+				vecDraw.fillRect(mX, mY + mH * (1 - mVU1Size), mW, mH * mVU1Size);
 			else 
-				mVecDraw->fillRect(mX, mY, mW * mVU1Size, mH);
+				vecDraw.fillRect(mX, mY, mW * mVU1Size, mH);
 		}
 		
 		// VU 2
@@ -2495,58 +2464,58 @@ public:
 		if (mVU2Size > 0)
 		{
 			if (mOverlayFixedGradientBox == false)
-				mVecDraw->forceGradientBox();
+				vecDraw.forceGradientBox();
 			
 			if (mPeak)
-				mVecDraw->setColor(mVU2PeakCS);
+				vecDraw.setColor(mVU2PeakCS);
 			else
-				mVecDraw->setColor(mVU2CS);
+				vecDraw.setColor(mVU2CS);
 					
 			if (mW < mH)
-				mVecDraw->fillRect(mX, mY + mH * (1 - mVU2Size),  mW, mH * mVU2Size);
+				vecDraw.fillRect(mX, mY + mH * (1 - mVU2Size),  mW, mH * mVU2Size);
 			else
-				mVecDraw->fillRect(mX, mY, mW * mVU2Size, mH);
+				vecDraw.fillRect(mX, mY, mW * mVU2Size, mH);
 		}
 		
 		// Ticks
 		
-		mVecDraw->setColor(mOutlineCS);
+		vecDraw.setColor(mOutlineCS);
 				
 		if (mW < mH)
 			for (int i = 0; i < nTicks; i++)
-				horzTick(mTick1, mTick2, mY, mH, (i / (double) (nTicks - 1)), mTickTK);
+				horzTick(vecDraw, mTick1, mTick2, mY, mH, (i / (double) (nTicks - 1)), mTickTK);
 		else
 			for (int i = 0; i < nTicks; i++)
-				vertTick (mTick1, mTick2, mX, mW, (i / (double) (nTicks - 1)), mTickTK);
+				vertTick(vecDraw, mTick1, mTick2, mX, mW, (i / (double) (nTicks - 1)), mTickTK);
 			
 		// Side VU
 		
 		if (mSideSize >= 0)
 		{
-			mVecDraw->forceGradientBox(mX, mY, mX + mW, mY + mH);
+			vecDraw.forceGradientBox(mX, mY, mX + mW, mY + mH);
 		
 			if (mPeak)
-				mVecDraw->setColor(mVUSidePeakCS);
+				vecDraw.setColor(mVUSidePeakCS);
 			else
-				mVecDraw->setColor(mVUSideCS);
+				vecDraw.setColor(mVUSideCS);
 		
 			if (mW < mH)
-				horzTick(mTick3, mTick4, mY, mH, mSideSize, mPeakHoldTK);
+				horzTick(vecDraw, mTick3, mTick4, mY, mH, mSideSize, mPeakHoldTK);
 			else
-				vertTick(mTick3, mTick4, mX, mW, mSideSize, mPeakHoldTK);
+				vertTick(vecDraw, mTick3, mTick4, mX, mW, mSideSize, mPeakHoldTK);
 		}
 
-		mVecDraw->forceGradientBox();
+		vecDraw.forceGradientBox();
 		
 		// Outline Again
 		// FIX - Draw ALL PROPERLY
 		
-		mVecDraw->setColor(mOutlineCS);
-		mVecDraw->frameRect(mX, mY, mW, mH, mOutlineTK);
+		vecDraw.setColor(mOutlineCS);
+		vecDraw.frameRect(mX, mY, mW, mH, mOutlineTK);
 
 		// Reset Orientation (default is always horizontal)
 		
-		mVecDraw->setColorOrientation(kCSOrientHorizontal);
+		vecDraw.setColorOrientation(kCSOrientHorizontal);
 	}
 };
 
@@ -2584,11 +2553,14 @@ private:
 	{
 		if (mParamIdx >= 0)
 		{
+            // TODO - FIX
+            /*
             IPlugAPIBase *plug = dynamic_cast<IPlugAPIBase *>(&mDelegate);
             
 			mValidReport = true;
             plug->OnParamChange(mParamIdx, kUI);
 			mValidReport = false;
+            */
 		}
 	}
 	
@@ -2596,8 +2568,8 @@ public:
 	
 	// FIX - turn automation off (also for matrix)
 		
-	HISSTools_FileSelector(IGEditorDelegate& delegate, int paramIdx, HISSTools_VecLib *vecDraw, double x, double y, double w, double h, EFileAction action, char* dir = "", char* extensions = "", const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char *label = "")
-	: HISSTools_Button(delegate, paramIdx, vecDraw, x, y, w, h, type, designScheme, label) , mState(kFSNone), mFileAction(action), mDir(dir), mExtensions(extensions)
+	HISSTools_FileSelector(int paramIdx, double x, double y, double w, double h, EFileAction action, char* dir = "", char* extensions = "", const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char *label = "")
+	: HISSTools_Button(paramIdx, x, y, w, h, type, designScheme, label) , mState(kFSNone), mFileAction(action), mDir(dir), mExtensions(extensions)
 	{
 		mValidReport = false;
 	}
@@ -2657,7 +2629,7 @@ public:
 		}
 	}
 	
-	void Draw(IGraphics& pGraphics) override
+	void Draw(IGraphics& g) override
 	{
 		switch (mState)
 		{
@@ -2671,15 +2643,15 @@ public:
 				break;
 		}
 		
-		HISSTools_Button::Draw(pGraphics);
+		HISSTools_Button::Draw(g);
 	}
 	
-	void GetLastSelectedFileForPlug(WDL_String *pStr)
+	const WDL_String& GetLastSelectedFileForPlug()
 	{
-		pStr->Set(mFile.Get());
+		return mFile;
 	}
 	
-	void SetLastSelectedFileFromPlug(char* file)
+	void SetLastSelectedFileFromPlug(const char* file)
 	{
 		mFile.Set(file);
 	}
