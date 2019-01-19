@@ -35,8 +35,6 @@ public:
         setColor(&defaultColor);
 #ifndef USE_IGRAPHICS_TEXT
         mTextBitmap = nullptr;
-        mWidth = 0;
-        mHeight = 0;
 #endif
     }
     
@@ -239,8 +237,8 @@ public:
         double scale = mGraphics->GetDisplayScale();
         LICE_IBitmap *bitmap = mTextBitmap;
         
-        int width = mWidth * scale;
-        int height = mHeight * scale;
+        int width = mGraphics->GetWidth() * scale;
+        int height = mGraphics->GetHeight() * scale;
         
         // This allows the window to be any size...
         
@@ -257,10 +255,8 @@ public:
         
         updateDrawBounds(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1, true);
         
-        HISSTools_Bounds clip(x, y, w, h);
-        
         mGraphics->PathStateSave();
-        setClip(clip);
+        setClip(HISSTools_Bounds(x, y, w, h));
         int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
         cairo_surface_t *surface = cairo_image_surface_create_for_data((unsigned char *) bitmap->getBits(), CAIRO_FORMAT_ARGB32, width, height, stride);
         mGraphics->PathTransformScale(1.0/scale);
@@ -473,7 +469,6 @@ private:
     IGraphicsPathBase* mGraphics;
     
 #ifndef USE_IGRAPHICS_TEXT
-    int mWidth, mHeight;
     LICE_SysBitmap *mTextBitmap;
 #endif
     
