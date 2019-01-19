@@ -25,7 +25,7 @@ const int HT_FONT_LEN = 32;
 enum HTextAlign { kHAlignLeft, kHAlignCenter, kHAlignRight };
 enum VTextAlign { kVAlignTop, kVAlignCenter, kVAlignBottom };
 
-#ifndef USE_IGRAPHICS_TEXT
+#ifdef USE_IGRAPHICS_TEXT
 
 struct HISSTools_Text
 {
