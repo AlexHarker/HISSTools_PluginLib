@@ -434,11 +434,11 @@ private:
 		PanelFillGreyCS->addStop(HISSTools_Color(0.05, 0.05, 0.08, 0.3), 0.0);
 		PanelFillGreyCS->addStop(HISSTools_Color(0.05, 0.05, 0.08, 0.4), 1.0);
 		
+        matrixFillCS->addStop(HISSTools_Color(0.3, 0.3, 0.3, 1.0), 0.8);
 		matrixFillCS->addStop(HISSTools_Color(0.1, 0.1, 0.1, 1.0), 1.0);
-		matrixFillCS->addStop(HISSTools_Color(0.3, 0.3, 0.3, 1.0), 0.8);
 		
+        matrixHalfFillCS->addStop(HISSTools_Color(0.3, 0.3, 0.3, 0.4), 0.5);
 		matrixHalfFillCS->addStop(HISSTools_Color(0.1, 0.1, 0.1, 0.4), 1.0);
-		matrixHalfFillCS->addStop(HISSTools_Color(0.3, 0.3, 0.3, 0.4), 0.5);
 		
 		handleFillCS->addStop(HISSTools_Color(0.6, 0.6, 0.6, 1.0), 0.0);
 		handleFillCS->addStop(HISSTools_Color(0.15, 0.15, 0.15, 1.0), 0.9);
@@ -458,9 +458,9 @@ private:
 		dialCircleFillGradient->addStop(HISSTools_Color(0.3, 0.3, 0.3, 0.5), 0.0);
 		dialCircleFillGradient->addStop(HISSTools_Color(0.86, 0.86, 0.86, 0.5), 0.6);   // SUPER LUMINESCENT    (USED in shadow bitmap)
 		
-		boxFill->addStop(HISSTools_Color(0.90, 0.90, 0.90, 1.), 1.);
 		boxFill->addStop(HISSTools_Color(0.76, 0.76, 0.76, 1.), 0);
-		
+        boxFill->addStop(HISSTools_Color(0.90, 0.90, 0.90, 1.), 1.);
+
 		dialIndicatorRed->addStop(HISSTools_Color(0.54, 0, 0, 1), 0.);
 		dialIndicatorRed->addStop(HISSTools_Color(0.91, 0, 0, 1), 0.6);
 		
