@@ -5,12 +5,15 @@
 #include "HISSTools_VecLib_Structs.hpp"
 #include <algorithm>
 #include <vector>
-#include "cairo/cairo.h"
 #include <cmath>
 
 #define USE_IGRAPHICS_TEXT
 
 #include "HISSTools_LICE_Text.hpp"
+
+#ifndef USE_IGRAPHICS_TEXT
+#include "cairo/cairo.h"
+#endif
 
 static HISSTools_Color_Spec defaultColor;
 
@@ -128,7 +131,8 @@ public:
     void fillCircle(double cx, double cy, double r)
     {
         mGraphics.PathCircle(cx, cy, r);
-        fill(true);
+        setShapeGradient(cx - r, cx + r, cy - r, cy + r);
+        fill();
     }
     
     void frameCircle(double cx, double cy, double r, double thickness)
@@ -136,16 +140,16 @@ public:
         frameArc(cx, cy, r, 0.0, 1.0, thickness);
     }
     
-    void frameTriangle(double x1, double y1, double x2, double y2, double x3, double y3)
+    void frameTriangle(double x1, double y1, double x2, double y2, double x3, double y3, double thickness)
     {
         triangle(x1, y1, x2, y2, x3, y3);
-        stroke(true);
+        stroke(thickness);
     }
     
     void fillTriangle(double x1, double y1, double x2, double y2, double x3, double y3)
     {
         triangle(x1, y1, x2, y2, x3, y3);
-        fill(true);
+        fill();
     }
     
     void fillRect(double x, double y, double w, double h)
@@ -197,7 +201,8 @@ public:
     void line(double x1, double y1, double x2, double y2, double thickness)
     {
         mGraphics.PathLine(x1, y1, x2, y2);
-        stroke(thickness, true);
+        setShapeGradient(std::min(x1, x2), std::max(x1, x2), std::min(y1, y2), std::max(y1, y2));
+        stroke(thickness);
     }
     
     void text(HISSTools_Text *pTxt, const char *str, double x, double y, double w, double h, HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter)
@@ -207,7 +212,7 @@ public:
         IRECT rect(x, y, x + w, y + h);
         mGraphics.DrawText(textSpec, str, rect);
         
-        updateDrawBounds(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1, true);
+        setShapeGradient(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1);
 #else
         double scale = mGraphics->GetDisplayScale();
         LICE_IBitmap *bitmap = mTextBitmap;
@@ -228,14 +233,14 @@ public:
         LICE_Clear(bitmap, 0);
         HISSTools_LICE_Text::text(bitmap, pTxt, str, x, y, w, h, scale, hAlign, vAlign);
         
-        updateDrawBounds(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1, true);
+        setShapeGradient(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1);
         
         mGraphics->PathStateSave();
         setClip(HISSTools_Bounds(x, y, w, h));
         int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
         cairo_surface_t *surface = cairo_image_surface_create_for_data((unsigned char *) bitmap->getBits(), CAIRO_FORMAT_ARGB32, width, height, stride);
         mGraphics->PathTransformScale(1.0/scale);
-        cairo_mask_surface(getContext(), surface, 0, 0);
+        cairo_mask_surface((cairo_t *) mGraphics.GetDrawContext(), surface, 0, 0);
         mGraphics->PathStateRestore();
         cairo_surface_destroy(surface);
 #endif
@@ -274,15 +279,13 @@ public:
     
 private:
     
-    void fill(bool useExtents = false)
+    void fill()
     {
-        updateDrawBounds(true, useExtents);
         mGraphics.PathFill(mColor->getPattern());
     }
     
-    void stroke(double thickness, bool useExtents = false)
+    void stroke(double thickness)
     {
-        updateDrawBounds(false, useExtents);
         mGraphics.PathStroke(mColor->getPattern(), thickness);
     }
     
@@ -346,24 +349,11 @@ private:
     void triangle(double x1, double y1, double x2, double y2, double x3, double y3)
     {
         mGraphics.PathTriangle(x1, y1, x2, y2, x3, y3);
-    }
-    
-    void updateDrawBounds(bool fill, bool useExtents)
-    {
-        double xLo, xHi, yLo, yHi;
-        
-        if (fill)
-            cairo_fill_extents(getContext(), &xLo, &yLo, &xHi, &yHi);
-        else
-            cairo_stroke_extents(getContext(), &xLo, &yLo, &xHi, &yHi);
-        
-        updateDrawBounds(xLo, xHi, yLo, yHi, useExtents);
-    }
-    
-    void updateDrawBounds(double xLo, double xHi, double yLo, double yHi, bool useExtents)
-    {
-        if (useExtents)
-            setShapeGradient(xLo, xHi, yLo, yHi);
+        double l = std::min(x1, std::min(x2, x3));
+        double r = std::max(x1, std::max(x2, x3));
+        double t = std::min(y1, std::min(y2, y3));
+        double b = std::max(y1, std::max(y2, y3));
+        setShapeGradient(l, r, t, b);
     }
     
     void setShapeGradient(double xLo, double xHi, double yLo, double yHi)
@@ -373,8 +363,6 @@ private:
         else
             mColor->setRect(xLo, xHi, yLo, yHi, mCSOrientation);
     }
-    
-    cairo_t *getContext() const { return (cairo_t *) mGraphics.GetDrawContext(); }
     
     IGraphics& mGraphics;
     
