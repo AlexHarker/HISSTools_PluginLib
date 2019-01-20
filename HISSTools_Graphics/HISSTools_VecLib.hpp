@@ -1,8 +1,6 @@
 
 #pragma once
 
-#define USE_IGRAPHICS_TEXT
-
 #include "IGraphics.h"
 #include "HISSTools_VecLib_Structs.hpp"
 #include <algorithm>
