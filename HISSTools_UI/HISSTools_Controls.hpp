@@ -1126,7 +1126,7 @@ public:
         if (!mMouseOver)
         {
             mMouseOver = true;
-            SetDirty();
+            SetDirty(false);
         }
     }
 
