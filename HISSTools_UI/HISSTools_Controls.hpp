@@ -28,7 +28,7 @@ class HISSTools_Control_Layers
 private:
 	
     ILayerPtr mBackground;
-    const static bool sNoCaching = true;
+    const static bool sNoCaching = false;
     
 public:
 	
@@ -248,7 +248,7 @@ public:
 		setup(0, 0, 0, 0, hAlign, vAlign, name, type, designScheme);
 	}
 	
-	bool Draw(HISSTools_VecLib& vecDraw)
+	void Draw(HISSTools_VecLib& vecDraw)
 	{
 		if (mTextSD)
 			vecDraw.startShadow(mTextSD, IRECT(mX, mY, mX + mW, mY + mH));
@@ -258,8 +258,6 @@ public:
 
 		if (mTextSD)
 			vecDraw.renderShadow();
-		
-		return true;
 	}
 	
 	void resizeText(double x, double y, double w, double h)
@@ -377,7 +375,7 @@ public:
 		setup(0, 0, 0, 0, 0, 0, hAlign, vAlign, name, type, designScheme);
 	}
 	
-	bool Draw(HISSTools_VecLib& vecDraw, bool drawText)
+	void Draw(HISSTools_VecLib& vecDraw, bool drawText)
 	{	
 		if (doDrawPanel())
 		{
@@ -399,8 +397,7 @@ public:
 		
         if (drawText)
             HISSTools_Text_Helper_Block::Draw(vecDraw);
-		
-		return true;
+
 	}
 
 	void changePadding(double lPad, double rPad, double hPad)
@@ -718,14 +715,14 @@ public:
 
 	}
 	
-	bool Draw(HISSTools_VecLib& vecDraw)
+	void Draw(HISSTools_VecLib& vecDraw)
 	{
 		const IParam *param = mControl->GetParam();
 		
         WDL_String str;
         
 		if (param == nullptr)
-			return true;
+			return;
 		
 		// Retrieve Value
 		
@@ -765,8 +762,6 @@ public:
 			if (mTextSD)
                 vecDraw.renderShadow();
 		}
-		
-		return true;
 	}
 };
 
