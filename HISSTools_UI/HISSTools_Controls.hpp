@@ -626,7 +626,7 @@ public:
 		HISSTools_Bounds entryBounds;
 		IRECT iEntryBounds;
 		
-        mInEdit = true;
+        mInEdit = menuParam() ? false : true;
         
 		// FIX - Widths ??
 		// FIX - Text Prompt Vertical Centering??
@@ -663,13 +663,10 @@ public:
 				break;
 		}
 		
-		if (menuParam() && menuParam())
+		if (mDrawSeparator && menuParam() && doDrawOutline())
 		{
-			if (mDrawSeparator)
-			{
-				promptTop = mY + mH;
-				promptLeft = mMenuFlipTriangle ? mX : mSeparatorX;
-			}
+			promptTop = mY + mH;
+            promptLeft = mMenuFlipTriangle ? mX : mSeparatorX;
 		}
 		
 		entryBounds = HISSTools_Bounds(promptLeft, promptTop, promptWidth, promptHeight);
