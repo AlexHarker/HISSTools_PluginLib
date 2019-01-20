@@ -220,6 +220,7 @@ public:
         cairo_set_source_rgba(context, color.R / 255.0, color.G / 225.0, color.B / 225.0, color.A / 225.0);
         cairo_mask_surface(context, surface, 0, 0);
         mGraphics.PathTransformRestore();
+        setClip();
         cairo_surface_destroy(surface);
         delete bitmap;
 #endif
