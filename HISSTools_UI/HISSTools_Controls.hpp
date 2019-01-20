@@ -472,7 +472,6 @@ private:
 	double mMenuTriangleBtm;
 	double mMenuTriangleL;
 	double mMenuTriangleR;
-	double mMenuTriangleC;
 	
 	HISSTools_Color_Spec *mTextHiliteCS;
 	HISSTools_Color_Spec *mPanelHiliteCS;
@@ -572,17 +571,15 @@ public:
 		mOutlineHiliteCS = designScheme->getColorSpec(concatenatedName, type);
 		mShowUnits = designScheme->getFlag("ShowUnits", type);
 		
-		// FIX - Padding!
-		
+		// FIX - Padding! (see Draw also)
+    
 		double wPad = 9;
 		double hPad = 0;
 		
 		//changePadding(wPad, hPad);
 		changePadding(0, hPad);
         
-        //FIX - whether menuParam needs to be called here or not
-        
-		if (drawMenuTriangle)// && menuParam())
+		if (drawMenuTriangle)
 		{
 			mDrawTriangle = true;
 			sprintf(concatenatedName, "%sDrawSeparator", name);
@@ -597,14 +594,11 @@ public:
 					
 			double separatorWidth = wPad * 2.0 + menuTriangleWidth + roundnessCompensate(menuTriangleHeight);
 			mSeparatorX = mX + (mMenuFlipTriangle ? separatorWidth : mW - separatorWidth);
-			
-			mMenuTriangleTop = mY + (mH - menuTriangleHeight) / 2.0;
+
+            mMenuTriangleTop = mY + (mH - menuTriangleHeight) / 2.0;
 			mMenuTriangleBtm = mMenuTriangleTop + menuTriangleHeight;
 			mMenuTriangleL = mSeparatorX + (mMenuFlipTriangle ? -(menuTriangleWidth + wPad) : wPad);
 			mMenuTriangleR = mMenuTriangleL + menuTriangleWidth;
-			mMenuTriangleC = mMenuTriangleL + (menuTriangleWidth / 2.0);
-			
-			changePadding(wPad + (mMenuFlipTriangle ? separatorWidth : 0), wPad + (mMenuFlipTriangle ? 0 : separatorWidth), hPad);
 		}
 	}
 	
@@ -714,6 +708,17 @@ public:
 	
 	void Draw(HISSTools_VecLib& vecDraw)
 	{
+        if (mDrawTriangle && menuParam())
+        {
+            // FIX - Padding! (see constructor also)
+
+            double wPad = 9;
+            double hPad = 0;
+            double separatorWidth = mMenuFlipTriangle ? (mSeparatorX - mX) : mW + mX - mSeparatorX;
+
+            changePadding(wPad + (mMenuFlipTriangle ? separatorWidth : 0), wPad + (mMenuFlipTriangle ? 0 : separatorWidth), hPad);
+        }
+        
 		const IParam *param = mControl->GetParam();
 		
         WDL_String str;
@@ -756,7 +761,7 @@ public:
                 vecDraw.startShadow(mTextSD, IRECT(mX, mY, mX + mW, mY + mH));
 		 
             vecDraw.setColor(mTextCS);
-            vecDraw.fillTriangle(mMenuTriangleL, mMenuTriangleTop, mMenuTriangleC, mMenuTriangleBtm, mMenuTriangleR, mMenuTriangleTop);
+            vecDraw.fillTriangle(mMenuTriangleL, mMenuTriangleTop, (mMenuTriangleL + mMenuTriangleR) / 2.0, mMenuTriangleBtm, mMenuTriangleR, mMenuTriangleTop);
 		 
 			if (mTextSD)
                 vecDraw.renderShadow();
