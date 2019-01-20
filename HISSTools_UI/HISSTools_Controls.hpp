@@ -582,7 +582,7 @@ public:
         
         //FIX - whether menuParam needs to be called here or not
         
-		if (drawMenuTriangle)// && menuParam() == true)
+		if (drawMenuTriangle)// && menuParam())
 		{
 			mDrawTriangle = true;
 			sprintf(concatenatedName, "%sDrawSeparator", name);
@@ -596,11 +596,11 @@ public:
 			double menuTriangleHeight = textHeight * menuTriangleHeightRatio;
 					
 			double separatorWidth = wPad * 2.0 + menuTriangleWidth + roundnessCompensate(menuTriangleHeight);
-			mSeparatorX = mX + (mMenuFlipTriangle == true ? separatorWidth : mW - separatorWidth);
+			mSeparatorX = mX + (mMenuFlipTriangle ? separatorWidth : mW - separatorWidth);
 			
 			mMenuTriangleTop = mY + (mH - menuTriangleHeight) / 2.0;
 			mMenuTriangleBtm = mMenuTriangleTop + menuTriangleHeight;
-			mMenuTriangleL = mSeparatorX + (mMenuFlipTriangle == true ? -(menuTriangleWidth + wPad) : wPad);
+			mMenuTriangleL = mSeparatorX + (mMenuFlipTriangle ? -(menuTriangleWidth + wPad) : wPad);
 			mMenuTriangleR = mMenuTriangleL + menuTriangleWidth;
 			mMenuTriangleC = mMenuTriangleL + (menuTriangleWidth / 2.0);
 			
@@ -638,7 +638,7 @@ public:
 			return;
 		
 		double textHeight = mTextTS->mSize;
-		double promptHeight = (menuParam() == true) ? 0 : textHeight + (2.0 * mTextHPad);
+		double promptHeight = menuParam() ? 0 : textHeight + (2.0 * mTextHPad);
 
 		// FIX - Set Padding, rather than variable???
 		// FIX - is this one justified?
@@ -663,7 +663,7 @@ public:
 				break;
 		}
 		
-		if (menuParam() == true)
+		if (menuParam() && menuParam())
 		{
 			if (mDrawSeparator)
 			{
@@ -696,7 +696,7 @@ public:
 	
 	void hilite(bool on)
 	{
-		if (on == true)
+		if (on)
 		{
 			if (mTextHiliteCS)
 				HISSTools_Text_Helper_Panel::mTextCS = mTextHiliteCS;
@@ -730,7 +730,7 @@ public:
 		
 		// If label is nullptr don't add the space
 		
-		if (mShowUnits == true && *(param->GetLabelForHost()))
+		if (mShowUnits && *(param->GetLabelForHost()))
 		{
 			str.Append(" ");
 			str.Append(param->GetLabelForHost());
@@ -741,18 +741,20 @@ public:
 		setText(str.Get());
 		HISSTools_Text_Helper_Panel::Draw(vecDraw, !mInEdit);
 		
-		// Menu Separator 
+		// Menu Separator / Triangle
 		
-		if (mDrawSeparator && doDrawOutline())
+		if (mDrawTriangle && menuParam())
 		{
-            vecDraw.setColor(mPanelOutlineCS);
-            vecDraw.line(mSeparatorX, mY, mSeparatorX, mY + mH, mPanelOutlineTK);
-		}
-				
-		// Menu Triangle
-		
-		if (mDrawTriangle)
-		{
+            // Separator
+            
+            if (mDrawSeparator && doDrawOutline())
+            {
+                vecDraw.setColor(mPanelOutlineCS);
+                vecDraw.line(mSeparatorX, mY, mSeparatorX, mY + mH, mPanelOutlineTK);
+            }
+            
+            // Triangle
+            
 			if (mTextSD)
                 vecDraw.startShadow(mTextSD, IRECT(mX, mY, mX + mW, mY + mH));
 		 
@@ -836,7 +838,7 @@ public:
     
 	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
 	{
-		if (pMod.S == true)
+		if (pMod.S)
 		{
 			if (mDefaultValue >= 0.0)
 			{
@@ -846,7 +848,7 @@ public:
 			}
 		}
 
-		if (mTextParam->menuParam() == true)
+		if (mTextParam->menuParam())
 		{
 			if (mTextParam->promptUserInput(x, y) == false && GetParam())
 			{
@@ -1093,7 +1095,7 @@ public:
 	
 	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
 	{
-		if (pMod.S == true)
+		if (pMod.S)
 		{
 			if (mDefaultValue >= 0.0)
 			{
@@ -1107,7 +1109,7 @@ public:
 	{
 		// FIX - Confirm best key combo...
 		
-		if (pMod.S == true)
+		if (pMod.S)
 		{
 			OnMouseDown(x, y, pMod);
 			return;
@@ -1241,7 +1243,7 @@ public:
 		vecDraw.frameCPointer(mCx, mCy, mPointerCircRadius, mPointerTipRadius, iPntrAng, mPointerAngle, mPointerOutlineTK);
 		vecDraw.renderShadow();
         
-		if (IsGrayed() == true)
+		if (IsGrayed())
 		{
 			// Inactive Overlay
 			
@@ -1411,8 +1413,8 @@ public:
 		vecDraw.frameRoundRect(mX, mY, mLabelMode ? mH : mW, mH, mRoundness, mOutlineTK);
 		vecDraw.renderShadow();
 		
-        vecDraw.setColor(mLabelMode == true ? mBackgroundLabelCS : mValue > 0.5 ? mHandleLabelCS : mHandleLabelOffCS);
-		vecDraw.text(mTextStyle, mName, mLabelMode == true ? mX + mH + mTextPad : mX, mY, mLabelMode == true ? mW - (mH + mTextPad) : mW, mH, mLabelMode == true ?  kHAlignLeft : kHAlignCenter);
+        vecDraw.setColor(mLabelMode ? mBackgroundLabelCS : mValue > 0.5 ? mHandleLabelCS : mHandleLabelOffCS);
+		vecDraw.text(mTextStyle, mName, mLabelMode ? mX + mH + mTextPad : mX, mY, mLabelMode ? mW - (mH + mTextPad) : mW, mH, mLabelMode ?  kHAlignLeft : kHAlignCenter);
 
 		// Inactive
 		
@@ -1595,7 +1597,7 @@ public:
 		
 		// Inactive
 		
-		if (IsGrayed() == true)
+		if (IsGrayed())
 		{
 			// Inactive Overlay
 			
@@ -1820,7 +1822,7 @@ public:
 		mMousing = action;
 		mPMod = pMod;
 		
-		if (coordsToIndices(x, y, &mXPos, &mYPos) == true)
+		if (coordsToIndices(x, y, &mXPos, &mYPos))
 		{
 			reportToPlug();
 			
@@ -1951,7 +1953,7 @@ public:
 	
 	void SetHilite(bool on)
 	{
-		if (on == true)
+		if (on)
 		{
 			mXHilite = mXPos;
 			mYHilite = mYPos;
@@ -2302,7 +2304,7 @@ private:
 	
 	double getSize(double value, bool linear)
 	{
-		double db = linear == true ? 20. * log10(value) : value;
+		double db = linear ? 20. * log10(value) : value;
 		double size = (db - mMinDB) / (mMaxDB - mMinDB);
 		
 		if (size != size)
@@ -2600,7 +2602,7 @@ public:
 		{
 			WDL_String tempFile;
 
-			if (pMod.A == true)
+			if (pMod.A)
 			{
 				mState = kFSDone;
 
