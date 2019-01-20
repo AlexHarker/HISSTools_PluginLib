@@ -1,57 +1,22 @@
 
+#pragma once
 
-#ifndef __HISSTOOLS_LICE_TEXT__
-#define __HISSTOOLS_LICE_TEXT__
-
-#include "IPlugStructs.h"
-#include "IGraphicsConstants.h"
-
-// HISSTools_Text is very similar to IText from IPlug (but does not require IPlug)
-
-// Defaults
-
-#if defined __APPLE__
-const char* const HT_DEFAULT_FONT = "Monaco";
-const int HT_DEFAULT_TEXT_SIZE = 10;
-#else
-const char* const HT_DEFAULT_FONT = "Verdana";
-const int HT_DEFAULT_TEXT_SIZE = 12;
-#endif
-
-const int HT_FONT_LEN = 32;
-
-// Alignment
-
-enum HTextAlign { kHAlignLeft, kHAlignCenter, kHAlignRight };
-enum VTextAlign { kVAlignTop, kVAlignCenter, kVAlignBottom };
-
-#ifdef USE_IGRAPHICS_TEXT
-
-struct HISSTools_Text
-{
-    char mFont[HT_FONT_LEN];
-    int mSize;
-    enum EStyle { kStyleNormal, kStyleBold, kStyleItalic } mStyle;
-    
-    HISSTools_Text(int size = HT_DEFAULT_TEXT_SIZE, char* font = 0, EStyle style = kStyleNormal)
-    : mSize(size), mStyle(style)
-    {
-        strcpy(mFont, (font ? font : HT_DEFAULT_FONT));
-    }
-    
-    HISSTools_Text() : mSize(HT_DEFAULT_TEXT_SIZE), mStyle(kStyleNormal)
-    {
-        strcpy(mFont, HT_DEFAULT_FONT);
-    }
-};
-
-#else
-
+#include "cairo/cairo.h"
 #include <lice.h>
 #include <lice_text.h>
 #include "mutex.h"
 #include "ptrlist.h"
 #include "swell.h"
+
+#ifdef FillRect
+#undef FillRect
+#endif
+#ifdef DrawText
+#undef DrawText
+#endif
+#ifdef Polygon
+#undef Polygon
+#endif
 
 struct HISSTools_Text
 {
@@ -234,7 +199,4 @@ struct HISSTools_LICE_Text
     }
 };
 
-#endif
-
-#endif /* __HISSTOOLS_LICE_TEXT__ */
-
+static int getLineHeight(HISSTools_Text* txt) { return HISSTools_LICE_Text::getTextLineHeight(txt); }

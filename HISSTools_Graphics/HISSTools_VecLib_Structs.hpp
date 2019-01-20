@@ -70,7 +70,7 @@ public:
     
     virtual IPattern getPattern() const { return IPattern(getColor()); }
     
-    virtual void setRect(double xLo, double xHi, double yLo, double yHi, ColorOrientation CSOrientation) {}
+    virtual void setRect(const IRECT r, ColorOrientation CSOrientation) {}
     
 private:
     
@@ -111,16 +111,16 @@ public:
         mPattern.AddStop(colorClamp.getColor(), offset);
     }
     
-    virtual void setRect(double xLo, double xHi, double yLo, double yHi, ColorOrientation CSOrientation) override
+    virtual void setRect(const IRECT r, ColorOrientation CSOrientation) override
     {
         if ((CSOrientation == kCSOrientHorizontal && mMode != kModeVert) || mMode == kModeHorz)
-            mBox = IRECT(xLo, yLo, xHi, yLo);
+            mBox = IRECT(r.L, r.T, r.R, r.T);
         else
         {
             if (mMode == kModeHVFlip)
-                mBox = IRECT(xLo, yHi, xLo, yLo);
+                mBox = IRECT(r.L, r.B, r.L, r.T);
             else
-                mBox = IRECT(xLo, yLo, xLo, yHi);
+                mBox = IRECT(r.L, r.T, r.L, r.B);
         }
     }
     
@@ -170,3 +170,49 @@ struct HISSTools_Shadow : public IShadow
         return currentBounds;
     }
 };
+
+// Text
+
+// Defaults
+
+#if defined __APPLE__
+const char* const HT_DEFAULT_FONT = "Monaco";
+const int HT_DEFAULT_TEXT_SIZE = 10;
+#else
+const char* const HT_DEFAULT_FONT = "Verdana";
+const int HT_DEFAULT_TEXT_SIZE = 12;
+#endif
+
+const int HT_FONT_LEN = 32;
+
+// Alignment
+
+enum HTextAlign { kHAlignLeft, kHAlignCenter, kHAlignRight };
+enum VTextAlign { kVAlignTop, kVAlignCenter, kVAlignBottom };
+
+#ifdef USE_IGRAPHICS_TEXT
+
+struct HISSTools_Text
+{
+    char mFont[HT_FONT_LEN];
+    int mSize;
+    enum EStyle { kStyleNormal, kStyleBold, kStyleItalic } mStyle;
+    
+    HISSTools_Text(int size = HT_DEFAULT_TEXT_SIZE, char* font = 0, EStyle style = kStyleNormal)
+    : mSize(size), mStyle(style)
+    {
+        strcpy(mFont, (font ? font : HT_DEFAULT_FONT));
+    }
+    
+    HISSTools_Text() : mSize(HT_DEFAULT_TEXT_SIZE), mStyle(kStyleNormal)
+    {
+        strcpy(mFont, HT_DEFAULT_FONT);
+    }
+};
+
+static int getLineHeight(HISSTools_Text* txt) { return txt->mSize; }
+
+#else
+#include "HISSTools_LICE_Text.hpp"
+#endif
+

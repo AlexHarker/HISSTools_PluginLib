@@ -1,19 +1,13 @@
 
 #pragma once
 
+#define USE_IGRAPHICS_TEXT
+
 #include "IGraphics.h"
 #include "HISSTools_VecLib_Structs.hpp"
 #include <algorithm>
 #include <vector>
 #include <cmath>
-
-#define USE_IGRAPHICS_TEXT
-
-#include "HISSTools_LICE_Text.hpp"
-
-#ifndef USE_IGRAPHICS_TEXT
-#include "cairo/cairo.h"
-#endif
 
 static HISSTools_Color_Spec defaultColor;
 
@@ -23,18 +17,7 @@ class HISSTools_VecLib
 public:
     
     HISSTools_VecLib(IGraphics& graphics) : mGraphics(graphics), mShadow(nullptr), mForceGradientBox(false), mColor(&defaultColor), mCSOrientation(kCSOrientHorizontal)
-    {
-#ifndef USE_IGRAPHICS_TEXT
-        mTextBitmap = nullptr;
-#endif
-    }
-    
-    ~HISSTools_VecLib()
-    {
-#ifndef USE_IGRAPHICS_TEXT
-        delete mTextBitmap;
-#endif
-    }
+    {}
     
     void setClip()
     {
@@ -131,7 +114,7 @@ public:
     void fillCircle(double cx, double cy, double r)
     {
         mGraphics.PathCircle(cx, cy, r);
-        setShapeGradient(cx - r, cx + r, cy - r, cy + r);
+        setShapeGradient(IRECT(cx - r, cy - r, cx + r, cy + r));
         fill();
     }
     
@@ -201,7 +184,7 @@ public:
     void line(double x1, double y1, double x2, double y2, double thickness)
     {
         mGraphics.PathLine(x1, y1, x2, y2);
-        setShapeGradient(std::min(x1, x2), std::max(x1, x2), std::min(y1, y2), std::max(y1, y2));
+        setShapeGradient(IRECT(std::min(x1, x2), std::min(y1, y2), std::max(x1, x2), std::max(y1, y2)));
         stroke(thickness);
     }
     
@@ -212,47 +195,38 @@ public:
         IRECT rect(x, y, x + w, y + h);
         mGraphics.DrawText(textSpec, str, rect);
         
-        setShapeGradient(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1);
+        setShapeGradient(IRECT(floor(x), floor(y), ceil(x + w), ceil(y + h)));
 #else
-        double scale = mGraphics->GetDisplayScale();
-        LICE_IBitmap *bitmap = mTextBitmap;
+        double scale = mGraphics.GetScreenScale() * mGraphics.GetDrawScale();
         
-        int width = mGraphics->GetWidth() * scale;
-        int height = mGraphics->GetHeight() * scale;
+        int width = mGraphics.Width() * scale;
+        int height = mGraphics.Height() * scale;
         
         // This allows the window to be any size...
         
         width = (width + 3 ) &~ 3;
         
-        if (!bitmap || bitmap->getWidth() != width || bitmap->getHeight() != height)
-        {
-            delete mTextBitmap;
-            bitmap = mTextBitmap = new LICE_SysBitmap(width, height);
-        }
-        
+        LICE_IBitmap *bitmap = new LICE_SysBitmap(width, height);
         LICE_Clear(bitmap, 0);
         HISSTools_LICE_Text::text(bitmap, pTxt, str, x, y, w, h, scale, hAlign, vAlign);
         
-        setShapeGradient(floor(x), ceil(x + w) - 1, floor(y), ceil(y + h) - 1);
+        setShapeGradient(IRECT(floor(x), floor(y), ceil(x + w), ceil(y + h)));
         
-        mGraphics->PathStateSave();
+        mGraphics.PathTransformSave();
         setClip(HISSTools_Bounds(x, y, w, h));
         int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
         cairo_surface_t *surface = cairo_image_surface_create_for_data((unsigned char *) bitmap->getBits(), CAIRO_FORMAT_ARGB32, width, height, stride);
-        mGraphics->PathTransformScale(1.0/scale);
+        mGraphics.PathTransformScale(1.0/scale);
         cairo_mask_surface((cairo_t *) mGraphics.GetDrawContext(), surface, 0, 0);
-        mGraphics->PathStateRestore();
+        mGraphics.PathTransformRestore();
         cairo_surface_destroy(surface);
+        delete bitmap;
 #endif
     }
     
     static double getTextLineHeight(HISSTools_Text *pTxt)
     {
-#ifdef USE_IGRAPHICS_TEXT
-        return pTxt->mSize;
-#else
-        return HISSTools_LICE_Text::getTextLineHeight(pTxt);
-#endif
+        return ::getLineHeight(pTxt);
     }
     
     void startShadow(HISSTools_Shadow *shadow, IRECT rect)
@@ -304,13 +278,14 @@ private:
         arcAng = begAng + (arcAng * 360.0);
         
         mGraphics.PathArc(cx, cy, r, std::min(begAng, arcAng), std::max(arcAng, begAng));
-        setShapeGradient(cx - r, cx + r, cy - r, cy + r);
+        setShapeGradient(IRECT(cx - r, cy - r, cx + r, cy + r));
     }
     
     void rectangle(double x, double y, double w, double h)
     {
-        mGraphics.PathRect(IRECT(x, y, x + w, y + h));
-        setShapeGradient(x, x + w, y, y + h);
+        IRECT r(x, y, x + w, y + h);
+        mGraphics.PathRect(r);
+        setShapeGradient(r);
     }
     
     void roundedRectangle(double x, double y, double w, double h, double rtl, double rtr, double rbl, double rbr)
@@ -320,13 +295,9 @@ private:
         rbl = sanitizeRadius(rbl, w, h);
         rbr = sanitizeRadius(rbr, w, h);
         
-        mGraphics.PathMoveTo(x, y + rtl);
-        mGraphics.PathArc(x + rtl, y + rtl, rtl, 270.0,  360.0);
-        mGraphics.PathArc(x + w - rtr, y + rtr, rtr, 0.0,  90.0);
-        mGraphics.PathArc(x + w - rbr, y + h - rbr, rbr, 90.0, 180.0);
-        mGraphics.PathArc(x + rbl, y + h - rbl, rbl, 180.0, 270.0);
-        mGraphics.PathClose();
-        setShapeGradient(x, x + w, y, y + h);
+        IRECT r(x, y, x + w, y + h);
+        mGraphics.PathRoundRect(r, rtl, rtr, rbl, rbr);
+        setShapeGradient(r);
     }
     
     void cPointer(double cx, double cy, double r, double pr, double ang, double pAng)
@@ -343,7 +314,7 @@ private:
         mGraphics.PathClose();
         
         // FIX - revise...
-        setShapeGradient(cx - pr, cx + pr, cy - pr, cy + pr);
+        setShapeGradient(IRECT(cx - pr, cy - pr, cx + pr, cy + pr));
     }
     
     void triangle(double x1, double y1, double x2, double y2, double x3, double y3)
@@ -353,39 +324,27 @@ private:
         double r = std::max(x1, std::max(x2, x3));
         double t = std::min(y1, std::min(y2, y3));
         double b = std::max(y1, std::max(y2, y3));
-        setShapeGradient(l, r, t, b);
+        setShapeGradient(IRECT(l, t, r, b));
     }
     
-    void setShapeGradient(double xLo, double xHi, double yLo, double yHi)
+    void setShapeGradient(const IRECT r)
     {
-        if (mForceGradientBox)
-            mColor->setRect(mGradientArea.L, mGradientArea.R, mGradientArea.T, mGradientArea.B, mCSOrientation);
-        else
-            mColor->setRect(xLo, xHi, yLo, yHi, mCSOrientation);
+        mColor->setRect(mForceGradientBox ? mGradientArea : r, mCSOrientation);
     }
+    
+    // IGraphics
     
     IGraphics& mGraphics;
-    
-#ifndef USE_IGRAPHICS_TEXT
-    LICE_SysBitmap *mTextBitmap;
-#endif
-    
-    // Boundaries
+
+    // Gradients
     
     IRECT mGradientArea;
-    
-    // Forced Gradient Bounds Flag
-    
     bool mForceGradientBox;
     ColorOrientation mCSOrientation;
     
+    // Other State (line thickness, color and shadow
+    
     double mMultiLineThickness = 1.0;
-    
-    // Color
-    
     HISSTools_Color_Spec *mColor;
-    
-    // Shadow
-    
     HISSTools_Shadow *mShadow;
 };
