@@ -302,9 +302,9 @@ private:
 		HISSTools_Text *smallTxt = new HISSTools_Text(11, "Arial", HISSTools_Text::kStyleBold);
 		*/
         
-        HISSTools_Text *defaultTxt = new HISSTools_Text(14, "Arial Bold", HISSTools_Text::kStyleBold);
-        HISSTools_Text *medTxt = new HISSTools_Text(12, "Arial Bold", HISSTools_Text::kStyleBold);
-        HISSTools_Text *smallTxt = new HISSTools_Text(10, "Arial Bold", HISSTools_Text::kStyleBold);
+        HISSTools_Text *defaultTxt = new HISSTools_Text(14, "Arial Bold");
+        HISSTools_Text *medTxt = new HISSTools_Text(12, "Arial Bold");
+        HISSTools_Text *smallTxt = new HISSTools_Text(10, "Arial Bold");
         
 		addTextStyle("Value", defaultTxt);
 

@@ -196,15 +196,14 @@ struct HISSTools_Text
 {
     char mFont[HT_FONT_LEN];
     int mSize;
-    enum EStyle { kStyleNormal, kStyleBold, kStyleItalic } mStyle;
     
-    HISSTools_Text(int size = HT_DEFAULT_TEXT_SIZE, char* font = 0, EStyle style = kStyleNormal)
-    : mSize(size), mStyle(style)
+    HISSTools_Text(int size = HT_DEFAULT_TEXT_SIZE, char* font = 0)
+    : mSize(size)
     {
         strcpy(mFont, (font ? font : HT_DEFAULT_FONT));
     }
     
-    HISSTools_Text() : mSize(HT_DEFAULT_TEXT_SIZE), mStyle(kStyleNormal)
+    HISSTools_Text() : mSize(HT_DEFAULT_TEXT_SIZE)
     {
         strcpy(mFont, HT_DEFAULT_FONT);
     }

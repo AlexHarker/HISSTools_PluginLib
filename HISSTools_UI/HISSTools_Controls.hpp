@@ -496,21 +496,6 @@ private:
 #ifdef __APPLE__
         text.mSize = ceil(powf(text.mSize, 0.94));
 #endif
-        
-		switch (mTextTS->mStyle)
-		{
-			case HISSTools_Text::kStyleNormal:
-				text.mStyle = IText::kStyleNormal;
-				break;
-				
-			case HISSTools_Text::kStyleBold:
-				text.mStyle = IText::kStyleBold;
-				break;
-				
-			case HISSTools_Text::kStyleItalic:
-				text.mStyle = IText::kStyleItalic;
-				break;
-		}
 		
 		switch (mHAlign)
 		{
