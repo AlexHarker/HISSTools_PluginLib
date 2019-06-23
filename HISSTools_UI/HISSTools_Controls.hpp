@@ -500,15 +500,15 @@ private:
 		switch (mHAlign)
 		{
 			case kHAlignLeft:
-				text.mAlign = IText::kAlignNear;
+                text.mAlign = EAlign::Near;
 				break;
 				
 			case kHAlignCenter:
-				text.mAlign = IText::kAlignCenter;
+				text.mAlign = EAlign::Center;
 				break;
 				
 			case kHAlignRight:
-				text.mAlign = IText::kAlignFar;
+				text.mAlign = EAlign::Far;
 				break;
 		}
 

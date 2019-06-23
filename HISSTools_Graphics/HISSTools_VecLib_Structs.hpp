@@ -102,7 +102,7 @@ public:
     
     HISSTools_LICE_HVGradient(bool flipVertical = true) : mMode(flipVertical ? kModeHVFlip : kModeHorzVert)
     {
-        mPattern = IPattern(kLinearPattern);
+        mPattern = IPattern(EPatternType::Linear);
     }
     
     void addStop(HISSTools_Color color, double offset)

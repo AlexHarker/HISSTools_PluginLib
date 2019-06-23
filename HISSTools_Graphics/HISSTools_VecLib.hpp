@@ -189,7 +189,7 @@ public:
     void text(HISSTools_Text *pTxt, const char *str, double x, double y, double w, double h, HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter)
     {
 #ifdef USE_IGRAPHICS_TEXT
-        IText textSpec(pTxt->mSize, mColor->getColor(), pTxt->mFont, (IText::EAlign) hAlign, (IText::EVAlign) vAlign, 0, IText::kQualityAntiAliased);
+        IText textSpec(pTxt->mSize, mColor->getColor(), pTxt->mFont, (EAlign) hAlign, (EVAlign) vAlign, 0);
         IRECT rect(x, y, x + w, y + h);
         mGraphics.DrawText(textSpec, str, rect);
         
