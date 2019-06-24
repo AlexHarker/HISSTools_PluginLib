@@ -827,20 +827,16 @@ public:
 	{
 		if (pMod.S)
 		{
-			if (mDefaultValue >= 0.0)
-			{
-				mValue = mDefaultValue;
-				SetDirty();
-				return;
-			}
+            SetValueToDefault();
+            return;
 		}
 
 		if (mTextParam->menuParam())
 		{
 			if (mTextParam->promptUserInput(x, y) == false && GetParam())
 			{
-				mValue = round(mValue * (GetParam()->GetRange()) + 1) / (GetParam()->GetRange());
-				mValue = mValue > 1.0 ? 0 : mValue;
+				double value = round(GetValue() * (GetParam()->GetRange()) + 1) / (GetParam()->GetRange());
+                SetValue(value > 1.0 ? 0 : value);
 			}
 		}
         else
@@ -875,12 +871,12 @@ public:
         OnMouseDown(x, y, pMod);
 	}
     
-    virtual void SetValueFromUserInput(double value) override
+    virtual void SetValueFromUserInput(double value, int valIdx) override
     {
         mDrag = false;
         mTextParam->finishEdit();
         mTextParam->hilite(false);
-        IKnobControlBase::SetValueFromUserInput(value);
+        IKnobControlBase::SetValueFromUserInput(value, valIdx);
     }
 	
 	void Draw(IGraphics& g) override
@@ -1083,13 +1079,9 @@ public:
 	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
 	{
 		if (pMod.S)
-		{
-			if (mDefaultValue >= 0.0)
-			{
-				mValue = mDefaultValue;
-				SetDirty();
-			}
-		}
+            SetValueToDefault();
+        else
+            GetUI()->HideMouseCursor();
 	}
 	
 	void OnMouseDblClick(float x, float y, const IMouseMod& pMod) override
@@ -1124,10 +1116,10 @@ public:
         }
     }
     
-    virtual void SetValueFromUserInput(double value) override
+    virtual void SetValueFromUserInput(double value, int valIdx) override
     {
         mTextParam->finishEdit();
-        IControl::SetValueFromUserInput(value);
+        IControl::SetValueFromUserInput(value, valIdx);
     }
     
 	/*
@@ -1202,7 +1194,7 @@ public:
 		if (param != nullptr && param->Type() != IParam::kTypeDouble && param->Type() != IParam::kTypeNone)
 			value = (param->Int() - param->GetMin()) / param->GetRange();
 		else 
-			value = mValue;
+			value = GetValue();
 
 		// Calculate Angles
 		
@@ -1378,8 +1370,7 @@ public:
 	
 	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
 	{
-		mValue += 1.0;
-		mValue = mValue > 1.0 ? 0 : mValue;
+		SetValue(GetValue() ? 0 : 1.0);
 		SetDirty();
 	}	
 
@@ -1394,13 +1385,13 @@ public:
 		// Button Rectangle
 		
 		vecDraw.startShadow(mShadow, mRECT);
-		vecDraw.setColor(mValue > 0.5 ? mOnCS : mOffCS);
+		vecDraw.setColor(GetValue() > 0.5 ? mOnCS : mOffCS);
 		vecDraw.fillRoundRect(mX, mY, mLabelMode ? mH : mW, mH, mRoundness);
 		vecDraw.setColor(mOutlineCS);
 		vecDraw.frameRoundRect(mX, mY, mLabelMode ? mH : mW, mH, mRoundness, mOutlineTK);
 		vecDraw.renderShadow();
 		
-        vecDraw.setColor(mLabelMode ? mBackgroundLabelCS : mValue > 0.5 ? mHandleLabelCS : mHandleLabelOffCS);
+        vecDraw.setColor(mLabelMode ? mBackgroundLabelCS : GetValue() > 0.5 ? mHandleLabelCS : mHandleLabelOffCS);
 		vecDraw.text(mTextStyle, mName, mLabelMode ? mX + mH + mTextPad : mX, mY, mLabelMode ? mW - (mH + mTextPad) : mW, mH, mLabelMode ?  kHAlignLeft : kHAlignCenter);
 
 		// Inactive
@@ -1525,9 +1516,9 @@ public:
         // FIX - retina support for position data!
         
 		if (mW > mH)
-			mValue = round(std::max(0.0, std::min(1.0, ((x - mX) / mW))) * (mNStates - 1)) / (mNStates - 1);
+			SetValue(round(std::max(0.0, std::min(1.0, ((x - mX) / mW))) * (mNStates - 1)) / (mNStates - 1));
 		else
-			mValue = round(std::max(0.0, std::min(1.0, ((y - mY) / mH))) * (mNStates - 1)) / (mNStates - 1);
+			SetValue(round(std::max(0.0, std::min(1.0, ((y - mY) / mH))) * (mNStates - 1)) / (mNStates - 1));
 		
 		SetDirty();
 	}
@@ -1544,13 +1535,13 @@ public:
 		
 		if (mW > mH)
 		{
-			xPos = mX + (mW - mS) * mValue;
+			xPos = mX + (mW - mS) * GetValue();
 			yPos = mY;
 		}
 		else 
 		{
 			xPos = mX;
-			yPos = mY + (mH - mS) * mValue;
+			yPos = mY + (mH - mS) * GetValue();
 		}
 
 		// Background
@@ -2207,9 +2198,9 @@ public:
 		vecDraw.setColor(mProgressCS);
 
 		if (mW < mH)
-			vecDraw.fillRect(mX, mY + mH * (1 - mValue), mW, mH * mValue);
+			vecDraw.fillRect(mX, mY + mH * (1 - GetValue()), mW, mH * GetValue());
 		else 
-			vecDraw.fillRect(mX, mY, mW * mValue, mH);
+			vecDraw.fillRect(mX, mY, mW * GetValue(), mH);
 			
 		vecDraw.forceGradientBox();
 		
@@ -2535,7 +2526,7 @@ private:
 
 	virtual void reportToPlug()
 	{
-		if (mParamIdx >= 0)
+		if (GetParamIdx() >= 0)
 		{
             // TODO - FIX
             /*
@@ -2619,11 +2610,11 @@ public:
 		{
 			case kFSDone:
 			case kFSNone:
-				mValue = 0;
+                SetValue(0);
 				break;
 				
 			case kFSSelecting:
-				mValue = 1;
+				SetValue(1);
 				break;
 		}
 		
