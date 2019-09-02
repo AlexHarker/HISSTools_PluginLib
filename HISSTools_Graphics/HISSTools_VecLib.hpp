@@ -11,7 +11,16 @@ static HISSTools_Color_Spec defaultColor;
 
 class HISSTools_VecLib
 {
+    using IGraphics = iplug::igraphics::IGraphics;
+    using IRECT = iplug::igraphics::IRECT;
+    using IText = iplug::igraphics::IText;
+    using IShadow = iplug::igraphics::IShadow;
+    using ILayerPtr = iplug::igraphics::ILayerPtr;
+    using EAlign = iplug::igraphics::EAlign;
+    using EVAlign = iplug::igraphics::EVAlign;
     
+    const double PI = iplug::PI;
+
 public:
     
     HISSTools_VecLib(IGraphics& graphics) : mGraphics(graphics), mShadow(nullptr), mForceGradientBox(false), mColor(&defaultColor), mCSOrientation(kCSOrientHorizontal)

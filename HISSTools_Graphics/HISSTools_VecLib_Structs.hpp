@@ -6,8 +6,10 @@
 
 // Bounds
 
-struct HISSTools_Bounds : public IRECT
+struct HISSTools_Bounds : public iplug::igraphics::IRECT
 {
+    using IRECT = iplug::igraphics::IRECT;
+    
     HISSTools_Bounds() {}
     HISSTools_Bounds(const IRECT rect) : IRECT(rect) {}
     HISSTools_Bounds(double x, double y, double w, double h)
@@ -49,11 +51,18 @@ struct HISSTools_Color
 
 class HISSTools_Color_Spec
 {
+protected:
+    
+    using IRECT = iplug::igraphics::IRECT;
+    using IPattern = iplug::igraphics::IPattern;
+    using IColor = iplug::igraphics::IColor;
+    using IColorStop = iplug::igraphics::IColorStop;
+    using EPatternType = iplug::igraphics::EPatternType;
     
 public:
     
     HISSTools_Color_Spec()
-    : mPattern(COLOR_BLACK)
+    : mPattern(iplug::igraphics::COLOR_BLACK)
     {}
     
     HISSTools_Color_Spec(HISSTools_Color color)
@@ -79,9 +88,9 @@ private:
         return std::min(1.0, std::max(0.0, x));
     }
     
-    IColor clampColor(HISSTools_Color color)
+    IColor clampColor(HISSTools_Color c)
     {
-        return IColor(clamp(color.a) * 255.0, clamp(color.r) * 255.0, clamp(color.g) * 255.0, clamp(color.b) * 255.0);
+        return IColor(clamp(c.a) * 255.0, clamp(c.r) * 255.0, clamp(c.g) * 255.0, clamp(c.b) * 255.0);
     }
     
 protected:
@@ -156,8 +165,10 @@ struct HISSTools_LICE_VGradient : public HISSTools_LICE_HVGradient
 
 // Shadows
 
-struct HISSTools_Shadow : public IShadow
+struct HISSTools_Shadow : public iplug::igraphics::IShadow
 {
+    using IRECT = iplug::igraphics::IRECT;
+
     HISSTools_Shadow(HISSTools_Color_Spec *shadowColor, double xOffset, double yOffset, double blurSize)
     : IShadow(shadowColor->getPattern(), blurSize, xOffset, yOffset, 1.f, true)
     {}
