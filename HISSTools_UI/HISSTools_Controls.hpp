@@ -21,9 +21,7 @@ enum MousingAction {kMouseDown, kMouseUp, kMouseDblClick, kMouseDrag, kMouseWhee
 // A struct to bring iplug and igraphics items into scope
 
 struct HISSTools_Graphics_Types
-{
-    // Basic Types
-    
+{    
     using IEditorDelegate = iplug::IEditorDelegate;
     template <typename T>
     using IPlugQueue = iplug::IPlugQueue<T>;
@@ -34,18 +32,30 @@ struct HISSTools_Graphics_Types
     using IBitmap = iplug::igraphics::IBitmap;
     using IRECT = iplug::igraphics::IRECT;
     using IPattern = iplug::igraphics::IPattern;
+    using IMatrix = iplug::igraphics::IMatrix;
     using IColor = iplug::igraphics::IColor;
     using IText = iplug::igraphics::IText;
+    using IShadow = iplug::igraphics::IShadow;
+    using IFillOptions = iplug::igraphics::IFillOptions;
+    using IStrokeOptions = iplug::igraphics::IStrokeOptions;
+    using IMouseMod = iplug::igraphics::IMouseMod;
+    using IKeyPress = iplug::igraphics::IKeyPress;
+    using IActionFunction = iplug::igraphics::IActionFunction;
+    using ILayerPtr = iplug::igraphics::ILayerPtr;
+    
+    using EBlend = iplug::igraphics::EBlend;
     using EAlign = iplug::igraphics::EAlign;
     using EVAlign = iplug::igraphics::EVAlign;
     using ETextStyle = iplug::igraphics::ETextStyle;
     using EDirection = iplug::igraphics::EDirection;
     using EFileAction = iplug::igraphics::EFileAction;
-    using IShadow = iplug::igraphics::IShadow;
-    using ILayerPtr = iplug::igraphics::ILayerPtr;
-    using IMouseMod = iplug::igraphics::IMouseMod;
-    using IKeyPress = iplug::igraphics::IKeyPress;
-    using IActionFunction = iplug::igraphics::IActionFunction;
+    using EWinding = iplug::igraphics::EWinding;
+    using EFillRule = iplug::igraphics::EFillRule;
+    using ELineCap = iplug::igraphics::ELineCap;
+    using ELineJoin = iplug::igraphics::ELineJoin;
+    using EPatternType = iplug::igraphics::EPatternType;
+    using EPatternExtend = iplug::igraphics::EPatternExtend;
+    using ECursor = iplug::igraphics::ECursor;
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
