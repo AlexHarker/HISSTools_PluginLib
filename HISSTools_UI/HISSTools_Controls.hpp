@@ -1270,7 +1270,7 @@ public:
 			// Inactive Overlay
 			
 			vecDraw.setColor(mInactiveOverlayCS);
-			vecDraw.fillCircle(mCx, mCy, mR);
+            vecDraw.fillCPointer(mCx, mCy, mPointerCircRadius, mPointerTipRadius, iPntrAng, mPointerAngle);
 		}
 		else
         {
