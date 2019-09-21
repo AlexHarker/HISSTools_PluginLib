@@ -48,7 +48,7 @@ public:
     {
         int size;
         HISSTools_Text::EStyle style;
-        char face[FONT_LEN];
+        char face[iplug::igraphics::FONT_LEN];
         LICE_IFont* font;
     };
     

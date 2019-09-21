@@ -224,7 +224,7 @@ public:
         int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
         cairo_surface_t *surface = cairo_image_surface_create_for_data((unsigned char *) bitmap->getBits(), CAIRO_FORMAT_ARGB32, width, height, stride);
         mGraphics.PathTransformScale(1.0/scale);
-        IColor color = mColor->getColor();
+        iplug::igraphics::IColor color = mColor->getColor();
         cairo_t *context = (cairo_t *) mGraphics.GetDrawContext();
         cairo_set_source_rgba(context, color.R / 255.0, color.G / 225.0, color.B / 225.0, color.A / 225.0);
         cairo_mask_surface(context, surface, 0, 0);
