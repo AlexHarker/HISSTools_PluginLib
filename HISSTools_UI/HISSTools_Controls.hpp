@@ -26,7 +26,8 @@ struct HISSTools_Graphics_Types
     template <typename T>
     using IPlugQueue = iplug::IPlugQueue<T>;
     using IParam = iplug::IParam;
-    
+    using IKeyPress = iplug::IKeyPress;
+
     using IGraphics = iplug::igraphics::IGraphics;
     using IPopupMenu = iplug::igraphics::IPopupMenu;
     using IBitmap = iplug::igraphics::IBitmap;
@@ -39,7 +40,6 @@ struct HISSTools_Graphics_Types
     using IFillOptions = iplug::igraphics::IFillOptions;
     using IStrokeOptions = iplug::igraphics::IStrokeOptions;
     using IMouseMod = iplug::igraphics::IMouseMod;
-    using IKeyPress = iplug::igraphics::IKeyPress;
     using IActionFunction = iplug::igraphics::IActionFunction;
     using ILayerPtr = iplug::igraphics::ILayerPtr;
     
@@ -850,8 +850,8 @@ public:
             fullBoxBounds.include(mTextLabel->bounds());
 		mRECT = fullBoxBounds.iBounds();
         
-        SetMOWhenGrayed(true);
-        SetMEWhenGrayed(true);
+        SetMouseOverWhenDisabled(true);
+        SetMouseEventsWhenDisabled(true);
 	}
 	
 	~HISSTools_Value()
@@ -1088,8 +1088,8 @@ public:
 		mRECT = fullBoxBounds.iBounds();
 		SetTargetRECT(dialBoxBounds.iBounds());
         
-        SetMOWhenGrayed(true);
-        SetMEWhenGrayed(true);
+        SetMouseOverWhenDisabled(true);
+        SetMouseEventsWhenDisabled(true);
 	}	
 	
 	~HISSTools_Dial()
@@ -1265,7 +1265,7 @@ public:
 		vecDraw.frameCPointer(mCx, mCy, mPointerCircRadius, mPointerTipRadius, iPntrAng, mPointerAngle, mPointerOutlineTK);
 		vecDraw.renderShadow();
         
-		if (IsGrayed())
+		if (IsDisabled())
 		{
 			// Inactive Overlay
 			
@@ -1439,7 +1439,7 @@ public:
 
 		// Inactive
 		
-		if (IsGrayed())
+		if (IsDisabled())
 		{
 			// Inactive Overlay
 			
@@ -1541,8 +1541,8 @@ public:
 		mRECT = (fullBounds.iBounds());
 		SetTargetRECT(boxBounds.iBounds());
         
-        SetMOWhenGrayed(true);
-        SetMEWhenGrayed(true);
+        SetMouseOverWhenDisabled(true);
+        SetMouseEventsWhenDisabled(true);
 	}
 	
 public:
@@ -1618,7 +1618,7 @@ public:
 		
 		// Inactive
 		
-		if (IsGrayed())
+		if (IsDisabled())
 		{
 			// Inactive Overlay
 			

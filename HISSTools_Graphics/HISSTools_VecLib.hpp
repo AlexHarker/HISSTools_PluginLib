@@ -48,7 +48,7 @@ public:
     
     void startGroup(const IRECT& r)
     {
-        mGraphics.StartLayer(r);
+        mGraphics.StartLayer(nullptr, r);
     }
     
     ILayerPtr endGroup()
