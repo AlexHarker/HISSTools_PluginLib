@@ -179,12 +179,12 @@ public:
         else
             mTextLabel = nullptr;
 
-		SetTargetRECT(HISSTools_Bounds(x, y, w, h).iBounds());
+		SetTargetRECT(HISSTools_Bounds(x, y, w, h));
 		
 		HISSTools_Bounds fullBoxBounds = mTextParam->bounds();
 		if (mTextLabel)
             fullBoxBounds.include(mTextLabel->bounds());
-		mRECT = fullBoxBounds.iBounds();
+		mRECT = fullBoxBounds;
         
         SetMouseOverWhenDisabled(true);
         SetMouseEventsWhenDisabled(true);
@@ -421,8 +421,8 @@ public:
 		fullBoxBounds.include(mOutlineSD->getBlurBounds(dialBoxBounds));
 		fullBoxBounds.include(mPointerSD->getBlurBounds(ptrBoxBounds));
 		
-		mRECT = fullBoxBounds.iBounds();
-		SetTargetRECT(dialBoxBounds.iBounds());
+		mRECT = fullBoxBounds;
+		SetTargetRECT(dialBoxBounds);
         
         SetMouseOverWhenDisabled(true);
         SetMouseEventsWhenDisabled(true);
@@ -729,8 +729,8 @@ public:
 		fullBounds = mShadow->getBlurBounds(handleBounds);
 		fullBounds.include(fullBounds);
 		
-		mRECT = (fullBounds.iBounds());
-		SetTargetRECT(handleBounds.iBounds());
+		mRECT = (fullBounds);
+		SetTargetRECT(handleBounds);
 		
         mName = label;
         
@@ -874,8 +874,8 @@ public:
 		fullBounds = mShadow->getBlurBounds(fullBounds);
 		fullBounds.include(boxBounds);
 		
-		mRECT = (fullBounds.iBounds());
-		SetTargetRECT(boxBounds.iBounds());
+		mRECT = fullBounds;
+		SetTargetRECT(boxBounds);
         
         SetMouseOverWhenDisabled(true);
         SetMouseEventsWhenDisabled(true);
@@ -1161,8 +1161,8 @@ public:
 		fullBoxBounds = boxBoundsOutline;
 		fullBoxBounds.include(boxBoundsShadow);
 		
-		mRECT = (fullBoxBounds.iBounds());
-		SetTargetRECT(boxBoundsOutline.iBounds());
+		mRECT = fullBoxBounds;
+		SetTargetRECT(boxBoundsOutline);
 		
 		mValidReport = false;
 	}
@@ -1352,7 +1352,7 @@ public:
 	: HISSTools_Text_Helper_Block(x, y, w, h, hAlign, vAlign, "TextBlock", type, designScheme), IControl(IRECT()), HISSTools_Control_Layers()
 	{
 		setText(str);
-		mRECT = bounds().iBounds();
+		mRECT = bounds();
 	}
 	
 	void Draw(IGraphics& g)
@@ -1458,7 +1458,7 @@ public:
 		
 		fullBounds = mShadow->getBlurBounds(fullBounds);
 		
-		mRECT = (fullBounds.iBounds());
+		mRECT = fullBounds;
 	}
 	
 public:
@@ -1539,7 +1539,7 @@ public:
 		
 		// FIX - Hack
 		
-		mRECT = HISSTools_Bounds(x, y, w, h).iBounds();
+		mRECT = HISSTools_Bounds(x, y, w, h);
 	}
 	
 	~HISSTools_Progress() {}

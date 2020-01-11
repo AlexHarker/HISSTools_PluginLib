@@ -17,9 +17,7 @@ struct HISSTools_Bounds : public iplug::igraphics::IRECT
     {}
     
     void include(HISSTools_Bounds inc)      { *this = Union(inc); }
-    void addThickness(double thickness)     { Pad(std::max(0.0, thickness) * 0.5); }
-    
-    IRECT iBounds() const                   { return GetPixelAligned(); }
+    void addThickness(double thickness)     { Pad(std::max(0.0, thickness) * 0.5); }    
 };
 
 // Colors and Color Specs

@@ -338,16 +338,15 @@ void HISSTools_Text_Helper_Param::promptUserInput()
     }
     
     entryBounds = HISSTools_Bounds(promptLeft, promptTop, promptWidth, promptHeight);
-    iEntryBounds = entryBounds.iBounds();
     
     setControlText();
     mControl->DisablePrompt(false);
-    mControl->PromptUserInput(iEntryBounds);
+    mControl->PromptUserInput(entryBounds);
 }
 
 bool HISSTools_Text_Helper_Param::promptUserInput(float x, float y)
 {
-    if (bounds().iBounds().Contains(x, y))
+    if (bounds().Contains(x, y))
     {
         if (!mDrawSeparator || (mMenuFlipTriangle == (x < mSeparatorX)))
         {
