@@ -206,7 +206,7 @@ public:
     
     static double getTextLineHeight(HISSTools_Text *pTxt)
     {
-        return mText->mSize;
+        return pTxt->mSize;
     }
     
     void startShadow(HISSTools_Shadow *shadow, IRECT rect)
