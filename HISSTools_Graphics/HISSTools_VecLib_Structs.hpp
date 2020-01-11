@@ -199,10 +199,6 @@ const int HT_FONT_LEN = 32;
 enum HTextAlign { kHAlignLeft, kHAlignCenter, kHAlignRight };
 enum VTextAlign { kVAlignTop, kVAlignCenter, kVAlignBottom };
 
-#ifdef USE_LICE_TEXT
-#include "HISSTools_LICE_Text.hpp"
-#else
-
 struct HISSTools_Text
 {
     char mFont[HT_FONT_LEN];
@@ -219,7 +215,3 @@ struct HISSTools_Text
         strcpy(mFont, HT_DEFAULT_FONT);
     }
 };
-
-static int getLineHeight(HISSTools_Text* txt) { return txt->mSize; }
-#endif
-
