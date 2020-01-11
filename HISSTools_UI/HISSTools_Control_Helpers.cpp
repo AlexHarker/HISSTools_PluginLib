@@ -1,5 +1,6 @@
 
 #include "HISSTools_Controls.hpp"
+#include "IControl.h"
 
 bool HISSTools_Control_Layers::startBackground(IGraphics& g, HISSTools_VecLib& vecDraw, IRECT area)
 {
