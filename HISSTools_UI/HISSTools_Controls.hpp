@@ -1129,6 +1129,8 @@ public:
 	
 	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
 	{
+        OnMouseOver(x, y, pMod);
+        
 		if (pMod.S)
             SetValueToDefault();
         else
