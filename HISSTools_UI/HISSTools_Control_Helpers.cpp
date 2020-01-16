@@ -53,7 +53,7 @@ HISSTools_Text_Helper_Block::HISSTools_Text_Helper_Block(double x, double y, dou
 void HISSTools_Text_Helper_Block::Draw(HISSTools_VecLib& vl)
 {
     if (mTextSD)
-        vl.startShadow(mTextSD, IRECT(mX, mY, mX + mW, mY + mH));
+        vl.startShadow(mTextSD, bounds());
     
     vl.setColor(mTextCS);
     vl.text(mTextTS, mStr.Get(), mX, mY, mW, mH, mHAlign, mVAlign);
@@ -131,7 +131,7 @@ void HISSTools_Text_Helper_Panel::Draw(HISSTools_VecLib& vl, bool drawText)
     if (doDrawPanel())
     {
         if (mPanelSD)
-            vl.startShadow(mPanelSD, IRECT(mX, mY, mX + mW, mY + mH));
+            vl.startShadow(mPanelSD, bounds());
         
         vl.setColor(mPanelFillCS);
         vl.fillRoundRect(mX, mY, mW, mH, mPanelRoundness);

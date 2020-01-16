@@ -344,11 +344,13 @@ private:
     bool mMouseOver;
     bool mDrawValOnlyOnMO;
     
+    WDL_String mDisplayName;
+    
 public:
 
 	// Constructor
 
-	HISSTools_Dial(int paramIdx, double x, double y, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	HISSTools_Dial(int paramIdx, double x, double y, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char* name = nullptr)
 	: IKnobControlBase(IRECT(), paramIdx), HISSTools_Control_Layers(), mMouseOver(false)
 	{
 		// Calculate Measurements
@@ -425,6 +427,9 @@ public:
         
         SetMouseOverWhenDisabled(true);
         SetMouseEventsWhenDisabled(true);
+        
+        if (name)
+            mDisplayName.Set(name);
 	}	
 	
 	~HISSTools_Dial()
@@ -435,7 +440,10 @@ public:
 	
     void OnInit() override
     {
-        mTextLabel->setText(GetParam() != nullptr ? GetParam()->GetNameForHost() : "");
+        if (mDisplayName.GetLength())
+            mTextLabel->setText(mDisplayName.Get());
+        else
+            mTextLabel->setText(GetParam() != nullptr ? GetParam()->GetNameForHost() : "");
     }
     
 private:
@@ -456,6 +464,8 @@ public:
 	
 	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
 	{
+        OnMouseOver(x, y, pMod);
+        
 		if (pMod.S)
             SetValueToDefault();
         else

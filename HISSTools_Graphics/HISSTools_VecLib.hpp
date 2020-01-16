@@ -41,7 +41,7 @@ public:
         setClip(HISSTools_Bounds(xLo, yLo, xHi - xLo, yHi - yLo));
     }
     
-    void setClip(IRECT rect)
+    void setClip(const IRECT& rect)
     {
         setClip(rect.L, rect.T, rect.R, rect.B);
     }
@@ -214,7 +214,7 @@ public:
         return pTxt->mSize;
     }
     
-    void startShadow(HISSTools_Shadow *shadow, IRECT rect)
+    void startShadow(HISSTools_Shadow *shadow, const IRECT& rect)
     {
         mShadow = shadow;
         startGroup(rect);
@@ -312,7 +312,7 @@ private:
         setShapeGradient(IRECT(l, t, r, b));
     }
     
-    void setShapeGradient(const IRECT r)
+    void setShapeGradient(const IRECT& r)
     {
         mColor->setRect(mForceGradientBox ? mGradientArea : r, mCSOrientation);
     }
