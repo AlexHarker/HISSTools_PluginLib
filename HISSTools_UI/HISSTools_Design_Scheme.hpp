@@ -267,10 +267,10 @@ private:
 
 		// Shadows
 		
-        HISSTools_Color_Spec *shadowCS1 = new HISSTools_Color_Spec(HISSTools_Color(0.05, 0.05, 0.05, 0.63));
-        HISSTools_Color_Spec *shadowCS2 = new HISSTools_Color_Spec(HISSTools_Color(0.05, 0.05, 0.05, 1.0));
-        HISSTools_Color_Spec *shadowCS3 = new HISSTools_Color_Spec(HISSTools_Color(0.00, 0.00, 0.00, 0.70));
-        HISSTools_Color_Spec *shadowCS4 = new HISSTools_Color_Spec(HISSTools_Color(0.00, 0.00, 0.00, 0.81));
+        HISSTools_Color_Spec shadowCS1(HISSTools_Color(0.05, 0.05, 0.05, 0.63));
+        HISSTools_Color_Spec shadowCS2(HISSTools_Color(0.05, 0.05, 0.05, 1.0));
+        HISSTools_Color_Spec shadowCS3(HISSTools_Color(0.00, 0.00, 0.00, 0.70));
+        HISSTools_Color_Spec shadowCS4(HISSTools_Color(0.00, 0.00, 0.00, 0.81));
         
 		//HISSTools_Color_Spec *shadowCS1 = new HISSTools_Color_Spec(HISSTools_Color(0.05, 0.05, 0.05, 0.4));
 		//HISSTools_Color_Spec *shadowCS2 = new HISSTools_Color_Spec(HISSTools_Color(0.05, 0.05, 0.05, 1.0));
