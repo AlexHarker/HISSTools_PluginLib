@@ -167,8 +167,8 @@ struct HISSTools_Shadow : public iplug::igraphics::IShadow
 {
     using IRECT = iplug::igraphics::IRECT;
 
-    HISSTools_Shadow(HISSTools_Color_Spec *shadowColor, double xOffset, double yOffset, double blurSize)
-    : IShadow(shadowColor->getPattern(), blurSize, xOffset, yOffset, 1.f, true)
+    HISSTools_Shadow(HISSTools_Color_Spec& shadowColor, double xOffset, double yOffset, double blurSize)
+    : IShadow(shadowColor.getPattern(), blurSize, xOffset, yOffset, 1.f, true)
     {}
     
     HISSTools_Bounds getBlurBounds(HISSTools_Bounds currentBounds)
