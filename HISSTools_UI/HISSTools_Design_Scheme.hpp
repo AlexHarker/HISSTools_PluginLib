@@ -14,7 +14,7 @@
 /////////////////////////////////////////// Label Template Class //////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template <class T> 
+template <class T>
 class HISSTools_Label
 {
 public:
@@ -47,33 +47,34 @@ public:
 		if (defaultScheme == true)
 			setDefaults();
 	}
-	
-	~HISSTools_Design_Scheme()
-	{
-		deletePointers(&mColorSpecs);
-		deletePointers(&mShadowSpecs);
-		deletePointers(&mTextStyles);
-	}
-	
-	/////////////////////////////////////////////////////////////////////////////////////////////
-	//////////////////////////////////////// Templates //////////////////////////////////////////
-	/////////////////////////////////////////////////////////////////////////////////////////////
-	
+    
+    ~HISSTools_Design_Scheme()
+    {
+        deletePointers(mColorSpecs);
+        deletePointers(mShadowSpecs);
+        deletePointers(mTextStyles);
+    }
+    
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////// Templates //////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    
 private:
 
 	// Storage for all named specificiations
-	
-	std::vector < HISSTools_Label< HISSTools_Text *> >			mTextStyles;
-	std::vector < HISSTools_Label< HISSTools_Color_Spec *> >	mColorSpecs;
-	std::vector < HISSTools_Label < HISSTools_Shadow *> >		mShadowSpecs;
-	std::vector < HISSTools_Label <double> >					mDimensions;
-	std::vector < HISSTools_Label <bool> >						mFlags;
-	
+    
+    std::vector<HISSTools_Label<HISSTools_Text*>>           mTextStyles;
+    std::vector<HISSTools_Label<HISSTools_Color_Spec*>>     mColorSpecs;
+    std::vector<HISSTools_Label<HISSTools_Shadow*>>         mShadowSpecs;
+    std::vector<HISSTools_Label<double>>                    mDimensions;
+    std::vector<HISSTools_Label<bool>>                      mFlags;
+
 	// Searching Template
 	
-	template <class T> T findByName(std::vector < HISSTools_Label <T> > *searchSpace, const char *searchName, const char *searchSubTypes, T defaultValue)
+	template <class T>
+    T findByName(std::vector<HISSTools_Label<T>>& searchSpace, const char *searchName, const char *searchSubTypes, T defaultValue)
 	{
-		typename std::vector < HISSTools_Label <T> >::iterator it;
+		typename std::vector<HISSTools_Label<T>>::iterator it;
 		
 		if (searchSubTypes)
 		{
@@ -84,13 +85,13 @@ private:
 			
 			for (searchType = strtok(searchTypesMutable, " "); searchType; searchType = strtok(0, " "))
 			{
-				for (it = searchSpace->begin(); it != searchSpace->end(); it++)
+				for (it = searchSpace.begin(); it != searchSpace.end(); it++)
 					if (it->SubType.GetLength() && !strcmp(it->TypeName.Get(), searchName) && !strcmp(it->SubType.Get(), searchType))
 						return it->mValue;			
 			}
 		}
 		
-		for (it = searchSpace->begin(); it != searchSpace->end(); it++)
+		for (it = searchSpace.begin(); it != searchSpace.end(); it++)
 			if (it->TypeName.GetLength() && !strcmp(it->TypeName.Get(), searchName))
 				return it->mValue;
 		
@@ -99,25 +100,27 @@ private:
 	
 	// Addition Template For Pointers
 	
-	template <class T> void addPointer(std::vector < HISSTools_Label < T *> > *searchSpace, const char *name, const char *subType, T *newValue)
+	template <class T>
+    void addPointer(std::vector<HISSTools_Label<T*>>& searchSpace, const char *name, const char *subType, T *newValue)
 	{		
-		for (typename std::vector< HISSTools_Label < T *> >::iterator it = searchSpace->begin(); it != searchSpace->end(); it++)
+		for (auto it = searchSpace.begin(); it != searchSpace.end(); it++)
 		{
 			if (it->mValue == newValue)
 			{
-				searchSpace->push_back(HISSTools_Label < T *> (newValue, name, subType, false));
+				searchSpace.push_back(HISSTools_Label<T*>(newValue, name, subType, false));
 				return;
 			}
 		}
 		
-		searchSpace->push_back(HISSTools_Label < T *> (newValue, name, subType, true));
+		searchSpace.push_back(HISSTools_Label<T*>(newValue, name, subType, true));
 	}
 	
 	// Deletion Template for Pointers
 	
-	template <class T> void deletePointers(std::vector < HISSTools_Label < T *> > *searchSpace)
+	template <class T>
+    void deletePointers(std::vector<HISSTools_Label<T*>>& searchSpace)
 	{
-		for (typename std::vector< HISSTools_Label < T *> >::iterator it = searchSpace->begin(); it != searchSpace->end(); it++)
+		for (auto it = searchSpace.begin(); it != searchSpace.end(); it++)
 		{
 			if (it->mDelete)
 				delete it->mValue;
@@ -134,85 +137,85 @@ public:
 
 	void addColorSpec(const char *name, const char *subType, HISSTools_Color_Spec *spec)
 	{
-		addPointer(&mColorSpecs, name, subType, spec);
+        addPointer(mColorSpecs, name, subType, spec);
 	}
 	
 	void addColorSpec(const char *name, HISSTools_Color_Spec *spec)
 	{
-		addColorSpec(name, 0, spec);
+        addColorSpec(name, nullptr, spec);
 	}
 	
 	HISSTools_Color_Spec *getColorSpec(const char *name, const char *subType = 0)
 	{
-		return findByName(&mColorSpecs, name, subType, (HISSTools_Color_Spec *) NULL);
+        return findByName(mColorSpecs, name, subType, (HISSTools_Color_Spec *) NULL);
 	}
 
 	// Dimensions
 
 	void addDimension(const char *name, const char *subType, double thickness)
 	{
-		mDimensions.push_back(HISSTools_Label <double> (thickness, name, subType));
+        mDimensions.push_back(HISSTools_Label<double>(thickness, name, subType));
 	}
 	
 	void addDimension(const char *name, double thickness)
 	{
-		addDimension(name, 0, thickness);
+        addDimension(name, nullptr, thickness);
 	}
 	
 	double getDimension(const char *name, const char *subType = 0)
 	{	
-        return findByName(&mDimensions, name, subType, 0.0);
+        return findByName(mDimensions, name, subType, 0.0);
 	}
 	
 	// Text
 		
 	void addTextStyle(const char *name, const char *subType, HISSTools_Text *spec)
 	{
-		addPointer(&mTextStyles, name, subType, spec);
+        addPointer(mTextStyles, name, subType, spec);
 	}
 	
 	void addTextStyle(const char *name, HISSTools_Text *spec)
 	{
-		addTextStyle(name, 0, spec);
+        addTextStyle(name, nullptr, spec);
 	}
 	
 	HISSTools_Text *getTextStyle(const char *name, const char *subType = 0)
 	{
-		return findByName(&mTextStyles, name, subType, (HISSTools_Text *) NULL);
+        return findByName(mTextStyles, name, subType, (HISSTools_Text *) NULL);
 	}
 	
 	// Shadows
 		
 	void addShadow(const char *name, const char *subType, HISSTools_Shadow *spec)
 	{
-		addPointer(&mShadowSpecs, name, subType, spec);
+        addPointer(mShadowSpecs, name, subType, spec);
 	}
 	
 	void addShadow(const char *name, HISSTools_Shadow *spec)
 	{
-		addShadow(name, 0, spec);
+        addShadow(name, nullptr, spec);
 	}
 	
 	HISSTools_Shadow *getShadow(const char *name, const char *subType = 0)
 	{
-		return findByName(&mShadowSpecs, name, subType, (HISSTools_Shadow *)NULL);
-	}	
+        return findByName(mShadowSpecs, name, subType, (HISSTools_Shadow *)NULL);
+	}
 	
 	// Flags
 	
 	void addFlag(const char *name, const char *subType, bool flag)
 	{
-		mFlags.push_back(HISSTools_Label <bool> (flag, name, subType));
+        mFlags.push_back(HISSTools_Label<bool>(flag, name, subType));
 	}
 	
 	void addFlag(const char *name, bool flag)
 	{
-		addFlag(name, 0, flag);
+        addFlag(name, nullptr, flag);
 	}
 	
 	bool getFlag(const char *name, const char *subType = 0)
 	{
-		return findByName(&mFlags, name, subType, (bool) false);
+        return findByName(mFlags, name, subType, (bool) false);
 	}
 		
 	/////////////////////////////////////////////////////////////////////////////////////////////
