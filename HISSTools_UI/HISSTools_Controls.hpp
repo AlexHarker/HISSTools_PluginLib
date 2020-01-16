@@ -1169,7 +1169,15 @@ public:
         }
     }
     
-    virtual void SetValueFromUserInput(double value, int valIdx) override
+    void SetDisabled(bool disable) override
+    {
+        bool old = mDisabled;
+        mDisabled = disable;
+        if (disable != old)
+            SetDirty(false);
+    }
+    
+    void SetValueFromUserInput(double value, int valIdx) override
     {
         mTextParam->finishEdit();
         IControl::SetValueFromUserInput(value, valIdx);
