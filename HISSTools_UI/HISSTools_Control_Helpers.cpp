@@ -457,6 +457,29 @@ double HISSTools_Text_Helper_Param::roundnessCompensate(double menuTriangleHeigh
     return mPanelRoundness - sqrt(mPanelRoundness * mPanelRoundness - (0.25 * menuTriangleHeight * menuTriangleHeight) - (0.5 * mH) - mPanelRoundness);
 }
 
+// **** Controls **** //
+
+// HISSTools_TextBlock
+// A Text Block 
+
+HISSTools_TextBlock::HISSTools_TextBlock(double x, double y, double w, double h, const char* str, HTextAlign hAlign, VTextAlign vAlign, const char* type, HISSTools_Design_Scheme *designScheme)
+: HISSTools_Text_Helper_Block(x, y, w, h, hAlign, vAlign, "TextBlock", type, designScheme), IControl(IRECT()), HISSTools_Control_Layers()
+{
+    setText(str);
+    mRECT = bounds();
+}
+
+void HISSTools_TextBlock::Draw(IGraphics& g)
+{
+    HISSTools_VecLib vecDraw(g);
+    HISSTools_Text_Helper_Block::Draw(vecDraw);
+}
+
+void HISSTools_TextBlock::setText(const char *str)
+{
+    HISSTools_Text_Helper_Block::setText(str);
+    SetDirty();
+}
 
 // HISSTools_Button
 // On/Off button with text on or off the handle

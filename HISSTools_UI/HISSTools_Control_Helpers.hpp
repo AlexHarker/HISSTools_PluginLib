@@ -225,6 +225,19 @@ private:
 
 // **** Controls **** //
 
+// HISSTools_TextBlock
+// A Text Block
+
+struct HISSTools_TextBlock : public HISSTools_Text_Helper_Block, public iplug::igraphics::IControl, public HISSTools_Control_Layers
+{    
+    HISSTools_TextBlock(double x, double y, double w, double h, const char* str = "", HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter, const char* type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme);
+    
+    void Draw(IGraphics& g) override;
+    
+    void setText(const char *str);
+};
+
+
 // HISSTools_Button
 // On/Off button with text on or off the handle
 // FIX - Momentary action and extensibility!!

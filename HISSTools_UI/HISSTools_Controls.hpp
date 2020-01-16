@@ -1171,40 +1171,6 @@ public:
 };
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////// HISSTools TextBlock ////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-// A Text Block (Static or otherwise)
-
-class HISSTools_TextBlock : public HISSTools_Text_Helper_Block, public iplug::igraphics::IControl, public HISSTools_Control_Layers
-{
-	
-public:
-	
-	// Constructors
-	
-	HISSTools_TextBlock(double x, double y, double w, double h, const char* str = "", HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter, const char* type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
-	: HISSTools_Text_Helper_Block(x, y, w, h, hAlign, vAlign, "TextBlock", type, designScheme), IControl(IRECT()), HISSTools_Control_Layers()
-	{
-		setText(str);
-		mRECT = bounds();
-	}
-	
-	void Draw(IGraphics& g)
-	{
-        HISSTools_VecLib vecDraw(g);
-        HISSTools_Text_Helper_Block::Draw(vecDraw);
-	}
-	
-	void setText(const char *str)
-	{
-		HISSTools_Text_Helper_Block::setText(str);
-		SetDirty();
-	}
-};
-
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////// HISSTools Panel ///////////////////////////////////////////
