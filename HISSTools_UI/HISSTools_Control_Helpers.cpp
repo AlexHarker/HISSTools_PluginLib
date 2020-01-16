@@ -456,3 +456,109 @@ double HISSTools_Text_Helper_Param::roundnessCompensate(double menuTriangleHeigh
     
     return mPanelRoundness - sqrt(mPanelRoundness * mPanelRoundness - (0.25 * menuTriangleHeight * menuTriangleHeight) - (0.5 * mH) - mPanelRoundness);
 }
+
+
+// HISSTools_Button
+// On/Off button with text on or off the handle
+// FIX - Momentary action and extensibility!!
+
+// Constructor
+    
+HISSTools_Button::HISSTools_Button(int paramIdx, double x, double y, double w, double h, const char *type, HISSTools_Design_Scheme *designScheme, const char *label)
+: IControl(IRECT(), paramIdx), HISSTools_Control_Layers()
+{
+    // Dimensions
+    
+    mX = x;
+    mY = y;
+    mW = w <= 0 ? designScheme->getDimension("ButtonWidth", type) : w;
+    mH = h <= 0 ? designScheme->getDimension("ButtonHeight", type) : h;
+    
+    double roundness = designScheme->getDimension("ButtonRoundness", type);
+    mRoundness = roundness < 0 ? mH / 2 : roundness;
+    
+    mTextPad = designScheme->getDimension("ButtonTextPad", type);
+    
+    // Label Mode
+    
+    mLabelMode = designScheme->getFlag("ButtonLabelMode", type);
+    
+    // Get Appearance
+    
+    mOutlineTK = designScheme->getDimension("ButtonOutline", type);
+    
+    mShadow = designScheme->getShadow("Button", type);
+    
+    mTextStyle = designScheme->getTextStyle("Button", type);
+    
+    mOnCS = designScheme->getColorSpec("ButtonHandleOn", type);
+    mOffCS = designScheme->getColorSpec("ButtonHandleOff", type);
+    mHandleLabelCS = designScheme->getColorSpec("ButtonHandleLabel", type);
+    mHandleLabelOffCS = designScheme->getColorSpec("ButtonHandleLabelOff", type);
+    mHandleLabelOffCS = mHandleLabelOffCS ? mHandleLabelOffCS : mHandleLabelCS;
+    mOutlineCS = designScheme->getColorSpec("ButtonOutline", type);
+    mBackgroundLabelCS = designScheme->getColorSpec("ButtonBackgroundLabel", type);
+    mInactiveOverlayCS = designScheme->getColorSpec("ButtonInactiveOverlay", type);
+    
+    // Calculate Areas (including shadows and thicknesses)
+    
+    HISSTools_Bounds handleBounds(mX, mY, mLabelMode ? mH : mW, mH);
+    HISSTools_Bounds fullBounds(mX, mY, mW, mH);
+    
+    handleBounds.addThickness(mOutlineTK);
+    
+    fullBounds = mShadow->getBlurBounds(handleBounds);
+    fullBounds.include(fullBounds);
+    
+    mRECT = (fullBounds);
+    SetTargetRECT(handleBounds);
+    
+    mName = label;
+    
+    mDblAsSingleClick = true;
+}
+
+void HISSTools_Button::OnInit()
+{
+    if (GetParam() != nullptr)
+        mName = GetParam()->GetNameForHost();
+        }
+
+// Mousing Functions
+
+void HISSTools_Button::OnMouseDown(float x, float y, const IMouseMod& pMod)
+{
+    SetValue(GetValue() ? 0 : 1.0);
+    SetDirty();
+}
+
+// Draw
+
+void HISSTools_Button::Draw(IGraphics& g)
+{
+    HISSTools_VecLib vecDraw(g);
+    
+    // FIX - Support Label Colour States / Outline Color States? - Multiple States?
+    
+    // Button Rectangle
+    
+    vecDraw.startShadow(mShadow, mRECT);
+    vecDraw.setColor(GetValue() > 0.5 ? mOnCS : mOffCS);
+    vecDraw.fillRoundRect(mX, mY, mLabelMode ? mH : mW, mH, mRoundness);
+    vecDraw.setColor(mOutlineCS);
+    vecDraw.frameRoundRect(mX, mY, mLabelMode ? mH : mW, mH, mRoundness, mOutlineTK);
+    vecDraw.renderShadow();
+    
+    vecDraw.setColor(mLabelMode ? mBackgroundLabelCS : GetValue() > 0.5 ? mHandleLabelCS : mHandleLabelOffCS);
+    vecDraw.text(mTextStyle, mName, mLabelMode ? mX + mH + mTextPad : mX, mY, mLabelMode ? mW - (mH + mTextPad) : mW, mH, mLabelMode ?  kHAlignLeft : kHAlignCenter);
+    
+    // Inactive
+    
+    if (IsDisabled())
+    {
+        // Inactive Overlay
+        
+        vecDraw.setColor(mInactiveOverlayCS);
+        vecDraw.fillRoundRect(mX, mY, mLabelMode ? mH : mW, mH, mRoundness);
+    }
+}

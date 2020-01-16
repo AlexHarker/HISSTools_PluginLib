@@ -5,6 +5,7 @@
 #include "../HISSTools_Graphics/HISSTools_VecLib.hpp"
 #include "HISSTools_Design_Scheme.hpp"
 
+#include <IControl.h>
 
 // HISSTools_Graphics_Types
 // A base struct to bring iplug and igraphics items into scope
@@ -220,6 +221,77 @@ private:
     // Show Units
     
     bool mShowUnits;
+};
+
+// **** Controls **** //
+
+// HISSTools_Button
+// On/Off button with text on or off the handle
+// FIX - Momentary action and extensibility!!
+
+class HISSTools_Button: public iplug::igraphics::IControl, public HISSTools_Control_Layers
+{
+    
+public:
+    
+    // Constructor
+    
+    HISSTools_Button(int paramIdx, double x, double y, double w = 0, double h = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char *label = "");
+    
+public:
+    
+    void OnInit() override;
+    
+    // Mousing Functions
+    
+    void OnMouseDown(float x, float y, const IMouseMod& pMod) override;
+    
+    // Draw
+    
+    void Draw(IGraphics& g) override;
+    
+protected:
+    
+    // Text
+    
+    const char *mName;
+    
+private:
+    
+    // Positioning / Dimensions
+    
+    double mX;
+    double mY;
+    double mW;
+    double mH;
+    double mTextPad;
+    double mRoundness;
+    
+    // Line Thicknesses
+    
+    double mOutlineTK;
+    
+    // Shadow Spec
+    
+    HISSTools_Shadow *mShadow;
+    
+    // Text Spec
+    
+    HISSTools_Text *mTextStyle;
+    
+    // Color Specs
+    
+    HISSTools_Color_Spec *mOnCS;
+    HISSTools_Color_Spec *mOffCS;
+    HISSTools_Color_Spec *mOutlineCS;
+    HISSTools_Color_Spec *mHandleLabelCS;
+    HISSTools_Color_Spec *mHandleLabelOffCS;
+    HISSTools_Color_Spec *mBackgroundLabelCS;
+    HISSTools_Color_Spec *mInactiveOverlayCS;
+    
+    // Label Mode
+    
+    bool mLabelMode;
 };
 
 #include "HISSTools_Control_Helpers.cpp"
