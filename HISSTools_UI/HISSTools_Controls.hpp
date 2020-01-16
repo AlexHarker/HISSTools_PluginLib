@@ -294,7 +294,7 @@ public:
 	void Draw(HISSTools_VecLib& vecDraw)
 	{
 		if (mTextSD)
-			vecDraw.startShadow(mTextSD, IRECT(mX, mY, mX + mW, mY + mH));
+			vecDraw.startShadow(mTextSD, bounds());
 			
 		vecDraw.setColor(mTextCS);
 		vecDraw.text(mTextTS, mStr.Get(), mX, mY, mW, mH, mHAlign, mVAlign);
@@ -423,7 +423,7 @@ public:
 		if (doDrawPanel())
 		{
 			if (mPanelSD)
-				vecDraw.startShadow(mPanelSD, IRECT(mX, mY, mX + mW, mY + mH));
+				vecDraw.startShadow(mPanelSD, bounds());
 		
 			vecDraw.setColor(mPanelFillCS);
 			vecDraw.fillRoundRect(mX, mY, mW, mH, mPanelRoundness);
