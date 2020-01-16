@@ -265,9 +265,9 @@ public:
         
         if (mTextLabel)
         {
-            if (startBackground(g, vecDraw, mRECT))
+            if (startBackground(vecDraw, mRECT))
                 mTextLabel->Draw(vecDraw);
-            renderBackground(g, vecDraw, mRECT);
+            renderBackground(vecDraw, mRECT);
         }
 		mTextParam->Draw(vecDraw);
 	}
@@ -549,7 +549,7 @@ public:
 
 		// Background
 		
-		if (startBackground(g, vecDraw, mRECT))
+		if (startBackground(vecDraw, mRECT))
 		{
 			// Background Circles
 			
@@ -565,7 +565,7 @@ public:
 			mTextLabel->Draw(vecDraw);
 		}
 				
-		renderBackground(g, vecDraw, mRECT);
+		renderBackground(vecDraw, mRECT);
 		
 		// Round positions for integer parameters
 		
@@ -762,7 +762,7 @@ public:
 
 		// Background
 		
-		if (startBackground(g, vecDraw, mRECT))
+		if (startBackground(vecDraw, mRECT))
 		{
 			// Background Rectangle
 		
@@ -772,7 +772,7 @@ public:
 			vecDraw.frameRoundRect(mX, mY, mW, mH, mRoundness, mBoxOutlineTK);
 		}
 		
-		renderBackground(g, vecDraw, mRECT);
+		renderBackground(vecDraw, mRECT);
 		
 		// Handle
 		
@@ -1079,7 +1079,7 @@ public:
         
 		// Background (shadow boxes)
 		
-		if (startBackground(g, vecDraw, mRECT))
+		if (startBackground(vecDraw, mRECT))
 		{		
 			vecDraw.startShadow(mShadow, mRECT);
 			vecDraw.setColor(mOutlineCS);
@@ -1099,7 +1099,7 @@ public:
 			vecDraw.renderShadow(false);
 		}
 		
-		renderBackground(g, vecDraw, mRECT);
+		renderBackground(vecDraw, mRECT);
 
 		// Matrix fills
 		
@@ -1170,128 +1170,6 @@ public:
 	}
 };
 
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////// HISSTools Panel ///////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-// Panel with or without outline and with dropshadow
-
-class HISSTools_Panel: public iplug::igraphics::IControl, public HISSTools_Control_Layers
-{
-	
-private:
-
-	// Positioning / Dimensions
-	
-	double mX;
-	double mY;
-	double mW;
-	double mH;
-	
-	double mRoundnessTL;
-	double mRoundnessTR;
-	double mRoundnessBL;
-	double mRoundnessBR;
-	
-	// Line Thicknesses
-	
-	double mOutlineTK;
-	
-	// Shadow Spec
-	
-	HISSTools_Shadow *mShadow;
-	
-	// Color Specs
-	
-	HISSTools_Color_Spec *mPanelCS;
-	HISSTools_Color_Spec *mOutlineCS;
-	
-	bool mDrawOutline;
-	
-private:
-	
-	double getRoundness(const char *name, const char *type, HISSTools_Design_Scheme *designScheme)
-	{
-		double roundness = designScheme->getDimension(name, type);
-		
-		// FIX - Why height?
-		
-		return roundness < 0 ? mH / 2 : roundness;	
-	}
-	
-public:
-	
-	// Constructor
-	
-	HISSTools_Panel(double x, double y, double w = 0, double h = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
-	: IControl(IRECT()), HISSTools_Control_Layers()
-	{
-		// Dimenasions
-		
-		mX = x;
-		mY = y;
-		mW = w <= 0 ? designScheme->getDimension("PanelWidth", type) : w;
-		mH = h <= 0 ? designScheme->getDimension("PanelHeight", type) : h;
-		
-		mRoundnessTL = getRoundness("PanelRoundnessTL", type, designScheme);
-		mRoundnessTR = getRoundness("PanelRoundnessTR", type, designScheme);
-		mRoundnessBL = getRoundness("PanelRoundnessBL", type, designScheme);
-		mRoundnessBR = getRoundness("PanelRoundnessBR", type, designScheme);
-		
-		// Get Appearance
-		
-		mOutlineTK = designScheme->getDimension("PanelOutline", type);
-		
-		mShadow = designScheme->getShadow("Panel", type);
-			
-		mDrawOutline = designScheme->getFlag("PanelDrawOutline", type);
-		
-		mPanelCS = designScheme->getColorSpec("PanelFill", type);
-		mOutlineCS = designScheme->getColorSpec("PanelOutline", type);
-			
-		// Calculate Areas (including shadows and thicknesses)
-		
-		HISSTools_Bounds fullBounds(mX, mY, mW, mH);
-
-		if (mDrawOutline)
-			fullBounds.addThickness(mOutlineTK);
-		
-		fullBounds = mShadow->getBlurBounds(fullBounds);
-		
-		mRECT = fullBounds;
-	}
-	
-public:
-	
-	// Draw
-	
-	void Draw(IGraphics& g)
-	{
-        HISSTools_VecLib vecDraw(g);
-
-		if (startBackground(g, vecDraw, mRECT))
-		{
-			vecDraw.startShadow(mShadow, mRECT);
-			vecDraw.setColor(mPanelCS);
-			vecDraw.fillRoundRect(mX, mY, mW, mH, mRoundnessTL, mRoundnessTR, mRoundnessBL, mRoundnessBR);
-			if (mDrawOutline)
-			{				
-				vecDraw.setColor(mOutlineCS);
-				vecDraw.frameRoundRect(mX, mY, mW, mH, mRoundnessTL, mRoundnessTR, mRoundnessBL, mRoundnessBR, mOutlineTK);
-			}
-			vecDraw.renderShadow();
-		}
-		
-		// Background
-		
-		renderBackground(g, vecDraw, mRECT);
-	}
-};
-
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////// HISSTools VU ///////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1356,7 +1234,7 @@ public:
         
 		// Parameters
 				
-		if (startBackground(g, vecDraw, mRECT))
+		if (startBackground(vecDraw, mRECT))
 		{
 			vecDraw.setColor(mBackgroundCS);
 			vecDraw.fillRect(mX, mY, mW, mH);
@@ -1369,7 +1247,7 @@ public:
 			vecDraw.renderShadow();
 		}
 		
-		renderBackground(g, vecDraw, mRECT);
+		renderBackground(vecDraw, mRECT);
 		
 		// Meter Rectangles
 		
@@ -1582,7 +1460,7 @@ public:
 		
 		int nTicks = 10;
 		
-		if (startBackground(g, vecDraw, mRECT))
+		if (startBackground(vecDraw, mRECT))
 		{
 			vecDraw.setColor(mBackgroundCS);
 			vecDraw.fillRect(mX, mY, mW, mH);
@@ -1595,7 +1473,7 @@ public:
 			vecDraw.renderShadow();
 		}
 		
-		renderBackground(g, vecDraw, mRECT);
+		renderBackground(vecDraw, mRECT);
 		
 		// Meter Rectangles
 		

@@ -61,6 +61,11 @@ public:
         mGraphics.DrawLayer(layer);
     }
     
+    bool checkGroup(const ILayerPtr& layer)
+    {
+        return mGraphics.CheckLayer(layer);
+    }
+    
     void setColor(HISSTools_Color_Spec *color)
     {
         mColor = color;

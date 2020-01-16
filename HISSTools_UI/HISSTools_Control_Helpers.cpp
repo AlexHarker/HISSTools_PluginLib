@@ -2,28 +2,28 @@
 #include "HISSTools_Controls.hpp"
 #include "IControl.h"
 
-bool HISSTools_Control_Layers::startBackground(IGraphics& g, HISSTools_VecLib& vecDraw, IRECT area)
+bool HISSTools_Control_Layers::startBackground(HISSTools_VecLib& vl, IRECT area)
 {
     if (sNoCaching)
         return true;
     
-    if (!g.CheckLayer(mBackground))
+    if (!vl.checkGroup(mBackground))
     {
-        vecDraw.startGroup(area);
+        vl.startGroup(area);
         return true;
     }
     
     return false;
 }
 
-void HISSTools_Control_Layers::renderBackground(IGraphics& g, HISSTools_VecLib& vecDraw, IRECT area)
+void HISSTools_Control_Layers::renderBackground(HISSTools_VecLib& vl, IRECT area)
 {
     if (!sNoCaching)
     {
-        if (!g.CheckLayer(mBackground))
-            mBackground = vecDraw.endGroup();
+        if (!vl.checkGroup(mBackground))
+            mBackground = vl.endGroup();
         if (mBackground)
-            vecDraw.renderGroup(mBackground);
+            vl.renderGroup(mBackground);
     }
 }
 
@@ -50,16 +50,16 @@ HISSTools_Text_Helper_Block::HISSTools_Text_Helper_Block(double x, double y, dou
     mVAlign = vAlign;
 }
 
-void HISSTools_Text_Helper_Block::Draw(HISSTools_VecLib& vecDraw)
+void HISSTools_Text_Helper_Block::Draw(HISSTools_VecLib& vl)
 {
     if (mTextSD)
-        vecDraw.startShadow(mTextSD, IRECT(mX, mY, mX + mW, mY + mH));
+        vl.startShadow(mTextSD, IRECT(mX, mY, mX + mW, mY + mH));
     
-    vecDraw.setColor(mTextCS);
-    vecDraw.text(mTextTS, mStr.Get(), mX, mY, mW, mH, mHAlign, mVAlign);
+    vl.setColor(mTextCS);
+    vl.text(mTextTS, mStr.Get(), mX, mY, mW, mH, mHAlign, mVAlign);
     
     if (mTextSD)
-        vecDraw.renderShadow();
+        vl.renderShadow();
 }
 
 void HISSTools_Text_Helper_Block::resizeText(double x, double y, double w, double h)
@@ -126,28 +126,28 @@ HISSTools_Text_Helper_Panel::HISSTools_Text_Helper_Panel(double x, double y, dou
     mPanelRoundness = roundness < 0 ? mH / 2 : roundness;
 }
 
-void HISSTools_Text_Helper_Panel::Draw(HISSTools_VecLib& vecDraw, bool drawText)
+void HISSTools_Text_Helper_Panel::Draw(HISSTools_VecLib& vl, bool drawText)
 {
     if (doDrawPanel())
     {
         if (mPanelSD)
-            vecDraw.startShadow(mPanelSD, IRECT(mX, mY, mX + mW, mY + mH));
+            vl.startShadow(mPanelSD, IRECT(mX, mY, mX + mW, mY + mH));
         
-        vecDraw.setColor(mPanelFillCS);
-        vecDraw.fillRoundRect(mX, mY, mW, mH, mPanelRoundness);
+        vl.setColor(mPanelFillCS);
+        vl.fillRoundRect(mX, mY, mW, mH, mPanelRoundness);
         
         if (doDrawOutline())
         {
-            vecDraw.setColor(mPanelOutlineCS);
-            vecDraw.frameRoundRect(mX, mY, mW, mH, mPanelRoundness, mPanelOutlineTK);
+            vl.setColor(mPanelOutlineCS);
+            vl.frameRoundRect(mX, mY, mW, mH, mPanelRoundness, mPanelOutlineTK);
         }
         
         if (mPanelSD)
-            vecDraw.renderShadow();
+            vl.renderShadow();
     }
     
     if (drawText)
-        HISSTools_Text_Helper_Block::Draw(vecDraw);
+        HISSTools_Text_Helper_Block::Draw(vl);
     
 }
 
@@ -368,7 +368,7 @@ void HISSTools_Text_Helper_Param::hilite(bool on)
     Base::mPanelOutlineCS = on && mOutlineHiliteCS ? mOutlineHiliteCS : mPanelOutlineCS;
 }
 
-void HISSTools_Text_Helper_Param::Draw(HISSTools_VecLib& vecDraw)
+void HISSTools_Text_Helper_Param::Draw(HISSTools_VecLib& vl)
 {
     if (mDrawTriangle && menuParam())
     {
@@ -403,7 +403,7 @@ void HISSTools_Text_Helper_Param::Draw(HISSTools_VecLib& vecDraw)
     // Draw Text (with Panel)
     
     setText(str.Get());
-    HISSTools_Text_Helper_Panel::Draw(vecDraw, !mInEdit);
+    HISSTools_Text_Helper_Panel::Draw(vl, !mInEdit);
     
     // Menu Separator / Triangle
     
@@ -413,20 +413,20 @@ void HISSTools_Text_Helper_Param::Draw(HISSTools_VecLib& vecDraw)
         
         if (mDrawSeparator && doDrawOutline())
         {
-            vecDraw.setColor(mPanelOutlineCS);
-            vecDraw.line(mSeparatorX, mY, mSeparatorX, mY + mH, mPanelOutlineTK);
+            vl.setColor(mPanelOutlineCS);
+            vl.line(mSeparatorX, mY, mSeparatorX, mY + mH, mPanelOutlineTK);
         }
         
         // Triangle
         
         if (mTextSD)
-            vecDraw.startShadow(mTextSD, IRECT(mX, mY, mX + mW, mY + mH));
+            vl.startShadow(mTextSD, IRECT(mX, mY, mX + mW, mY + mH));
         
-        vecDraw.setColor(mTextCS);
-        vecDraw.fillTriangle(mMenuTriangleL, mMenuTriangleTop, (mMenuTriangleL + mMenuTriangleR) / 2.0, mMenuTriangleBtm, mMenuTriangleR, mMenuTriangleTop);
+        vl.setColor(mTextCS);
+        vl.fillTriangle(mMenuTriangleL, mMenuTriangleTop, (mMenuTriangleL + mMenuTriangleR) / 2.0, mMenuTriangleBtm, mMenuTriangleR, mMenuTriangleTop);
         
         if (mTextSD)
-            vecDraw.renderShadow();
+            vl.renderShadow();
     }
 }
 
@@ -462,8 +462,8 @@ double HISSTools_Text_Helper_Param::roundnessCompensate(double menuTriangleHeigh
 // HISSTools_TextBlock
 // A Text Block 
 
-HISSTools_TextBlock::HISSTools_TextBlock(double x, double y, double w, double h, const char* str, HTextAlign hAlign, VTextAlign vAlign, const char* type, HISSTools_Design_Scheme *designScheme)
-: HISSTools_Text_Helper_Block(x, y, w, h, hAlign, vAlign, "TextBlock", type, designScheme), IControl(IRECT()), HISSTools_Control_Layers()
+HISSTools_TextBlock::HISSTools_TextBlock(double x, double y, double w, double h, const char* str, HTextAlign hAlign, VTextAlign vAlign, const char* type, HISSTools_Design_Scheme *scheme)
+: HISSTools_Text_Helper_Block(x, y, w, h, hAlign, vAlign, "TextBlock", type, scheme), IControl(IRECT()), HISSTools_Control_Layers()
 {
     setText(str);
     mRECT = bounds();
@@ -471,8 +471,8 @@ HISSTools_TextBlock::HISSTools_TextBlock(double x, double y, double w, double h,
 
 void HISSTools_TextBlock::Draw(IGraphics& g)
 {
-    HISSTools_VecLib vecDraw(g);
-    HISSTools_Text_Helper_Block::Draw(vecDraw);
+    HISSTools_VecLib vl(g);
+    HISSTools_Text_Helper_Block::Draw(vl);
 }
 
 void HISSTools_TextBlock::setText(const char *str)
@@ -481,47 +481,123 @@ void HISSTools_TextBlock::setText(const char *str)
     SetDirty();
 }
 
+// HISSTools_Panel
+// Panel with or without outline and with dropshadow
+
+double HISSTools_Panel::GetRoundness(const char *name, const char *type, HISSTools_Design_Scheme *scheme)
+{
+    double roundness = scheme->getDimension(name, type);
+    
+    // FIX - Why height?
+    
+    return roundness < 0 ? mH / 2 : roundness;
+}
+
+// Constructor
+
+HISSTools_Panel::HISSTools_Panel(double x, double y, double w, double h, const char *type, HISSTools_Design_Scheme *scheme)
+: IControl(IRECT()), HISSTools_Control_Layers()
+{
+    // Dimenasions
+    
+    mX = x;
+    mY = y;
+    mW = w <= 0 ? scheme->getDimension("PanelWidth", type) : w;
+    mH = h <= 0 ? scheme->getDimension("PanelHeight", type) : h;
+    
+    mRoundnessTL = GetRoundness("PanelRoundnessTL", type, scheme);
+    mRoundnessTR = GetRoundness("PanelRoundnessTR", type, scheme);
+    mRoundnessBL = GetRoundness("PanelRoundnessBL", type, scheme);
+    mRoundnessBR = GetRoundness("PanelRoundnessBR", type, scheme);
+    
+    // Get Appearance
+    
+    mOutlineTK = scheme->getDimension("PanelOutline", type);
+    
+    mShadow = scheme->getShadow("Panel", type);
+    
+    mDrawOutline = scheme->getFlag("PanelDrawOutline", type);
+    
+    mPanelCS = scheme->getColorSpec("PanelFill", type);
+    mOutlineCS = scheme->getColorSpec("PanelOutline", type);
+    
+    // Calculate Areas (including shadows and thicknesses)
+    
+    HISSTools_Bounds fullBounds(mX, mY, mW, mH);
+    
+    if (mDrawOutline)
+        fullBounds.addThickness(mOutlineTK);
+    
+    fullBounds = mShadow->getBlurBounds(fullBounds);
+    
+    mRECT = fullBounds;
+}
+
+// Draw
+
+void HISSTools_Panel::Draw(IGraphics& g)
+{
+    HISSTools_VecLib vl(g);
+    
+    if (startBackground(vl, mRECT))
+    {
+        vl.startShadow(mShadow, mRECT);
+        vl.setColor(mPanelCS);
+        vl.fillRoundRect(mX, mY, mW, mH, mRoundnessTL, mRoundnessTR, mRoundnessBL, mRoundnessBR);
+        if (mDrawOutline)
+        {
+            vl.setColor(mOutlineCS);
+            vl.frameRoundRect(mX, mY, mW, mH, mRoundnessTL, mRoundnessTR, mRoundnessBL, mRoundnessBR, mOutlineTK);
+        }
+        vl.renderShadow();
+    }
+    
+    // Background
+    
+    renderBackground(vl, mRECT);
+}
+
 // HISSTools_Button
 // On/Off button with text on or off the handle
 // FIX - Momentary action and extensibility!!
 
 // Constructor
     
-HISSTools_Button::HISSTools_Button(int paramIdx, double x, double y, double w, double h, const char *type, HISSTools_Design_Scheme *designScheme, const char *label)
+HISSTools_Button::HISSTools_Button(int paramIdx, double x, double y, double w, double h, const char *type, HISSTools_Design_Scheme *scheme, const char *label)
 : IControl(IRECT(), paramIdx), HISSTools_Control_Layers()
 {
     // Dimensions
     
     mX = x;
     mY = y;
-    mW = w <= 0 ? designScheme->getDimension("ButtonWidth", type) : w;
-    mH = h <= 0 ? designScheme->getDimension("ButtonHeight", type) : h;
+    mW = w <= 0 ? scheme->getDimension("ButtonWidth", type) : w;
+    mH = h <= 0 ? scheme->getDimension("ButtonHeight", type) : h;
     
-    double roundness = designScheme->getDimension("ButtonRoundness", type);
+    double roundness = scheme->getDimension("ButtonRoundness", type);
     mRoundness = roundness < 0 ? mH / 2 : roundness;
     
-    mTextPad = designScheme->getDimension("ButtonTextPad", type);
+    mTextPad = scheme->getDimension("ButtonTextPad", type);
     
     // Label Mode
     
-    mLabelMode = designScheme->getFlag("ButtonLabelMode", type);
+    mLabelMode = scheme->getFlag("ButtonLabelMode", type);
     
     // Get Appearance
     
-    mOutlineTK = designScheme->getDimension("ButtonOutline", type);
+    mOutlineTK = scheme->getDimension("ButtonOutline", type);
     
-    mShadow = designScheme->getShadow("Button", type);
+    mShadow = scheme->getShadow("Button", type);
     
-    mTextStyle = designScheme->getTextStyle("Button", type);
+    mTextStyle = scheme->getTextStyle("Button", type);
     
-    mOnCS = designScheme->getColorSpec("ButtonHandleOn", type);
-    mOffCS = designScheme->getColorSpec("ButtonHandleOff", type);
-    mHandleLabelCS = designScheme->getColorSpec("ButtonHandleLabel", type);
-    mHandleLabelOffCS = designScheme->getColorSpec("ButtonHandleLabelOff", type);
+    mOnCS = scheme->getColorSpec("ButtonHandleOn", type);
+    mOffCS = scheme->getColorSpec("ButtonHandleOff", type);
+    mHandleLabelCS = scheme->getColorSpec("ButtonHandleLabel", type);
+    mHandleLabelOffCS = scheme->getColorSpec("ButtonHandleLabelOff", type);
     mHandleLabelOffCS = mHandleLabelOffCS ? mHandleLabelOffCS : mHandleLabelCS;
-    mOutlineCS = designScheme->getColorSpec("ButtonOutline", type);
-    mBackgroundLabelCS = designScheme->getColorSpec("ButtonBackgroundLabel", type);
-    mInactiveOverlayCS = designScheme->getColorSpec("ButtonInactiveOverlay", type);
+    mOutlineCS = scheme->getColorSpec("ButtonOutline", type);
+    mBackgroundLabelCS = scheme->getColorSpec("ButtonBackgroundLabel", type);
+    mInactiveOverlayCS = scheme->getColorSpec("ButtonInactiveOverlay", type);
     
     // Calculate Areas (including shadows and thicknesses)
     
@@ -545,7 +621,7 @@ void HISSTools_Button::OnInit()
 {
     if (GetParam() != nullptr)
         mName = GetParam()->GetNameForHost();
-        }
+}
 
 // Mousing Functions
 
@@ -559,21 +635,21 @@ void HISSTools_Button::OnMouseDown(float x, float y, const IMouseMod& pMod)
 
 void HISSTools_Button::Draw(IGraphics& g)
 {
-    HISSTools_VecLib vecDraw(g);
+    HISSTools_VecLib vl(g);
     
     // FIX - Support Label Colour States / Outline Color States? - Multiple States?
     
     // Button Rectangle
     
-    vecDraw.startShadow(mShadow, mRECT);
-    vecDraw.setColor(GetValue() > 0.5 ? mOnCS : mOffCS);
-    vecDraw.fillRoundRect(mX, mY, mLabelMode ? mH : mW, mH, mRoundness);
-    vecDraw.setColor(mOutlineCS);
-    vecDraw.frameRoundRect(mX, mY, mLabelMode ? mH : mW, mH, mRoundness, mOutlineTK);
-    vecDraw.renderShadow();
+    vl.startShadow(mShadow, mRECT);
+    vl.setColor(GetValue() > 0.5 ? mOnCS : mOffCS);
+    vl.fillRoundRect(mX, mY, mLabelMode ? mH : mW, mH, mRoundness);
+    vl.setColor(mOutlineCS);
+    vl.frameRoundRect(mX, mY, mLabelMode ? mH : mW, mH, mRoundness, mOutlineTK);
+    vl.renderShadow();
     
-    vecDraw.setColor(mLabelMode ? mBackgroundLabelCS : GetValue() > 0.5 ? mHandleLabelCS : mHandleLabelOffCS);
-    vecDraw.text(mTextStyle, mName, mLabelMode ? mX + mH + mTextPad : mX, mY, mLabelMode ? mW - (mH + mTextPad) : mW, mH, mLabelMode ?  kHAlignLeft : kHAlignCenter);
+    vl.setColor(mLabelMode ? mBackgroundLabelCS : GetValue() > 0.5 ? mHandleLabelCS : mHandleLabelOffCS);
+    vl.text(mTextStyle, mName, mLabelMode ? mX + mH + mTextPad : mX, mY, mLabelMode ? mW - (mH + mTextPad) : mW, mH, mLabelMode ?  kHAlignLeft : kHAlignCenter);
     
     // Inactive
     
@@ -581,7 +657,7 @@ void HISSTools_Button::Draw(IGraphics& g)
     {
         // Inactive Overlay
         
-        vecDraw.setColor(mInactiveOverlayCS);
-        vecDraw.fillRoundRect(mX, mY, mLabelMode ? mH : mW, mH, mRoundness);
+        vl.setColor(mInactiveOverlayCS);
+        vl.fillRoundRect(mX, mY, mLabelMode ? mH : mW, mH, mRoundness);
     }
 }

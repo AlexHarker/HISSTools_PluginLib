@@ -57,8 +57,8 @@ class HISSTools_Control_Layers : protected virtual HISSTools_Graphics_Types
     
 public:
 	
-    bool startBackground(IGraphics& g, HISSTools_VecLib& vecDraw, IRECT area);
-    void renderBackground(IGraphics& g, HISSTools_VecLib& vecDraw, IRECT area);
+    bool startBackground(HISSTools_VecLib& vl, IRECT area);
+    void renderBackground(HISSTools_VecLib& vl, IRECT area);
     void redrawBackground();
     
 private:
@@ -84,7 +84,7 @@ public:
     : HISSTools_Text_Helper_Block(0, 0, 0, 0 , hAlign, vAlign, name, type, scheme)
     {}
 	
-    void Draw(HISSTools_VecLib& vecDraw);
+    void Draw(HISSTools_VecLib& vl);
 	
     void resizeText(double x, double y, double w, double h);
 	
@@ -130,7 +130,7 @@ public:
     : HISSTools_Text_Helper_Panel(0, 0, 0, 0, 0, 0, hAlign, vAlign, name, type, scheme)
     {}
 	
-    void Draw(HISSTools_VecLib& vecDraw, bool drawText);
+    void Draw(HISSTools_VecLib& vl, bool drawText);
 
     void changePadding(double lPad, double rPad, double hPad);
     void changePadding(double wPad, double hPad);
@@ -188,7 +188,7 @@ public:
     void promptUserInput();
     bool promptUserInput(float x, float y);
 		
-    void Draw(HISSTools_VecLib& vecDraw);
+    void Draw(HISSTools_VecLib& vl);
     
 private:
     
@@ -230,13 +230,62 @@ private:
 
 struct HISSTools_TextBlock : public HISSTools_Text_Helper_Block, public iplug::igraphics::IControl, public HISSTools_Control_Layers
 {    
-    HISSTools_TextBlock(double x, double y, double w, double h, const char* str = "", HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter, const char* type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme);
+    HISSTools_TextBlock(double x, double y, double w, double h, const char* str = "", HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter, const char* type = 0, HISSTools_Design_Scheme *scheme = &DefaultDesignScheme);
     
     void Draw(IGraphics& g) override;
     
     void setText(const char *str);
 };
 
+
+// HISSTools_Panel
+// Panel with or without outline and with dropshadow
+
+class HISSTools_Panel: public iplug::igraphics::IControl, public HISSTools_Control_Layers
+{
+    double GetRoundness(const char *name, const char *type, HISSTools_Design_Scheme *scheme);
+    
+public:
+    
+    // Constructor
+    
+    HISSTools_Panel(double x, double y, double w = 0, double h = 0, const char *type = 0, HISSTools_Design_Scheme *scheme = &DefaultDesignScheme);
+    
+public:
+    
+    // Draw
+    
+    void Draw(IGraphics& g) override;
+    
+private:
+    
+    // Positioning / Dimensions
+    
+    double mX;
+    double mY;
+    double mW;
+    double mH;
+    
+    double mRoundnessTL;
+    double mRoundnessTR;
+    double mRoundnessBL;
+    double mRoundnessBR;
+    
+    // Line Thicknesses
+    
+    double mOutlineTK;
+    
+    // Shadow Spec
+    
+    HISSTools_Shadow *mShadow;
+    
+    // Color Specs
+    
+    HISSTools_Color_Spec *mPanelCS;
+    HISSTools_Color_Spec *mOutlineCS;
+    
+    bool mDrawOutline;
+};
 
 // HISSTools_Button
 // On/Off button with text on or off the handle
@@ -249,7 +298,7 @@ public:
     
     // Constructor
     
-    HISSTools_Button(int paramIdx, double x, double y, double w = 0, double h = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char *label = "");
+    HISSTools_Button(int paramIdx, double x, double y, double w = 0, double h = 0, const char *type = 0, HISSTools_Design_Scheme *scheme = &DefaultDesignScheme, const char *label = "");
     
 public:
     
