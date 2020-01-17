@@ -812,6 +812,10 @@ private:
 	HISSTools_Text_Helper_Param *mTextParam;
 	HISSTools_Text_Helper_Block *mTextLabel;
 	
+    // Name
+    
+    WDL_String mDisplayName;
+
     // Mousing
     
     bool mDrag;
@@ -822,7 +826,7 @@ private:
 	
 public:
 	
-	HISSTools_Value(int paramIdx, double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	HISSTools_Value(int paramIdx, double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char* name = nullptr)
 	: IKnobControlBase(IRECT(), paramIdx), HISSTools_Control_Layers()
 	{
 		// FIX - perhaps just inherit these??
@@ -849,6 +853,9 @@ public:
         
         SetMouseOverWhenDisabled(true);
         SetMouseEventsWhenDisabled(true);
+        
+        if (name)
+            mDisplayName.Set(name);
 	}
 	
 	~HISSTools_Value()
@@ -860,7 +867,12 @@ public:
     void OnInit() override
     {
         if (mTextLabel)
-            mTextLabel->setText((GetParam() != nullptr) ? GetParam()->GetNameForHost() : "");
+        {
+            if (mDisplayName.GetLength())
+                mTextLabel->setText(mDisplayName.Get());
+            else
+                mTextLabel->setText((GetParam() != nullptr) ? GetParam()->GetNameForHost() : "");
+        }
     }
     
 	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
@@ -1356,13 +1368,13 @@ protected:
     
     // Text
     
-    const char *mName;
+    WDL_String mDisplayName;
 	
 public:
 	
 	// Constructor
 	
-	HISSTools_Button(int paramIdx, double x, double y, double w = 0, double h = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char *label = "")
+	HISSTools_Button(int paramIdx, double x, double y, double w = 0, double h = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char *name = "")
 	: IControl(IRECT(), paramIdx), HISSTools_Control_Layers()
 	{
 		// Dimensions
@@ -1410,8 +1422,9 @@ public:
 		
 		mRECT = (fullBounds.iBounds());
 		SetTargetRECT(handleBounds.iBounds());
-		
-        mName = label;
+        
+        if (name)
+            mDisplayName.Set(name);
         
 		mDblAsSingleClick = true;
 	}
@@ -1420,8 +1433,8 @@ public:
 	
     void OnInit() override
     {
-        if (GetParam() != nullptr)
-            mName = GetParam()->GetNameForHost();
+        if (!mDisplayName.GetLength() && GetParam() != nullptr)
+            mDisplayName.Set(GetParam()->GetNameForHost());
     }
     
 	// Mousing Functions
@@ -1450,7 +1463,7 @@ public:
 		vecDraw.renderShadow();
 		
         vecDraw.setColor(mLabelMode ? mBackgroundLabelCS : GetValue() > 0.5 ? mHandleLabelCS : mHandleLabelOffCS);
-		vecDraw.text(mTextStyle, mName, mLabelMode ? mX + mH + mTextPad : mX, mY, mLabelMode ? mW - (mH + mTextPad) : mW, mH, mLabelMode ?  kHAlignLeft : kHAlignCenter);
+		vecDraw.text(mTextStyle, mDisplayName.Get(), mLabelMode ? mX + mH + mTextPad : mX, mY, mLabelMode ? mW - (mH + mTextPad) : mW, mH, mLabelMode ?  kHAlignLeft : kHAlignCenter);
 
 		// Inactive
 		
