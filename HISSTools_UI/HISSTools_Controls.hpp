@@ -532,12 +532,6 @@ private:
 		strcpy(text.mFont, mTextTS->mFont);
 		text.mSize = mTextTS->mSize;
 		
-        // FIX - HACKZ!!
-        
-#ifdef __APPLE__
-        text.mSize = ceil(powf(text.mSize, 0.94));
-#endif
-		
 		switch (mHAlign)
 		{
 			case kHAlignLeft:
