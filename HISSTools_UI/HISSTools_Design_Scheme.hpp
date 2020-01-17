@@ -248,7 +248,7 @@ private:
 		
 		addDimension("DialPromptPadding", 1.0);	
 		addDimension("DialValuePromptRatio", 0.5);
-        addDimension("ValuePromptRatio", 0.35);
+        addDimension("ValuePromptRatio", 0.4);
 
 		// Flags
 		
