@@ -8,9 +8,6 @@
 
 #include <IPlugAPIBase.h>
 #include <IControl.h>
-#include <IControls.h>
-
-const double TEXT_PROMPT_PADDING = 1.;
 
 enum MousingAction {kMouseDown, kMouseUp, kMouseDblClick, kMouseDrag, kMouseWheel, kMouseOver, kMouseOut};
 
