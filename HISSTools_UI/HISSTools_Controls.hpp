@@ -1174,7 +1174,7 @@ public:
         if (mMouseOver)
         {
             mMouseOver = false;
-            SetDirty();
+            SetDirty(false);
         }
     }
     
