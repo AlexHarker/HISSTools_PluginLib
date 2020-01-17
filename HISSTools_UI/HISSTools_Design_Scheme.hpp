@@ -247,8 +247,9 @@ private:
 		// Dial Prompts
 		
 		addDimension("DialPromptPadding", 1.0);	
-		addDimension("DialPromptRatio", 0.8);
-		
+		addDimension("DialValuePromptRatio", 0.5);
+        addDimension("ValuePromptRatio", 0.35);
+
 		// Flags
 		
 		addFlag("ButtonLabelMode", false);

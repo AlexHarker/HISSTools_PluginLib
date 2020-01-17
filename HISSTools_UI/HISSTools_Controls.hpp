@@ -500,6 +500,7 @@ private:
 	
 	iplug::igraphics::IControl *mControl;
 	
+    double mPromptRatio;
 	double mTextHPad;
 	double mSeparatorX;
 	
@@ -588,7 +589,9 @@ public:
 		
 		sprintf(concatenatedName, "%sDrawTriangle", name);
 		drawMenuTriangle = designScheme->getFlag(concatenatedName, type);
-		sprintf(concatenatedName, "%sHilite", name);
+        sprintf(concatenatedName, "%sPromptRatio", name);
+        mPromptRatio = designScheme->getDimension(concatenatedName, type);
+        sprintf(concatenatedName, "%sHilite", name);
 		mTextHiliteCS = designScheme->getColorSpec(concatenatedName, type);
 		sprintf(concatenatedName, "%sPanelHilite", name);
 		mPanelHiliteCS = designScheme->getColorSpec(concatenatedName, type);
@@ -666,8 +669,8 @@ public:
 		double promptLeft = mX + mLPad;
 		double promptWidth = mW - (mLPad + mRPad);
 
-        promptLeft += promptWidth * 0.2;
-        promptWidth *= 0.6;
+        promptLeft += 0.5 * promptWidth * (1.0 - mPromptRatio);
+        promptWidth *= mPromptRatio;
         
 		switch (mVAlign)
 		{
@@ -986,7 +989,6 @@ private:
 	// Text Prompt
 	
 	double mPromptHalfHeight;
-	double mPromptRatio;
 	
 	// Line Thicknesses
 	
@@ -1072,7 +1074,6 @@ public:
 		// Text 
 				
 		mPromptHalfHeight = (0.5 * designScheme->getTextStyle("DialValue", type)->mSize) + designScheme->getDimension("DialPromptPadding", type);
-		mPromptRatio = designScheme->getDimension("DialPromptRatio", type);
 
 		double textPad = designScheme->getDimension("DialPromptPadding", type);
         double halfWidth = mR;// * mPromptRatio;// * mPointerCircRadius;
