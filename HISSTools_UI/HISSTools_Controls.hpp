@@ -873,6 +873,9 @@ public:
     
 	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
 	{
+        mMouseDown = true;
+        mMouseDragValue = GetValue();
+
 		if (pMod.S)
 		{
             SetValueToDefault();
@@ -904,6 +907,7 @@ public:
         else
             mTextParam->hilite(false);
             
+        mMouseDown = false;
         SetDirty(false);
 	}
 	
@@ -1133,6 +1137,9 @@ public:
 	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
 	{
         OnMouseOver(x, y, pMod);
+        
+        mMouseDown = true;
+        mMouseDragValue = GetValue();
         
 		if (pMod.S)
             SetValueToDefault();
