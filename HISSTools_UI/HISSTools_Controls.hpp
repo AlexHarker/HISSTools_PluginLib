@@ -749,14 +749,14 @@ public:
 		
 		// Retrieve Value
 		
-		param->GetDisplayForHost(str);
+		param->GetDisplay(str);
 		
 		// If label is nullptr don't add the space
 		
-		if (mShowUnits && *(param->GetLabelForHost()))
+		if (mShowUnits && *(param->GetLabel()))
 		{
 			str.Append(" ");
-			str.Append(param->GetLabelForHost());
+			str.Append(param->GetLabel());
 		}
 		
 		// Draw Text (with Panel)
@@ -867,7 +867,7 @@ public:
             if (mDisplayName.GetLength())
                 mTextLabel->setText(mDisplayName.Get());
             else
-                mTextLabel->setText((GetParam() != nullptr) ? GetParam()->GetNameForHost() : "");
+                mTextLabel->setText((GetParam() != nullptr) ? GetParam()->GetName() : "");
         }
     }
     
@@ -1111,7 +1111,7 @@ public:
         if (mDisplayName.GetLength())
             mTextLabel->setText(mDisplayName.Get());
         else
-            mTextLabel->setText(GetParam() != nullptr ? GetParam()->GetNameForHost() : "");
+            mTextLabel->setText(GetParam() != nullptr ? GetParam()->GetName() : "");
     }
     
 private:
@@ -1428,7 +1428,7 @@ public:
     void OnInit() override
     {
         if (!mDisplayName.GetLength() && GetParam() != nullptr)
-            mDisplayName.Set(GetParam()->GetNameForHost());
+            mDisplayName.Set(GetParam()->GetName());
     }
     
 	// Mousing Functions
