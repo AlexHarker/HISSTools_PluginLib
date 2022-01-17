@@ -197,42 +197,11 @@ public:
     
     void text(HISSTools_Text *pTxt, const char *str, double x, double y, double w, double h, HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter)
     {
-#ifndef USE_LICE_TEXT
         IText textSpec(pTxt->mSize, mColor->getColor(), pTxt->mFont, (EAlign) hAlign, (EVAlign) vAlign, 0);
         IRECT rect(x, y, x + w, y + h);
         mGraphics.DrawText(textSpec, str, rect);
         
         setShapeGradient(IRECT(floor(x), floor(y), ceil(x + w), ceil(y + h)));
-#else
-        double scale = mGraphics.GetScreenScale() * mGraphics.GetDrawScale();
-        
-        int width = mGraphics.Width() * scale;
-        int height = mGraphics.Height() * scale;
-        
-        // This allows the window to be any size...
-        
-        width = (width + 3 ) &~ 3;
-        
-        LICE_IBitmap *bitmap = new LICE_SysBitmap(width, height);
-        LICE_Clear(bitmap, 0);
-        HISSTools_LICE_Text::text(bitmap, pTxt, str, x, y, w, h, scale, hAlign, vAlign);
-        
-        setShapeGradient(IRECT(floor(x), floor(y), ceil(x + w), ceil(y + h)));
-        
-        mGraphics.PathTransformSave();
-        setClip(HISSTools_Bounds(x, y, w, h));
-        int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
-        cairo_surface_t *surface = cairo_image_surface_create_for_data((unsigned char *) bitmap->getBits(), CAIRO_FORMAT_ARGB32, width, height, stride);
-        mGraphics.PathTransformScale(1.0/scale);
-        iplug::igraphics::IColor color = mColor->getColor();
-        cairo_t *context = (cairo_t *) mGraphics.GetDrawContext();
-        cairo_set_source_rgba(context, color.R / 255.0, color.G / 225.0, color.B / 225.0, color.A / 225.0);
-        cairo_mask_surface(context, surface, 0, 0);
-        mGraphics.PathTransformRestore();
-        setClip();
-        cairo_surface_destroy(surface);
-        delete bitmap;
-#endif
     }
     
     static double getTextLineHeight(HISSTools_Text *pTxt)
