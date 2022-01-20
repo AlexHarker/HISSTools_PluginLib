@@ -219,7 +219,7 @@ class HISSTools_Invisible_Tabs : public iplug::igraphics::IControl, public HISST
     
 public:
 	
-	HISSTools_Invisible_Tabs(int paramInx) : IControl(IRECT(), paramInx), HISSTools_Tabs(this) {}
+	HISSTools_Invisible_Tabs(int paramIdx) : IControl(IRECT(), paramIdx), HISSTools_Tabs(this) {}
 	
     void OnInit() override                           { init(); }
 	void Draw(IGraphics& g) override                 { }
