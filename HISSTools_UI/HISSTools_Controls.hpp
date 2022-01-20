@@ -136,17 +136,10 @@ private:
 	
 	void updateItems()
 	{
-		std::vector<TabItem>::iterator it;
-		
 		bool tabObjectHidden = mTabControl->IsHidden();
 		
-		for (it = mItems.begin(); it != mItems.end(); it++)
-			if (it->mTabNumber != mCurrentTabNumber)
-				it->mControl->Hide(true);
-				
-		for (it = mItems.begin(); it != mItems.end(); it++)
-			if (it->mTabNumber == mCurrentTabNumber)
-				it->mControl->Hide(tabObjectHidden);
+		for (auto it = mItems.begin(); it != mItems.end(); it++)
+            it->mControl->Hide(tabObjectHidden || clipTabNumber(it->mTabNumber) != mCurrentTabNumber);
 	}
 	
 	int clipTabNumber(int tabNumber)
@@ -161,26 +154,23 @@ public:
 	
 	// You should pass the inheriting class here, after constructing the control, which must be mapped to a valid parameter of the plug - the tabs are tied to the parameter, rather than the control
 	
-    HISSTools_Tabs(iplug::igraphics::IControl *tabControl) : mParam(nullptr)
-	{		
-		mTabControl = tabControl;
-
-		// N.B. - mMaxTabNumber is one lass than the number of actual tabs (zero referenced)
-
-		mMaxTabNumber = mParam != NULL ? round(mParam->GetRange()) : 0;
-		tabSetDirty(false);
-	}
+    HISSTools_Tabs(iplug::igraphics::IControl *tabControl) : mTabControl(tabControl), mParam(nullptr)
+	{}
 	
     // Call this from OnInit in the inheriting class
     
     void init()
     {
         mParam = mTabControl->GetParam();
+        mMaxTabNumber = mParam != nullptr ? round(mParam->GetRange()) : 0;
+        tabSetDirty(false);
     }
     
 	void attachControl(iplug::igraphics::IControl *control, int tabNumber)
 	{
-		mItems.push_back(TabItem(control, clipTabNumber(tabNumber)));
+        // N.B. - mMaxTabNumber is one lass than the number of actual tabs (zero referenced)
+
+		mItems.push_back(TabItem(control, tabNumber));
 		updateItems();
 	}
 	
@@ -208,7 +198,7 @@ public:
 	// These functions should be declared in any inheriting classes, and should call the related tab versions
 	
 	virtual void Hide(bool hide) = 0;
-	virtual void SetDirty(bool pushParamToPlug) = 0;
+	virtual void SetDirty(bool pushParamToPlug, int) = 0;
 };
 
 
@@ -221,10 +211,10 @@ public:
 	
 	HISSTools_Invisible_Tabs(int paramIdx) : IControl(IRECT(), paramIdx), HISSTools_Tabs(this) {}
 	
-    void OnInit() override                           { init(); }
-	void Draw(IGraphics& g) override                 { }
-	void Hide(bool hide) override                    { tabHide(hide); }
-	void SetDirty(bool pushParamToPlug) override     { tabSetDirty(pushParamToPlug); }
+    void OnInit() override                              { init(); }
+	void Draw(IGraphics& g) override                    { }
+	void Hide(bool hide) override                       { tabHide(hide); }
+	void SetDirty(bool pushParamToPlug, int) override   { tabSetDirty(pushParamToPlug); }
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
