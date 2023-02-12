@@ -6,9 +6,7 @@
 #include <vector>
 
 #include <IPlugAPIBase.h>
-#include <IControls.h>
-
-const double TEXT_PROMPT_PADDING = 1.;
+#include <IControl.h>
 
 enum MousingAction {kMouseDown, kMouseUp, kMouseDblClick, kMouseDrag, kMouseWheel, kMouseOver, kMouseOut};
 
@@ -41,17 +39,10 @@ private:
 	
 	void updateItems()
 	{
-		std::vector<TabItem>::iterator it;
-		
 		bool tabObjectHidden = mTabControl->IsHidden();
 		
-		for (it = mItems.begin(); it != mItems.end(); it++)
-			if (it->mTabNumber != mCurrentTabNumber)
-				it->mControl->Hide(true);
-				
-		for (it = mItems.begin(); it != mItems.end(); it++)
-			if (it->mTabNumber == mCurrentTabNumber)
-				it->mControl->Hide(tabObjectHidden);
+		for (auto it = mItems.begin(); it != mItems.end(); it++)
+            it->mControl->Hide(tabObjectHidden || clipTabNumber(it->mTabNumber) != mCurrentTabNumber);
 	}
 	
 	int clipTabNumber(int tabNumber)
@@ -66,26 +57,23 @@ public:
 	
 	// You should pass the inheriting class here, after constructing the control, which must be mapped to a valid parameter of the plug - the tabs are tied to the parameter, rather than the control
 	
-    HISSTools_Tabs(iplug::igraphics::IControl *tabControl) : mParam(nullptr)
-	{		
-		mTabControl = tabControl;
-
-		// N.B. - mMaxTabNumber is one lass than the number of actual tabs (zero referenced)
-
-		mMaxTabNumber = mParam != NULL ? round(mParam->GetRange()) : 0;
-		tabSetDirty(false);
-	}
+    HISSTools_Tabs(iplug::igraphics::IControl *tabControl) : mTabControl(tabControl), mParam(nullptr)
+	{}
 	
     // Call this from OnInit in the inheriting class
     
     void init()
     {
         mParam = mTabControl->GetParam();
+        mMaxTabNumber = mParam != nullptr ? round(mParam->GetRange()) : 0;
+        tabSetDirty(false);
     }
     
 	void attachControl(iplug::igraphics::IControl *control, int tabNumber)
 	{
-		mItems.push_back(TabItem(control, clipTabNumber(tabNumber)));
+        // N.B. - mMaxTabNumber is one lass than the number of actual tabs (zero referenced)
+
+		mItems.push_back(TabItem(control, tabNumber));
 		updateItems();
 	}
 	
@@ -113,7 +101,7 @@ public:
 	// These functions should be declared in any inheriting classes, and should call the related tab versions
 	
 	virtual void Hide(bool hide) = 0;
-	virtual void SetDirty(bool pushParamToPlug) = 0;
+	virtual void SetDirty(bool pushParamToPlug, int) = 0;
 };
 
 
@@ -124,12 +112,12 @@ class HISSTools_Invisible_Tabs : public iplug::igraphics::IControl, public HISST
     
 public:
 	
-	HISSTools_Invisible_Tabs(int paramInx) : IControl(IRECT(), paramInx), HISSTools_Tabs(this) {}
+	HISSTools_Invisible_Tabs(int paramIdx) : IControl(IRECT(), paramIdx), HISSTools_Tabs(this) {}
 	
-    void OnInit() override                           { init(); }
-	void Draw(IGraphics& g) override                 { }
-	void Hide(bool hide) override                    { tabHide(hide); }
-	void SetDirty(bool pushParamToPlug) override     { tabSetDirty(pushParamToPlug); }
+    void OnInit() override                              { init(); }
+	void Draw(IGraphics& g) override                    { }
+	void Hide(bool hide) override                       { tabHide(hide); }
+	void SetDirty(bool pushParamToPlug, int) override   { tabSetDirty(pushParamToPlug); }
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -150,6 +138,10 @@ private:
 	HISSTools_Text_Helper_Param *mTextParam;
 	HISSTools_Text_Helper_Block *mTextLabel;
 	
+    // Name
+    
+    WDL_String mDisplayName;
+
     // Mousing
     
     bool mDrag;
@@ -160,7 +152,7 @@ private:
 	
 public:
 	
-	HISSTools_Value(int paramIdx, double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	HISSTools_Value(int paramIdx, double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char* name = nullptr)
 	: IKnobControlBase(IRECT(), paramIdx), HISSTools_Control_Layers()
 	{
 		// FIX - perhaps just inherit these??
@@ -187,6 +179,9 @@ public:
         
         SetMouseOverWhenDisabled(true);
         SetMouseEventsWhenDisabled(true);
+        
+        if (name)
+            mDisplayName.Set(name);
 	}
 	
 	~HISSTools_Value()
@@ -198,11 +193,19 @@ public:
     void OnInit() override
     {
         if (mTextLabel)
-            mTextLabel->setText((GetParam() != nullptr) ? GetParam()->GetNameForHost() : "");
+        {
+            if (mDisplayName.GetLength())
+                mTextLabel->setText(mDisplayName.Get());
+            else
+                mTextLabel->setText((GetParam() != nullptr) ? GetParam()->GetName() : "");
+        }
     }
     
 	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
 	{
+        mMouseDown = true;
+        mMouseDragValue = GetValue();
+
 		if (pMod.S)
 		{
             SetValueToDefault();
@@ -234,6 +237,7 @@ public:
         else
             mTextParam->hilite(false);
             
+        mMouseDown = false;
         SetDirty(false);
 	}
 	
@@ -312,7 +316,6 @@ private:
 	// Text Prompt
 	
 	double mPromptHalfHeight;
-	double mPromptRatio;
 	
 	// Line Thicknesses
 	
@@ -398,7 +401,6 @@ public:
 		// Text 
 				
 		mPromptHalfHeight = (0.5 * designScheme->getTextStyle("DialValue", type)->mSize) + designScheme->getDimension("DialPromptPadding", type);
-		mPromptRatio = designScheme->getDimension("DialPromptRatio", type);
 
 		double textPad = designScheme->getDimension("DialPromptPadding", type);
         double halfWidth = mR;// * mPromptRatio;// * mPointerCircRadius;
@@ -443,7 +445,7 @@ public:
         if (mDisplayName.GetLength())
             mTextLabel->setText(mDisplayName.Get());
         else
-            mTextLabel->setText(GetParam() != nullptr ? GetParam()->GetNameForHost() : "");
+            mTextLabel->setText(GetParam() != nullptr ? GetParam()->GetName() : "");
     }
     
 private:
@@ -465,6 +467,9 @@ public:
 	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
 	{
         OnMouseOver(x, y, pMod);
+        
+        mMouseDown = true;
+        mMouseDragValue = GetValue();
         
 		if (pMod.S)
             SetValueToDefault();
@@ -500,11 +505,19 @@ public:
         if (mMouseOver)
         {
             mMouseOver = false;
-            SetDirty();
+            SetDirty(false);
         }
     }
     
-    virtual void SetValueFromUserInput(double value, int valIdx) override
+    void SetDisabled(bool disable) override
+    {
+        bool old = mDisabled;
+        mDisabled = disable;
+        if (disable != old)
+            SetDirty(false);
+    }
+    
+    void SetValueFromUserInput(double value, int valIdx) override
     {
         mTextParam->finishEdit();
         IControl::SetValueFromUserInput(value, valIdx);
@@ -864,25 +877,11 @@ private:
 	int mXHilite;
 	int mYHilite;
 	
-public:
-	
-	// FIX - Consider making the variables private again
-	
-	// Mousing Info
-	
-	MousingAction mMousing;
-
-	IMouseMod mPMod;
-	
-	int mXPos;
-	int mYPos;
-
-	int mMouseWheel;
-	
-	bool mValidReport;
-	
-private:
-	
+    // Mousing Info
+    
+    int mXPos;
+    int mYPos;
+    	
 	bool coordsToIndices(double x, double y, int *xPos, int *yPos)
 	{
 		*xPos = -1;
@@ -915,21 +914,7 @@ private:
 		return false;
 	}
 	
-	void reportToPlug()
-	{
-        // TODO - FIX
-        /*
-		if (mParamIdx >= 0)
-		{
-            IPlugAPIBase *plug = dynamic_cast<IPlugAPIBase *>(&mDelegate);
-            
-			mValidReport = true;
-            plug->OnParamChange(mParamIdx, kUI);
-			mValidReport = false;
-		}
-        */
-	}
-	
+	virtual void reportToPlug(int xPos, int yPos, const IMouseMod& mod, MousingAction action, float wheel = 0.f) {}
 	
 public:
 	
@@ -1010,8 +995,6 @@ public:
 		
 		mRECT = fullBoxBounds;
 		SetTargetRECT(boxBoundsOutline);
-		
-		mValidReport = false;
 	}
 	
 	~HISSTools_Matrix()
@@ -1019,16 +1002,16 @@ public:
 		delete[] mStates;
 	}
 	
-	 // Mousing Functions
+    int getXPos() const { return mXPos; }
+    int getYPos() const { return mYPos; }
+    
+    // Mousing Functions
 	 
-	bool OnMousing(float x, float y, const IMouseMod& pMod, MousingAction action)
+	bool OnMousing(float x, float y, const IMouseMod& mod, MousingAction action, float wheel = 0.f)
 	{
-		mMousing = action;
-		mPMod = pMod;
-		
 		if (coordsToIndices(x, y, &mXPos, &mYPos))
 		{
-			reportToPlug();
+			reportToPlug(mXPos, mYPos, mod, action, wheel);
 			
 			return true;
 		}
@@ -1036,35 +1019,34 @@ public:
 		return false;
 	}
 	
-	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
+	void OnMouseDown(float x, float y, const IMouseMod& mod) override
 	{
-		OnMousing(x, y, pMod, kMouseDown);
+		OnMousing(x, y, mod, kMouseDown);
 	}
 	
-	void OnMouseUp(float x, float y, const IMouseMod& pMod) override
+	void OnMouseUp(float x, float y, const IMouseMod& mod) override
 	{
-		OnMousing(x, y, pMod, kMouseUp);
+		OnMousing(x, y, mod, kMouseUp);
 	}
 	
-	void OnMouseDblClick(float x, float y, const IMouseMod& pMod) override
+	void OnMouseDblClick(float x, float y, const IMouseMod& mod) override
 	{
-		OnMousing(x, y, pMod, kMouseDblClick);
+		OnMousing(x, y, mod, kMouseDblClick);
 	}
 	
-	void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& pMod) override
+	void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& mod) override
 	{
-		OnMousing(x, y, pMod, kMouseDrag);
+		OnMousing(x, y, mod, kMouseDrag);
 	}
 	
 	void OnMouseWheel(float x, float y, const IMouseMod& pMod, float d) override
 	{
-        mMouseWheel = d;
-		OnMousing(x, y, pMod, kMouseWheel);
+		OnMousing(x, y, pMod, kMouseWheel, d);
 	}
 	
-	void OnMouseOver(float x, float y, const IMouseMod& pMod) override
+	void OnMouseOver(float x, float y, const IMouseMod& mod) override
 	{
-		if (OnMousing(x, y, pMod, kMouseOver) == false)
+		if (OnMousing(x, y, mod, kMouseOver) == false)
 			OnMouseOut();
 		else
 			SetDirty(false);
@@ -1072,11 +1054,10 @@ public:
 	
 	virtual void OnMouseOut() override
 	{
-		mMousing = kMouseOut;
-		mXPos = -1;
-		mXPos = -1;
-		
-		reportToPlug();
+        mXPos = -1;
+        mXPos = -1;
+        
+		reportToPlug(-1, -1, IMouseMod(), kMouseOut);
 		
 		SetDirty(false);
 	}
@@ -1170,15 +1151,8 @@ public:
 		
 		SetDirty(false);
 	}
-	
-	bool validReport(bool reset = true)
-	{
-		bool validReport = mValidReport;
-		if (reset)
-			mValidReport = false;
-		return validReport;
-	}
 };
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////// HISSTools VU ///////////////////////////////////////////
@@ -1259,7 +1233,7 @@ public:
 		
 		renderBackground(vecDraw, mRECT);
 		
-		// Meter Rectangles
+		// Progress Rectangles
 		
 		vecDraw.forceGradientBox(mX, mY, mX + mW, mY + mH);
 		
@@ -1296,9 +1270,60 @@ public:
 // The meter supports two on meter levels (drawn in order) and a side value, typically intended for peak hold
 
 
-class HISSTools_MeterTest : public iplug::igraphics::IControl, public HISSTools_Control_Layers
+class HISSTools_VUMeter : public iplug::igraphics::IControl, public HISSTools_Control_Layers
 {
-	
+    enum
+    {
+        kUpdateTag = 0,
+    };
+    
+    struct MeterValues
+    {
+        double mVU1;
+        double mVU2;
+        double mSide;
+        bool mPeak;
+        bool mLinear;
+    };
+    
+public:
+        
+    class Sender
+    {
+        
+    public:
+        
+        Sender(int controlTag) : mControlTag(controlTag), mQueue(32) {}
+        
+        void Set(double VU1, double VU2, double side, bool peak, bool linear = true)
+        {
+            mQueue.Push(MeterValues{ VU1, VU2, side, peak, linear });
+        }
+        
+        void UpdateControl(IEditorDelegate& dlg)
+        {
+            while (mQueue.ElementsAvailable())
+            {
+                MeterValues v;
+                mQueue.Pop(v);
+                dlg.SendControlMsgFromDelegate(mControlTag, kUpdateTag, sizeof(MeterValues), (void*) &v);
+            }
+        }
+        
+        void Reset()
+        {
+            MeterValues v;
+            
+            while (mQueue.ElementsAvailable())
+                mQueue.Pop(v);
+        }
+        
+    private:
+        
+        int mControlTag;
+        IPlugQueue<MeterValues> mQueue;
+    };
+    
 private:
 
 	// Positioning / Dimensions
@@ -1379,7 +1404,7 @@ private:
 	
 public:
 	
-	HISSTools_MeterTest(double x, double y, double w, double h, bool flip = false, double minDB = -60, double maxDB = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	HISSTools_VUMeter(double x, double y, double w, double h, bool flip = false, double minDB = -60, double maxDB = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
 	: IControl(IRECT()), HISSTools_Control_Layers()
 	{
 		// Dimensions
@@ -1448,20 +1473,24 @@ public:
 		mRECT = IRECT(floor(mX) - 10, floor(mY) - 10, ceil(mX + mW) + 10, ceil(mY + mH) + 10);
 	}
 	
-	~HISSTools_MeterTest() {}
+	~HISSTools_VUMeter() {}
 	
-	void setLevels(double VU1, double VU2, double side, bool peak, bool linear = true)
+    void OnMsgFromDelegate(int messageTag, int dataSize, const void* pData) override
 	{
-		mVU1Size = getSize(VU1, linear);
-		mVU2Size = getSize(VU2, linear);
-		mSideSize = getSize(side, linear);
+        if (messageTag == kUpdateTag && dataSize == sizeof(MeterValues))
+        {
+            MeterValues* pTypedData = (MeterValues*) pData;
+            
+            mVU1Size = getSize(pTypedData->mVU1, pTypedData->mLinear);
+            mVU2Size = getSize(pTypedData->mVU2, pTypedData->mLinear);
+            mSideSize = getSize(pTypedData->mSide, pTypedData->mLinear);
+            mPeak = pTypedData->mPeak;
 		
-		mPeak = peak;
-		
-		SetDirty(false);
+            SetDirty(false);
+        }
 	}
 	
-	void Draw(IGraphics& g)
+	void Draw(IGraphics& g) override
 	{
         HISSTools_VecLib vecDraw(g);
 		vecDraw.setColorOrientation(mW < mH ? kCSOrientVertical : kCSOrientHorizontal);
@@ -1549,7 +1578,7 @@ public:
 			else
 				vertTick(vecDraw, mTick3, mTick4, mX, mW, mSideSize, mPeakHoldTK);
 		}
-
+         
 		vecDraw.forceGradientBox();
 		
 		// Outline Again
@@ -1589,25 +1618,10 @@ private:
 	
 	EFileAction mFileAction;
 	EFileSelectorState mState;
-	
-	bool mValidReport;
-	
+		
 private:
 
-	virtual void reportToPlug()
-	{
-		if (GetParamIdx() >= 0)
-		{
-            // TODO - FIX
-            /*
-            IPlugAPIBase *plug = dynamic_cast<IPlugAPIBase *>(&mDelegate);
-            
-			mValidReport = true;
-            plug->OnParamChange(mParamIdx, kUI);
-			mValidReport = false;
-            */
-		}
-	}
+	virtual void reportToPlug() {}
 	
 public:
 	
@@ -1615,9 +1629,7 @@ public:
 		
 	HISSTools_FileSelector(int paramIdx, double x, double y, double w, double h, EFileAction action, char* dir = "", char* extensions = "", const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char *label = "")
 	: HISSTools_Button(paramIdx, x, y, w, h, type, designScheme, label) , mState(kFSNone), mFileAction(action), mDir(dir), mExtensions(extensions)
-	{
-		mValidReport = false;
-	}
+	{}
 
     void OnMouseDown(float x, float y, const IMouseMod& pMod) override
     {
@@ -1700,16 +1712,8 @@ public:
 	{
 		mFile.Set(file);
 	}
-	
-	bool validReport(bool reset = true)
-	{
-		bool valid = mValidReport;
-		if (reset)
-			mValidReport = false;
-		return valid;
-	}
     
-    void setExtensions(char *extensions)
+    void SetExtensions(char *extensions)
     {
         mExtensions.Set(extensions);
     }

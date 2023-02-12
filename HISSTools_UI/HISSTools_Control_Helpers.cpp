@@ -390,14 +390,14 @@ void HISSTools_Text_Helper_Param::Draw(HISSTools_VecLib& vl)
     
     // Retrieve Value
     
-    param->GetDisplayForHost(str);
+    param->GetDisplay(str);
     
     // If label is nullptr don't add the space
     
-    if (mShowUnits && *(param->GetLabelForHost()))
+    if (mShowUnits && *(param->GetLabel()))
     {
         str.Append(" ");
-        str.Append(param->GetLabelForHost());
+        str.Append(param->GetLabel());
     }
     
     // Draw Text (with Panel)
@@ -563,7 +563,7 @@ void HISSTools_Panel::Draw(IGraphics& g)
 
 // Constructor
     
-HISSTools_Button::HISSTools_Button(int paramIdx, double x, double y, double w, double h, const char *type, HISSTools_Design_Scheme *scheme, const char *label)
+HISSTools_Button::HISSTools_Button(int paramIdx, double x, double y, double w, double h, const char *type, HISSTools_Design_Scheme *scheme, const char *name)
 : IControl(IRECT(), paramIdx), HISSTools_Control_Layers()
 {
     // Dimensions
@@ -609,18 +609,19 @@ HISSTools_Button::HISSTools_Button(int paramIdx, double x, double y, double w, d
     fullBounds = mShadow->getBlurBounds(handleBounds);
     fullBounds.include(fullBounds);
     
-    mRECT = (fullBounds);
+    mRECT = fullBounds;
     SetTargetRECT(handleBounds);
     
-    mName = label;
+    if (name)
+        mDisplayName.Set(name);
     
     mDblAsSingleClick = true;
 }
 
 void HISSTools_Button::OnInit()
 {
-    if (GetParam() != nullptr)
-        mName = GetParam()->GetNameForHost();
+    if (!mDisplayName.GetLength() && GetParam() != nullptr)
+        mDisplayName.Set(GetParam()->GetName());
 }
 
 // Mousing Functions
@@ -649,7 +650,7 @@ void HISSTools_Button::Draw(IGraphics& g)
     vl.renderShadow();
     
     vl.setColor(mLabelMode ? mBackgroundLabelCS : GetValue() > 0.5 ? mHandleLabelCS : mHandleLabelOffCS);
-    vl.text(mTextStyle, mName, mLabelMode ? mX + mH + mTextPad : mX, mY, mLabelMode ? mW - (mH + mTextPad) : mW, mH, mLabelMode ?  kHAlignLeft : kHAlignCenter);
+    vl.text(mTextStyle, mDisplayName.Get(), mLabelMode ? mX + mH + mTextPad : mX, mY, mLabelMode ? mW - (mH + mTextPad) : mW, mH, mLabelMode ?  kHAlignLeft : kHAlignCenter);
     
     // Inactive
     

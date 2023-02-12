@@ -13,11 +13,14 @@ struct HISSTools_Bounds : public iplug::igraphics::IRECT
     HISSTools_Bounds() {}
     HISSTools_Bounds(const IRECT rect) : IRECT(rect) {}
     HISSTools_Bounds(double x, double y, double w, double h)
-    : IRECT(w > 0 ? x : x - w, h > 0 ? y : y - h, w > 0 ? x + w : x, h > 0 ? y + h : y)
+    : IRECT(static_cast<float>(w > 0 ? x : x - w),
+            static_cast<float>(h > 0 ? y : y - h),
+            static_cast<float>(w > 0 ? x + w : x),
+            static_cast<float>(h > 0 ? y + h : y))
     {}
     
     void include(HISSTools_Bounds inc)      { *this = Union(inc); }
-    void addThickness(double thickness)     { Pad(std::max(0.0, thickness) * 0.5); }    
+    void addThickness(double thickness)     { Pad(static_cast<float>(std::max(0.0, thickness) * 0.5)); }
 };
 
 // Colors and Color Specs
@@ -81,14 +84,14 @@ public:
     
 private:
     
-    double clamp(double x)
+    int clampToInt(double x)
     {
-        return std::min(1.0, std::max(0.0, x));
+        return std::min(255, std::max(0, static_cast<int>(x * 255.0)));
     }
     
     IColor clampColor(HISSTools_Color c)
     {
-        return IColor(clamp(c.a) * 255.0, clamp(c.r) * 255.0, clamp(c.g) * 255.0, clamp(c.b) * 255.0);
+        return IColor(clampToInt(c.a), clampToInt(c.r), clampToInt(c.g), clampToInt(c.b));
     }
     
 protected:
@@ -115,7 +118,7 @@ public:
     void addStop(HISSTools_Color color, double offset)
     {
         HISSTools_Color_Spec colorClamp = HISSTools_Color_Spec(color);
-        mPattern.AddStop(colorClamp.getColor(), offset);
+        mPattern.AddStop(colorClamp.getColor(), static_cast<float>(offset));
     }
     
     virtual void setRect(const IRECT r, ColorOrientation CSOrientation) override
@@ -168,7 +171,7 @@ struct HISSTools_Shadow : public iplug::igraphics::IShadow
     using IRECT = iplug::igraphics::IRECT;
 
     HISSTools_Shadow(HISSTools_Color_Spec& shadowColor, double xOffset, double yOffset, double blurSize)
-    : IShadow(shadowColor.getPattern(), blurSize, xOffset, yOffset, 1.f, true)
+    : IShadow(shadowColor.getPattern(), static_cast<float>(blurSize), static_cast<float>(xOffset), static_cast<float>(yOffset), 1.f, true)
     {}
     
     HISSTools_Bounds getBlurBounds(HISSTools_Bounds currentBounds)

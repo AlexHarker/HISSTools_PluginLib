@@ -298,7 +298,7 @@ public:
     
     // Constructor
     
-    HISSTools_Button(int paramIdx, double x, double y, double w = 0, double h = 0, const char *type = 0, HISSTools_Design_Scheme *scheme = &DefaultDesignScheme, const char *label = "");
+    HISSTools_Button(int paramIdx, double x, double y, double w = 0, double h = 0, const char *type = 0, HISSTools_Design_Scheme *scheme = &DefaultDesignScheme, const char *name = "");
     
 public:
     
@@ -316,7 +316,7 @@ protected:
     
     // Text
     
-    const char *mName;
+    WDL_String mDisplayName;
     
 private:
     
