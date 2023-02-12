@@ -2263,9 +2263,60 @@ public:
 // The meter supports two on meter levels (drawn in order) and a side value, typically intended for peak hold
 
 
-class HISSTools_MeterTest : public iplug::igraphics::IControl, public HISSTools_Control_Layers
+class HISSTools_VUMeter : public iplug::igraphics::IControl, public HISSTools_Control_Layers
 {
-	
+    enum
+    {
+        kUpdateTag = 0,
+    };
+    
+    struct MeterValues
+    {
+        double mVU1;
+        double mVU2;
+        double mSide;
+        bool mPeak;
+        bool mLinear;
+    };
+    
+public:
+        
+    class Sender
+    {
+        
+    public:
+        
+        Sender(int controlTag) : mControlTag(controlTag), mQueue(32) {}
+        
+        void Set(double VU1, double VU2, double side, bool peak, bool linear = true)
+        {
+            mQueue.Push(MeterValues{ VU1, VU2, side, peak, linear });
+        }
+        
+        void UpdateControl(IEditorDelegate& dlg)
+        {
+            while (mQueue.ElementsAvailable())
+            {
+                MeterValues v;
+                mQueue.Pop(v);
+                dlg.SendControlMsgFromDelegate(mControlTag, kUpdateTag, sizeof(MeterValues), (void*) &v);
+            }
+        }
+        
+        void Reset()
+        {
+            MeterValues v;
+            
+            while (mQueue.ElementsAvailable())
+                mQueue.Pop(v);
+        }
+        
+    private:
+        
+        int mControlTag;
+        IPlugQueue<MeterValues> mQueue;
+    };
+    
 private:
 
 	// Positioning / Dimensions
@@ -2346,7 +2397,7 @@ private:
 	
 public:
 	
-	HISSTools_MeterTest(double x, double y, double w, double h, bool flip = false, double minDB = -60, double maxDB = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
+	HISSTools_VUMeter(double x, double y, double w, double h, bool flip = false, double minDB = -60, double maxDB = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme)
 	: IControl(IRECT()), HISSTools_Control_Layers()
 	{
 		// Dimensions
@@ -2415,20 +2466,24 @@ public:
 		mRECT = IRECT(floor(mX) - 10, floor(mY) - 10, ceil(mX + mW) + 10, ceil(mY + mH) + 10);
 	}
 	
-	~HISSTools_MeterTest() {}
+	~HISSTools_VUMeter() {}
 	
-	void setLevels(double VU1, double VU2, double side, bool peak, bool linear = true)
+    void OnMsgFromDelegate(int messageTag, int dataSize, const void* pData) override
 	{
-		mVU1Size = getSize(VU1, linear);
-		mVU2Size = getSize(VU2, linear);
-		mSideSize = getSize(side, linear);
+        if (messageTag == kUpdateTag && dataSize == sizeof(MeterValues))
+        {
+            MeterValues* pTypedData = (MeterValues*) pData;
+            
+            mVU1Size = getSize(pTypedData->mVU1, pTypedData->mLinear);
+            mVU2Size = getSize(pTypedData->mVU2, pTypedData->mLinear);
+            mSideSize = getSize(pTypedData->mSide, pTypedData->mLinear);
+            mPeak = pTypedData->mPeak;
 		
-		mPeak = peak;
-		
-		SetDirty(false);
+            SetDirty(false);
+        }
 	}
 	
-	void Draw(IGraphics& g)
+	void Draw(IGraphics& g) override
 	{
         HISSTools_VecLib vecDraw(g);
 		vecDraw.setColorOrientation(mW < mH ? kCSOrientVertical : kCSOrientHorizontal);
@@ -2567,9 +2622,7 @@ public:
 		
 	HISSTools_FileSelector(int paramIdx, double x, double y, double w, double h, EFileAction action, char* dir = "", char* extensions = "", const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char *label = "")
 	: HISSTools_Button(paramIdx, x, y, w, h, type, designScheme, label) , mState(kFSNone), mFileAction(action), mDir(dir), mExtensions(extensions)
-	{
-		mValidReport = false;
-	}
+	{}
 
     void OnMouseDown(float x, float y, const IMouseMod& pMod) override
     {
