@@ -444,8 +444,8 @@ private:
         matrixFillCS->addStop(HISSTools_Color(0.3, 0.3, 0.3, 1.0), 0.8);
 		matrixFillCS->addStop(HISSTools_Color(0.1, 0.1, 0.1, 1.0), 1.0);
 		
-        matrixHalfFillCS->addStop(HISSTools_Color(0.3, 0.3, 0.3, 0.4), 0.5);
-		matrixHalfFillCS->addStop(HISSTools_Color(0.1, 0.1, 0.1, 0.4), 1.0);
+        matrixHalfFillCS->addStop(HISSTools_Color(0.3, 0.3, 0.3, 0.7), 0.5);
+		matrixHalfFillCS->addStop(HISSTools_Color(0.1, 0.1, 0.1, 0.7), 1.0);
 		
 		handleFillCS->addStop(HISSTools_Color(0.6, 0.6, 0.6, 1.0), 0.0);
 		handleFillCS->addStop(HISSTools_Color(0.15, 0.15, 0.15, 1.0), 0.9);
