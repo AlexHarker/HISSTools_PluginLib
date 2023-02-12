@@ -1715,8 +1715,6 @@ public:
 
 	int mMouseWheel;
 	
-	bool mValidReport;
-	
 private:
 	
 	bool coordsToIndices(double x, double y, int *xPos, int *yPos)
@@ -1751,20 +1749,7 @@ private:
 		return false;
 	}
 	
-	void reportToPlug()
-	{
-        // TODO - FIX
-        /*
-		if (mParamIdx >= 0)
-		{
-            IPlugAPIBase *plug = dynamic_cast<IPlugAPIBase *>(&mDelegate);
-            
-			mValidReport = true;
-            plug->OnParamChange(mParamIdx, kUI);
-			mValidReport = false;
-		}
-        */
-	}
+	virtual void reportToPlug() {}
 	
 	
 public:
@@ -1846,8 +1831,6 @@ public:
 		
 		mRECT = (fullBoxBounds);
 		SetTargetRECT(boxBoundsOutline);
-		
-		mValidReport = false;
 	}
 	
 	~HISSTools_Matrix()
@@ -2005,14 +1988,6 @@ public:
 		}
 		
 		SetDirty(false);
-	}
-	
-	bool validReport(bool reset = true)
-	{
-		bool validReport = mValidReport;
-		if (reset)
-			mValidReport = false;
-		return validReport;
 	}
 };
 
@@ -2581,25 +2556,10 @@ private:
 	
 	EFileAction mFileAction;
 	EFileSelectorState mState;
-	
-	bool mValidReport;
-	
+		
 private:
 
-	virtual void reportToPlug()
-	{
-		if (GetParamIdx() >= 0)
-		{
-            // TODO - FIX
-            /*
-            IPlugAPIBase *plug = dynamic_cast<IPlugAPIBase *>(&mDelegate);
-            
-			mValidReport = true;
-            plug->OnParamChange(mParamIdx, kUI);
-			mValidReport = false;
-            */
-		}
-	}
+	virtual void reportToPlug() {}
 	
 public:
 	
@@ -2692,16 +2652,8 @@ public:
 	{
 		mFile.Set(file);
 	}
-	
-	bool validReport(bool reset = true)
-	{
-		bool valid = mValidReport;
-		if (reset)
-			mValidReport = false;
-		return valid;
-	}
     
-    void setExtensions(char *extensions)
+    void SetExtensions(char *extensions)
     {
         mExtensions.Set(extensions);
     }
