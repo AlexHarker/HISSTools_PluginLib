@@ -44,7 +44,7 @@ public:
 	
 	HISSTools_Design_Scheme(bool defaultScheme = false)
 	{
-		if (defaultScheme == true)
+		if (defaultScheme)
 			setDefaults();
 	}
     
@@ -74,8 +74,6 @@ private:
 	template <class T>
     T findByName(std::vector<HISSTools_Label<T>>& searchSpace, const char *searchName, const char *searchSubTypes, T defaultValue)
 	{
-		typename std::vector<HISSTools_Label<T>>::iterator it;
-		
 		if (searchSubTypes)
 		{
 			const char *searchType = 0;
@@ -85,13 +83,13 @@ private:
 			
 			for (searchType = strtok(searchTypesMutable, " "); searchType; searchType = strtok(0, " "))
 			{
-				for (it = searchSpace.begin(); it != searchSpace.end(); it++)
+				for (auto it = searchSpace.begin(); it != searchSpace.end(); it++)
 					if (it->SubType.GetLength() && !strcmp(it->TypeName.Get(), searchName) && !strcmp(it->SubType.Get(), searchType))
 						return it->mValue;			
 			}
 		}
 		
-		for (it = searchSpace.begin(); it != searchSpace.end(); it++)
+		for (auto it = searchSpace.begin(); it != searchSpace.end(); it++)
 			if (it->TypeName.GetLength() && !strcmp(it->TypeName.Get(), searchName))
 				return it->mValue;
 		
