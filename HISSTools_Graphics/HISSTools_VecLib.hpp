@@ -77,7 +77,7 @@ public:
     
     void forceGradientBox(double xLo, double yLo, double xHi, double yHi)
     {
-        mGradientArea = HISSTools_Bounds(xLo, xHi, xHi - xLo, yHi - yLo);
+        mGradientArea = HISSTools_Bounds(xLo, yLo, xHi - xLo, yHi - yLo);
         mForceGradientBox = true;
     }
     

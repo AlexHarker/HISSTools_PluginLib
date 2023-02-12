@@ -2211,7 +2211,7 @@ public:
 		
 		renderBackground(g, vecDraw, mRECT);
 		
-		// Meter Rectangles
+		// Progress Rectangles
 		
 		vecDraw.forceGradientBox(mX, mY, mX + mW, mY + mH);
 		
@@ -2556,7 +2556,7 @@ public:
 			else
 				vertTick(vecDraw, mTick3, mTick4, mX, mW, mSideSize, mPeakHoldTK);
 		}
-
+         
 		vecDraw.forceGradientBox();
 		
 		// Outline Again
