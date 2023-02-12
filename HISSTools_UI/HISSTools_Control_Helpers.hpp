@@ -198,6 +198,7 @@ private:
     
     iplug::igraphics::IControl *mControl;
     
+    double mPromptRatio;
     double mTextHPad;
     double mSeparatorX;
     

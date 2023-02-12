@@ -235,6 +235,8 @@ HISSTools_Text_Helper_Param::HISSTools_Text_Helper_Param(iplug::igraphics::ICont
     
     sprintf(concatenatedName, "%sDrawTriangle", name);
     drawMenuTriangle = scheme->getFlag(concatenatedName, type);
+    sprintf(concatenatedName, "%sPromptRatio", name);
+    mPromptRatio = scheme->getDimension(concatenatedName, type);
     sprintf(concatenatedName, "%sHilite", name);
     mTextHiliteCS = scheme->getColorSpec(concatenatedName, type);
     sprintf(concatenatedName, "%sPanelHilite", name);
