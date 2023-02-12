@@ -172,9 +172,9 @@ public:
 
 		SetTargetRECT(HISSTools_Bounds(x, y, w, h));
 		
-		HISSTools_Bounds fullBoxBounds = mTextParam->bounds();
+		HISSTools_Bounds fullBoxBounds = mTextParam->Bounds();
 		if (mTextLabel)
-            fullBoxBounds.include(mTextLabel->bounds());
+            fullBoxBounds.include(mTextLabel->Bounds());
 		mRECT = fullBoxBounds;
         
         SetMouseOverWhenDisabled(true);
@@ -195,9 +195,9 @@ public:
         if (mTextLabel)
         {
             if (mDisplayName.GetLength())
-                mTextLabel->setText(mDisplayName.Get());
+                mTextLabel->SetText(mDisplayName.Get());
             else
-                mTextLabel->setText((GetParam() != nullptr) ? GetParam()->GetName() : "");
+                mTextLabel->SetText((GetParam() != nullptr) ? GetParam()->GetName() : "");
         }
     }
     
@@ -214,14 +214,14 @@ public:
 
 		if (mTextParam->menuParam())
 		{
-			if (mTextParam->promptUserInput(x, y) == false && GetParam())
+			if (mTextParam->PromptUserInput(x, y) == false && GetParam())
 			{
 				double value = round(GetValue() * (GetParam()->GetRange()) + 1) / (GetParam()->GetRange());
                 SetValue(value > 1.0 ? 0 : value);
 			}
 		}
         else
-            mTextParam->hilite(true);
+            mTextParam->Hilite(true);
         
         mDrag = false;
 		SetDirty();
@@ -232,10 +232,10 @@ public:
         if (mDrag == false)
         {
             if (mTextParam->menuParam() == false)
-                mTextParam->promptUserInput();
+                mTextParam->PromptUserInput();
         }
         else
-            mTextParam->hilite(false);
+            mTextParam->Hilite(false);
             
         mMouseDown = false;
         SetDirty(false);
@@ -256,8 +256,8 @@ public:
     virtual void SetValueFromUserInput(double value, int valIdx) override
     {
         mDrag = false;
-        mTextParam->finishEdit();
-        mTextParam->hilite(false);
+        mTextParam->FinishEdit();
+        mTextParam->Hilite(false);
         IKnobControlBase::SetValueFromUserInput(value, valIdx);
     }
 	
@@ -269,9 +269,9 @@ public:
         
         if (mTextLabel)
         {
-            if (startBackground(vecDraw, mRECT))
+            if (StartBackground(vecDraw, mRECT))
                 mTextLabel->Draw(vecDraw);
-            renderBackground(vecDraw, mRECT);
+            RenderBackground(vecDraw, mRECT);
         }
 		mTextParam->Draw(vecDraw);
 	}
@@ -443,9 +443,9 @@ public:
     void OnInit() override
     {
         if (mDisplayName.GetLength())
-            mTextLabel->setText(mDisplayName.Get());
+            mTextLabel->SetText(mDisplayName.Get());
         else
-            mTextLabel->setText(GetParam() != nullptr ? GetParam()->GetName() : "");
+            mTextLabel->SetText(GetParam() != nullptr ? GetParam()->GetName() : "");
     }
     
 private:
@@ -487,7 +487,7 @@ public:
 			return;
 		}
 		
-		mTextParam->promptUserInput();
+		mTextParam->PromptUserInput();
         SetDirty(false);
 	}
     
@@ -519,7 +519,7 @@ public:
     
     void SetValueFromUserInput(double value, int valIdx) override
     {
-        mTextParam->finishEdit();
+        mTextParam->FinishEdit();
         IControl::SetValueFromUserInput(value, valIdx);
     }
     
@@ -572,7 +572,7 @@ public:
 
 		// Background
 		
-		if (startBackground(vecDraw, mRECT))
+		if (StartBackground(vecDraw, mRECT))
 		{
 			// Background Circles
 			
@@ -588,7 +588,7 @@ public:
 			mTextLabel->Draw(vecDraw);
 		}
 				
-		renderBackground(vecDraw, mRECT);
+        RenderBackground(vecDraw, mRECT);
 		
 		// Round positions for integer parameters
 		
@@ -785,7 +785,7 @@ public:
 
 		// Background
 		
-		if (startBackground(vecDraw, mRECT))
+		if (StartBackground(vecDraw, mRECT))
 		{
 			// Background Rectangle
 		
@@ -795,7 +795,7 @@ public:
 			vecDraw.frameRoundRect(mX, mY, mW, mH, mRoundness, mBoxOutlineTK);
 		}
 		
-		renderBackground(vecDraw, mRECT);
+        RenderBackground(vecDraw, mRECT);
 		
 		// Handle
 		
@@ -1070,7 +1070,7 @@ public:
         
 		// Background (shadow boxes)
 		
-		if (startBackground(vecDraw, mRECT))
+		if (StartBackground(vecDraw, mRECT))
 		{		
 			vecDraw.startShadow(mShadow, mRECT);
 			vecDraw.setColor(mOutlineCS);
@@ -1090,7 +1090,7 @@ public:
 			vecDraw.renderShadow(false);
 		}
 		
-		renderBackground(vecDraw, mRECT);
+        RenderBackground(vecDraw, mRECT);
 
 		// Matrix fills
 		
@@ -1218,7 +1218,7 @@ public:
         
 		// Parameters
 				
-		if (startBackground(vecDraw, mRECT))
+		if (StartBackground(vecDraw, mRECT))
 		{
 			vecDraw.setColor(mBackgroundCS);
 			vecDraw.fillRect(mX, mY, mW, mH);
@@ -1231,7 +1231,7 @@ public:
 			vecDraw.renderShadow();
 		}
 		
-		renderBackground(vecDraw, mRECT);
+        RenderBackground(vecDraw, mRECT);
 		
 		// Progress Rectangles
 		
@@ -1499,7 +1499,7 @@ public:
 		
 		int nTicks = 10;
 		
-		if (startBackground(vecDraw, mRECT))
+		if (StartBackground(vecDraw, mRECT))
 		{
 			vecDraw.setColor(mBackgroundCS);
 			vecDraw.fillRect(mX, mY, mW, mH);
@@ -1512,7 +1512,7 @@ public:
 			vecDraw.renderShadow();
 		}
 		
-		renderBackground(vecDraw, mRECT);
+        RenderBackground(vecDraw, mRECT);
 		
 		// Meter Rectangles
 		

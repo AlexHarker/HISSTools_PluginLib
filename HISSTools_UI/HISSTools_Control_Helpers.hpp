@@ -57,9 +57,9 @@ class HISSTools_Control_Layers : protected virtual HISSTools_Graphics_Types
     
 public:
 	
-    bool startBackground(HISSTools_VecLib& vl, IRECT area);
-    void renderBackground(HISSTools_VecLib& vl, IRECT area);
-    void redrawBackground();
+    bool StartBackground(HISSTools_VecLib& vl, IRECT area);
+    void RenderBackground(HISSTools_VecLib& vl, IRECT area);
+    void RedrawBackground();
     
 private:
     
@@ -86,12 +86,12 @@ public:
 	
     void Draw(HISSTools_VecLib& vl);
 	
-    void resizeText(double x, double y, double w, double h);
+    void ResizeText(double x, double y, double w, double h);
 	
-    void setTextColor(HISSTools_Color_Spec *colorSpec);
-    void setText(const char *str);
+    void SetTextColor(HISSTools_Color_Spec *colorSpec);
+    void SetText(const char *str);
 	
-    HISSTools_Bounds bounds();
+    HISSTools_Bounds Bounds();
     
 protected:
     
@@ -132,20 +132,20 @@ public:
 	
     void Draw(HISSTools_VecLib& vl, bool drawText);
 
-    void changePadding(double lPad, double rPad, double hPad);
-    void changePadding(double wPad, double hPad);
+    void ChangePadding(double lPad, double rPad, double hPad);
+    void ChangePadding(double wPad, double hPad);
 
-    void resize(double x, double y, double w, double h);
+    void Resize(double x, double y, double w, double h);
 	
-    void setPanelColor(HISSTools_Color_Spec *colorSpec);
-    void setOutlineColor(HISSTools_Color_Spec *colorSpec);
+    void SetPanelColor(HISSTools_Color_Spec *colorSpec);
+    void SetOutlineColor(HISSTools_Color_Spec *colorSpec);
 	
-    HISSTools_Bounds bounds();
+    HISSTools_Bounds Bounds();
 		
 protected:
     
-    bool doDrawOutline();
-    bool doDrawPanel();
+    bool DoDrawOutline();
+    bool DoDrawPanel();
 
     // Dimensions
     
@@ -182,19 +182,19 @@ public:
 	
     bool menuParam();
 	
-    void finishEdit();
-    void hilite(bool on);
+    void FinishEdit();
+    void Hilite(bool on);
 
-    void promptUserInput();
-    bool promptUserInput(float x, float y);
+    void PromptUserInput();
+    bool PromptUserInput(float x, float y);
 		
     void Draw(HISSTools_VecLib& vl);
     
 private:
     
-    void setControlText();
+    void SetControlText();
     
-    double roundnessCompensate(double menuTriangleHeight);
+    double RoundnessCompensate(double menuTriangleHeight);
     
     iplug::igraphics::IControl *mControl;
     
@@ -234,7 +234,7 @@ struct HISSTools_TextBlock : public HISSTools_Text_Helper_Block, public iplug::i
     
     void Draw(IGraphics& g) override;
     
-    void setText(const char *str);
+    void SetText(const char *str);
 };
 
 
