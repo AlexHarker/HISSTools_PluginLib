@@ -1700,23 +1700,11 @@ private:
 	int mXHilite;
 	int mYHilite;
 	
-public:
-	
-	// FIX - Consider making the variables private again
-	
-	// Mousing Info
-	
-	MousingAction mMousing;
-
-	IMouseMod mPMod;
-	
-	int mXPos;
-	int mYPos;
-
-	int mMouseWheel;
-	
-private:
-	
+    // Mousing Info
+    
+    int mXPos;
+    int mYPos;
+    	
 	bool coordsToIndices(double x, double y, int *xPos, int *yPos)
 	{
 		*xPos = -1;
@@ -1749,8 +1737,7 @@ private:
 		return false;
 	}
 	
-	virtual void reportToPlug() {}
-	
+	virtual void reportToPlug(int xPos, int yPos, const IMouseMod& mod, MousingAction action, float wheel = 0.f) {}
 	
 public:
 	
@@ -1838,16 +1825,16 @@ public:
 		delete[] mStates;
 	}
 	
-	 // Mousing Functions
+    int getXPos() const { return mXPos; }
+    int getYPos() const { return mYPos; }
+    
+    // Mousing Functions
 	 
-	bool OnMousing(float x, float y, const IMouseMod& pMod, MousingAction action)
+	bool OnMousing(float x, float y, const IMouseMod& mod, MousingAction action, float wheel = 0.f)
 	{
-		mMousing = action;
-		mPMod = pMod;
-		
 		if (coordsToIndices(x, y, &mXPos, &mYPos))
 		{
-			reportToPlug();
+			reportToPlug(mXPos, mYPos, mod, action, wheel);
 			
 			return true;
 		}
@@ -1855,35 +1842,34 @@ public:
 		return false;
 	}
 	
-	void OnMouseDown(float x, float y, const IMouseMod& pMod) override
+	void OnMouseDown(float x, float y, const IMouseMod& mod) override
 	{
-		OnMousing(x, y, pMod, kMouseDown);
+		OnMousing(x, y, mod, kMouseDown);
 	}
 	
-	void OnMouseUp(float x, float y, const IMouseMod& pMod) override
+	void OnMouseUp(float x, float y, const IMouseMod& mod) override
 	{
-		OnMousing(x, y, pMod, kMouseUp);
+		OnMousing(x, y, mod, kMouseUp);
 	}
 	
-	void OnMouseDblClick(float x, float y, const IMouseMod& pMod) override
+	void OnMouseDblClick(float x, float y, const IMouseMod& mod) override
 	{
-		OnMousing(x, y, pMod, kMouseDblClick);
+		OnMousing(x, y, mod, kMouseDblClick);
 	}
 	
-	void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& pMod) override
+	void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& mod) override
 	{
-		OnMousing(x, y, pMod, kMouseDrag);
+		OnMousing(x, y, mod, kMouseDrag);
 	}
 	
 	void OnMouseWheel(float x, float y, const IMouseMod& pMod, float d) override
 	{
-        mMouseWheel = d;
-		OnMousing(x, y, pMod, kMouseWheel);
+		OnMousing(x, y, pMod, kMouseWheel, d);
 	}
 	
-	void OnMouseOver(float x, float y, const IMouseMod& pMod) override
+	void OnMouseOver(float x, float y, const IMouseMod& mod) override
 	{
-		if (OnMousing(x, y, pMod, kMouseOver) == false)
+		if (OnMousing(x, y, mod, kMouseOver) == false)
 			OnMouseOut();
 		else
 			SetDirty(false);
@@ -1891,11 +1877,10 @@ public:
 	
 	virtual void OnMouseOut() override
 	{
-		mMousing = kMouseOut;
-		mXPos = -1;
-		mXPos = -1;
-		
-		reportToPlug();
+        mXPos = -1;
+        mXPos = -1;
+        
+		reportToPlug(-1, -1, IMouseMod(), kMouseOut);
 		
 		SetDirty(false);
 	}
