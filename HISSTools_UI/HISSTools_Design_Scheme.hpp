@@ -584,11 +584,11 @@ private:
 		// VU Leds
 		
 		HISSTools_Color_Spec *VULedCS0 = new HISSTools_Color_Spec(HISSTools_Color(0.000, 0.000, 0.000, 0.000));
-		HISSTools_Color_Spec *VULedCS1 = new HISSTools_Color_Spec(HISSTools_Color(0.075, 0.267, 0.000, 0.250));   // SUPER LUMINESCENT
+		HISSTools_Color_Spec *VULedCS1 = new HISSTools_Color_Spec(HISSTools_Color(0.075, 0.267, 0.000, 0.275));
 		HISSTools_Color_Spec *VULedCS2 = new HISSTools_Color_Spec(HISSTools_Color(0.075, 0.267, 0.000, 0.450));
-		HISSTools_Color_Spec *VULedCS3 = new HISSTools_Color_Spec(HISSTools_Color(0.220, 0.769, 0.000, 0.600));   // SUPER LUMINESCENT
-		HISSTools_Color_Spec *VULedCS4 = new HISSTools_Color_Spec(HISSTools_Color(0.500, 0.790, 0.000, 0.750));   // SUPER LUMINESCENT
-		HISSTools_Color_Spec *VULedCS5 = new HISSTools_Color_Spec(HISSTools_Color(0.933, 0.800, 0.000, 0.900));   // SUPER LUMINESCENT
+		HISSTools_Color_Spec *VULedCS3 = new HISSTools_Color_Spec(HISSTools_Color(0.186, 0.650, 0.000, 0.650));
+		HISSTools_Color_Spec *VULedCS4 = new HISSTools_Color_Spec(HISSTools_Color(0.500, 0.790, 0.000, 0.790));
+		HISSTools_Color_Spec *VULedCS5 = new HISSTools_Color_Spec(HISSTools_Color(0.933, 0.800, 0.000, 0.940)); 
 		HISSTools_Color_Spec *VULedCS6 = new HISSTools_Color_Spec(HISSTools_Color(0.769, 0.000, 0.000, 1.000));
 		
 		addColorSpec("MatrixState0", "VU_Leds", VULedCS0);
