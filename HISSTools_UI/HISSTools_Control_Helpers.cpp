@@ -316,8 +316,8 @@ void HISSTools_Text_Helper_Param::promptUserInput()
     double promptLeft = mX + mLPad;
     double promptWidth = mW - (mLPad + mRPad);
     
-    promptLeft += promptWidth * 0.2;
-    promptWidth *= 0.6;
+    promptLeft += 0.5 * promptWidth * (1.0 - mPromptRatio);
+    promptWidth *= mPromptRatio;
     
     switch (mVAlign)
     {
