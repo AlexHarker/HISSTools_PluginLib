@@ -1411,7 +1411,7 @@ public:
 		fullBounds = mShadow->getBlurBounds(handleBounds);
 		fullBounds.include(fullBounds);
 		
-		mRECT = (fullBounds);
+		mRECT = fullBounds;
 		SetTargetRECT(handleBounds);
         
         if (name)
@@ -1557,7 +1557,7 @@ public:
 		fullBounds = mShadow->getBlurBounds(fullBounds);
 		fullBounds.include(boxBounds);
 		
-		mRECT = (fullBounds);
+		mRECT = fullBounds;
 		SetTargetRECT(boxBounds);
         
         SetMouseOverWhenDisabled(true);
@@ -2101,7 +2101,7 @@ public:
 		
 		fullBounds = mShadow->getBlurBounds(fullBounds);
 		
-		mRECT = (fullBounds);
+		mRECT = fullBounds;
 	}
 	
 public:
