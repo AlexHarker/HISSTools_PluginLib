@@ -3,8 +3,9 @@
 #ifndef __HISSTOOLS_THREADSAFETY__
 #define __HISSTOOLS_THREADSAFETY__
 
-#include "HISSTools_Atomic.hpp"
 #include "HISSTools_Pointers.hpp"
+
+#include <atomic>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////// Lightweight Spinlock ////////////////////////////////////////////////////
@@ -15,7 +16,7 @@ class HISSTools_SpinLock
 	
 private:
 	
-	HISSTools_Atomic32 mAtomicLock;
+    std::atomic_flag mLock = ATOMIC_FLAG_INIT;
 	
 public:
 	
@@ -23,19 +24,24 @@ public:
 	{
 	}
 	
+    // Non-copyable
+    
+    HISSTools_SpinLock(const HISSTools_SpinLock&) = delete;
+    HISSTools_SpinLock& operator=(const HISSTools_SpinLock&) = delete;
+    
 	void acquire()
 	{
-		while(mAtomicLock.atomicSwap(0, 1) == FALSE);
+		while(!attempt());
 	}
 	
 	bool attempt()
 	{
-		return mAtomicLock.atomicSwap(0, 1);
+		return !mLock.test_and_set();
 	}
 	
 	void release()
 	{
-		mAtomicLock.atomicSwap(1, 0);
+        mLock.clear();
 	}
 };
 
