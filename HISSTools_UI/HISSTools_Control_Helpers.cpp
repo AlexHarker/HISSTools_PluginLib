@@ -274,6 +274,18 @@ HISSTools_Text_Helper_Param::HISSTools_Text_Helper_Param(iplug::igraphics::ICont
         mMenuTriangleL = mSeparatorX + (mMenuFlipTriangle ? -(menuTriangleWidth + wPad) : wPad);
         mMenuTriangleR = mMenuTriangleL + menuTriangleWidth;
     }
+    else
+    {
+        mDrawTriangle = false;
+        mDrawSeparator = false;
+        mMenuFlipTriangle = false;
+        mSeparatorX = mX + mW;
+        
+        mMenuTriangleTop = 0;
+        mMenuTriangleBtm = 0;
+        mMenuTriangleL = 0;
+        mMenuTriangleR = 0;
+    }
 }
 
 bool HISSTools_Text_Helper_Param::menuParam()

@@ -3,7 +3,8 @@
 #ifndef __HISSTOOLS_POINTERS__
 #define __HISSTOOLS_POINTERS__
 
-#include "HISSTools_Atomic.hpp"
+#include <atomic>
+#include <cstdint>
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////// A basic reference counted pointer /////////////////////////////////////////////
@@ -20,7 +21,7 @@ private:
 		
 		T *mMemory;
 		unsigned long mSize;
-		HISSTools_Atomic32 mRefCount;
+		std::atomic<int32_t> mRefCount;
 		
 	public:
 
@@ -40,6 +41,7 @@ private:
 		}
 		*/
 		MemoryBlock(unsigned long size)
+        : mRefCount(0)
 		{
 			mMemory = new T[size];
 			mSize = size;
@@ -66,7 +68,7 @@ private:
 			return NULL;
 		}
 		
-		Atomic32 release()
+		int32_t release()
 		{
 			return decrementRefCount();
 		}
@@ -83,14 +85,14 @@ private:
 		
 	private:
 		
-		Atomic32 incrementRefCount()
+        int32_t incrementRefCount()
 		{
-			return mRefCount.atomicIncrementBarrier();
+			return ++mRefCount;
 		}
 		
-		Atomic32 decrementRefCount()
+        int32_t decrementRefCount()
 		{
-			return mRefCount.atomicDecrementBarrier();
+			return --mRefCount;
 		}
 	};
 	
