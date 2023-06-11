@@ -612,6 +612,18 @@ public:
 			mMenuTriangleL = mSeparatorX + (mMenuFlipTriangle ? -(menuTriangleWidth + wPad) : wPad);
 			mMenuTriangleR = mMenuTriangleL + menuTriangleWidth;
 		}
+        else
+        {
+            mDrawTriangle = false;
+            mDrawSeparator = false;
+            mMenuFlipTriangle = false;
+            mSeparatorX = mX + mW;
+            
+            mMenuTriangleTop = 0;
+            mMenuTriangleBtm = 0;
+            mMenuTriangleL = 0;
+            mMenuTriangleR = 0;
+        }
 	}
 	
 	bool menuParam()
