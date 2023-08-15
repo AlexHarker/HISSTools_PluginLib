@@ -404,7 +404,6 @@ private:
     void updateItems();
 
     int clipTabNumber(int tabNumber);
-
 };
 
 // HISSTools_Invisible_Tabs
@@ -846,7 +845,6 @@ private:
     HISSTools_Color_Spec *mVUSidePeakCS;
 
     bool mOverlayFixedGradientBox;
-
 };
 
 // HISSTools_FileSelector
@@ -896,7 +894,6 @@ private:
 
     EFileAction mFileAction;
     EFileSelectorState mState;
-
 };
 
 #ifndef NO_HISSTOOLS_CONTROL_HELPERS_COMPILE
