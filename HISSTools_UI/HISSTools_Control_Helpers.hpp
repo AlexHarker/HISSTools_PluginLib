@@ -8,6 +8,17 @@
 #include <IPlugQueue.h>
 #include <IControl.h>
 
+enum MousingAction
+{
+  kMouseDown,
+  kMouseUp,
+  kMouseDblClick,
+  kMouseDrag,
+  kMouseWheel,
+  kMouseOver,
+  kMouseOut
+};
+
 // HISSTools_Graphics_Types
 // A base struct to bring iplug and igraphics items into scope
 
@@ -624,6 +635,106 @@ private:
   // Number of States
 
   int mNStates;
+};
+
+// HISSTools_Matrix
+//
+
+class HISSTools_Matrix : public iplug::igraphics::IControl, public HISSTools_Control_Layers
+{
+
+public:
+
+  // Constructor and Destructor
+
+  HISSTools_Matrix(int paramIdx, double x, double y, int xDim, int yDim, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, HISSTools_Design_Scheme *stateScheme = 0);
+
+  ~HISSTools_Matrix();
+
+  int getXPos() const;
+  int getYPos() const;
+
+  // Mousing Functions
+
+  bool OnMousing(float x, float y, const IMouseMod& mod, MousingAction action, float wheel = 0.f);
+
+  void OnMouseDown(float x, float y, const IMouseMod& mod) override;
+
+  void OnMouseUp(float x, float y, const IMouseMod& mod) override;
+
+  void OnMouseDblClick(float x, float y, const IMouseMod& mod) override;
+
+  void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& mod) override;
+
+  void OnMouseWheel(float x, float y, const IMouseMod& pMod, float d) override;
+
+  void OnMouseOver(float x, float y, const IMouseMod& mod) override;
+
+  virtual void OnMouseOut() override;
+
+  // Draw
+
+  void Draw(IGraphics& g) override;
+
+  void SetState(int x, int y, char state);
+
+  unsigned char GetState(int x, int y);
+
+  void SetHilite(bool on);
+
+private:
+
+  bool coordsToIndices(double x, double y, int *xPos, int *yPos);
+
+  virtual void reportToPlug(int xPos, int yPos, const IMouseMod& mod, MousingAction action, float wheel = 0.f)
+  {}
+
+  // Size (Dimension)
+
+  int mXDim;
+  int mYDim;
+
+  // Positioning / Dimensions
+
+  double mX;
+  double mY;
+  double mW;
+  double mH;
+  double mS;
+  double mRoundness;
+  double mGap;
+  double mUnit;
+
+  // Line Thicknesses
+
+  double mHandleEmptyOutlineTK;
+  double mHandleFilledOutlineTK;
+  double mHiliteTK;
+
+  // Shadow Spec
+
+  HISSTools_Shadow *mShadow;
+
+  // Color Specs
+
+  HISSTools_Color_Spec *mStateCS[256];
+  HISSTools_Color_Spec *mOutlineCS;
+  HISSTools_Color_Spec *mHiliteCS;
+
+  // States
+
+  unsigned char *mStates;
+  unsigned char mNStates;
+
+  // Hilite
+
+  int mXHilite;
+  int mYHilite;
+
+  // Mousing Info
+
+  int mXPos;
+  int mYPos;
 };
 #ifndef NO_HISSTOOLS_CONTROL_HELPERS_COMPILE
 #include "HISSTools_Control_Helpers.cpp"

@@ -1287,3 +1287,278 @@ void HISSTools_Switch::Draw(IGraphics& g)
     vecDraw.fillRoundRect(mX, mY, mW, mH, mRoundness);
   }
 }
+
+// HISSTools_Matrix
+//
+
+// Constructor and Destructor
+
+HISSTools_Matrix::HISSTools_Matrix(int paramIdx, double x, double y, int xDim, int yDim, const char *type, HISSTools_Design_Scheme *designScheme, HISSTools_Design_Scheme *stateScheme)
+  : IControl(IRECT(), paramIdx), HISSTools_Control_Layers()
+{
+  // Dimensions
+
+  mXDim = xDim;
+  mYDim = yDim;
+  mX = x;
+  mY = y;
+  mS = designScheme->getDimension("MatrixHandleSize", type);
+  mGap = designScheme->getDimension("MatrixHandleGap", type);
+  mUnit = mS + mGap;
+  mW = mXDim * mUnit - mGap;
+  mH = mYDim * mUnit - mGap;
+  mRoundness = designScheme->getDimension("MatrixHandleRoundness", type);
+  mRoundness = mRoundness < 0. ? mS / 2 : mRoundness;
+
+  // States
+
+  HISSTools_Design_Scheme *currentStateScheme = stateScheme ? stateScheme : designScheme;
+
+  mStates = new unsigned char[mXDim * mYDim];
+
+  for (int i = 0; i < mXDim; i++)
+    for (int j = 0; j < mYDim; j++)
+      mStates[j * mXDim + i] = 0;
+
+  // Get number of states that are supported with color specs
+
+  for (int i = 0; i < 256; i++)
+  {
+    char testName[16];
+
+    sprintf(testName, "MatrixState%d", i);
+    mStateCS[i] = currentStateScheme->getColorSpec(testName, type);
+
+    if (!mStateCS[i])
+      break;
+    else
+      mNStates = i + 1;
+  }
+
+  // Mousing
+
+  mXPos = mYPos = -1;
+
+  // Hilite
+
+  mXHilite = mYHilite = -1;
+
+  // Get Appearance
+
+  mHandleEmptyOutlineTK = designScheme->getDimension("MatrixShadowOutline", type);
+  mHandleFilledOutlineTK = designScheme->getDimension("MatrixOutline", type);
+  mHiliteTK = designScheme->getDimension("MatrixHilite", type);
+
+  mShadow = designScheme->getShadow("Matrix", type);
+
+  mOutlineCS = designScheme->getColorSpec("MatrixOutline", type);
+  mHiliteCS = designScheme->getColorSpec("MatrixHilite", type);
+
+  // Calculate Areas (including shadows and thicknesses)
+
+  HISSTools_Bounds boxBoundsShadow(mX, mY, mW, mH);
+  HISSTools_Bounds boxBoundsOutline(mX, mY, mW, mH);
+  HISSTools_Bounds fullBoxBounds(mX, mY, mW, mH);
+
+  boxBoundsShadow.addThickness(mHandleEmptyOutlineTK);
+  boxBoundsShadow = mShadow->getBlurBounds(boxBoundsShadow);
+  boxBoundsOutline.addThickness(mHandleFilledOutlineTK);
+  fullBoxBounds = boxBoundsOutline;
+  fullBoxBounds.include(boxBoundsShadow);
+
+  mRECT = fullBoxBounds;
+  SetTargetRECT(boxBoundsOutline);
+}
+
+HISSTools_Matrix::~HISSTools_Matrix()
+{
+  delete[] mStates;
+}
+
+int HISSTools_Matrix::getXPos() const
+{
+  return mXPos;
+}
+int HISSTools_Matrix::getYPos() const
+{
+  return mYPos;
+}
+
+// Mousing Functions
+
+bool HISSTools_Matrix::OnMousing(float x, float y, const IMouseMod& mod, MousingAction action, float wheel)
+{
+  if (coordsToIndices(x, y, &mXPos, &mYPos))
+  {
+    reportToPlug(mXPos, mYPos, mod, action, wheel);
+
+    return true;
+  }
+
+  return false;
+}
+
+void HISSTools_Matrix::OnMouseDown(float x, float y, const IMouseMod& mod)
+{
+  OnMousing(x, y, mod, kMouseDown);
+}
+
+void HISSTools_Matrix::OnMouseUp(float x, float y, const IMouseMod& mod)
+{
+  OnMousing(x, y, mod, kMouseUp);
+}
+
+void HISSTools_Matrix::OnMouseDblClick(float x, float y, const IMouseMod& mod)
+{
+  OnMousing(x, y, mod, kMouseDblClick);
+}
+
+void HISSTools_Matrix::OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& mod)
+{
+  OnMousing(x, y, mod, kMouseDrag);
+}
+
+void HISSTools_Matrix::OnMouseWheel(float x, float y, const IMouseMod& pMod, float d)
+{
+  OnMousing(x, y, pMod, kMouseWheel, d);
+}
+
+void HISSTools_Matrix::OnMouseOver(float x, float y, const IMouseMod& mod)
+{
+  if (OnMousing(x, y, mod, kMouseOver) == false)
+    OnMouseOut();
+  else
+    SetDirty(false);
+}
+
+void HISSTools_Matrix::OnMouseOut()
+{
+  mXPos = -1;
+  mXPos = -1;
+
+  reportToPlug(-1, -1, IMouseMod(), kMouseOut);
+
+  SetDirty(false);
+}
+
+// Draw
+
+void HISSTools_Matrix::Draw(IGraphics& g)
+{
+  HISSTools_VecLib vecDraw(g);
+
+  // Background (shadow boxes)
+
+  if (StartBackground(vecDraw, mRECT))
+  {
+    vecDraw.startShadow(mShadow, mRECT);
+    vecDraw.setColor(mOutlineCS);
+
+    for (int i = 0; i < mXDim; i++)
+    {
+      double sx = mX + i * mUnit;
+
+      for (int j = 0; j < mYDim; j++)
+      {
+        double sy = mY + j * mUnit;
+
+        vecDraw.frameRoundRect(sx, sy, mS, mS, mRoundness, mHandleEmptyOutlineTK);
+      }
+    }
+
+    vecDraw.renderShadow(false);
+  }
+
+  RenderBackground(vecDraw, mRECT);
+
+  // Matrix fills
+
+  for (int i = 0; i < mXDim; i++)
+  {
+    double sx = mX + i * mUnit;
+
+    for (int j = 0; j < mYDim; j++)
+    {
+      double sy = mY + j * mUnit;
+
+      vecDraw.setColor(mStateCS[mStates[j * mXDim + i] % mNStates]);
+      vecDraw.fillRoundRect(sx, sy, mS, mS, mRoundness);
+      vecDraw.setColor(mOutlineCS);
+      vecDraw.frameRoundRect(sx, sy, mS, mS, mRoundness, mHandleFilledOutlineTK);
+    }
+  }
+
+  if (mXHilite > -1 && mYHilite > -1)
+  {
+    vecDraw.setColor(mHiliteCS);
+    vecDraw.frameRoundRect(mX + mXPos * mUnit, mY + mYPos * mUnit, mS, mS, mRoundness, mHiliteTK);
+  }
+}
+
+void HISSTools_Matrix::SetState(int x, int y, char state)
+{
+  if (x >= 0 && x < mXDim && y >= 0 && y < mYDim)
+  {
+    if (state != mStates[y * mXDim + x])
+    {
+      mStates[y * mXDim + x] = state;
+      SetDirty(false);
+    }
+  }
+}
+
+unsigned char HISSTools_Matrix::GetState(int x, int y)
+{
+  if (x >= 0 && x < mXDim && y >= 0 && y < mYDim)
+    return mStates[y * mXDim + x];
+
+  return 0;
+}
+
+void HISSTools_Matrix::SetHilite(bool on)
+{
+  if (on)
+  {
+    mXHilite = mXPos;
+    mYHilite = mYPos;
+  }
+  else
+  {
+    mXHilite = -1;
+    mXHilite = -1;
+  }
+
+  SetDirty(false);
+}
+
+bool HISSTools_Matrix::coordsToIndices(double x, double y, int *xPos, int *yPos)
+{
+  *xPos = -1;
+  *yPos = -1;
+
+  // FIX - Look at different thicknesses here
+
+  double halfTK = mHandleFilledOutlineTK / 2.0;
+  x += halfTK;
+  y += halfTK;
+
+  if (x < mX)
+    return false;
+  if (x > mX + mW)
+    return false;
+  if (y < mY)
+    return false;
+  if (y > mY + mH)
+    return false;
+
+  *xPos = (x - mX) / mUnit;
+  *yPos = (y - mY) / mUnit;
+
+  if (((*xPos + 1) * mUnit + mX - mGap + halfTK) > x && ((*yPos + 1) * mUnit + mY - mGap + halfTK) > y)
+    return true;
+
+  *xPos = -1;
+  *yPos = -1;
+
+  return false;
+}
