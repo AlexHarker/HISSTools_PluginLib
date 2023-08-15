@@ -1562,3 +1562,79 @@ bool HISSTools_Matrix::coordsToIndices(double x, double y, int *xPos, int *yPos)
 
   return false;
 }
+
+// HISSTools_Progress
+//
+
+// Constructor
+
+HISSTools_Progress::HISSTools_Progress(double x, double y, double w, double h, const char *type, HISSTools_Design_Scheme *designScheme)
+  : IControl(IRECT()), HISSTools_Control_Layers(), mX(x), mY(y), mW(w), mH(h)
+{
+  // Get Appearance
+
+  mOutlineTK = designScheme->getDimension("ProgressOutline", type);
+
+  mBackgroundCS = designScheme->getColorSpec("ProgressBackground", type);
+  mOutlineCS = designScheme->getColorSpec("ProgressOutline", type);
+  mProgressCS = designScheme->getColorSpec("Progress", type);
+
+  mShadow = designScheme->getShadow("Progress", type);
+
+  // Area
+
+  // FIX - Hack
+
+  mRECT = HISSTools_Bounds(x, y, w, h);
+}
+
+// Draw
+
+void HISSTools_Progress::Draw(IGraphics& g)
+{
+  HISSTools_VecLib vecDraw(g);
+
+  vecDraw.setColorOrientation(mW < mH ? kCSOrientVertical : kCSOrientHorizontal);
+
+  // Parameters
+
+  if (StartBackground(vecDraw, mRECT))
+  {
+    vecDraw.setColor(mBackgroundCS);
+    vecDraw.fillRect(mX, mY, mW, mH);
+
+    // Frame Rectangle
+
+    vecDraw.startShadow(mShadow, mRECT);
+    vecDraw.setColor(mOutlineCS);
+    vecDraw.frameRect(mX, mY, mW, mH, mOutlineTK);
+    vecDraw.renderShadow();
+  }
+
+  RenderBackground(vecDraw, mRECT);
+
+  // Progress Rectangles
+
+  vecDraw.forceGradientBox(mX, mY, mX + mW, mY + mH);
+
+  // Progress
+
+  vecDraw.setColor(mProgressCS);
+
+  if (mW < mH)
+    vecDraw.fillRect(mX, mY + mH * (1 - GetValue()), mW, mH * GetValue());
+  else
+    vecDraw.fillRect(mX, mY, mW * GetValue(), mH);
+
+  vecDraw.forceGradientBox();
+
+  // Outline Again
+  // FIX - Draw ALL PROPERLY
+
+  vecDraw.setColor(mOutlineCS);
+  vecDraw.frameRect(mX, mY, mW, mH, mOutlineTK);
+
+  // Reset Orientation (default is always horizontal)
+
+  vecDraw.setColorOrientation(kCSOrientHorizontal);
+}

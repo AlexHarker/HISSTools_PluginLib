@@ -736,6 +736,49 @@ private:
   int mXPos;
   int mYPos;
 };
+
+// HISSTools_Progress
+//
+
+class HISSTools_Progress : public iplug::igraphics::IControl, public HISSTools_Control_Layers
+{
+
+public:
+
+  // Constructor and Destructor
+
+  HISSTools_Progress(double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme);
+
+  ~HISSTools_Progress() {}
+
+  // Draw
+  
+  void Draw(IGraphics& g);
+
+private:
+
+  // Positioning / Dimensions
+
+  double mX;
+  double mY;
+  double mW;
+  double mH;
+
+  // Line Thicknesses
+
+  double mOutlineTK;
+
+  // Shadow Spec
+
+  HISSTools_Shadow *mShadow;
+
+  // Color Specs
+
+  HISSTools_Color_Spec *mBackgroundCS;
+  HISSTools_Color_Spec *mOutlineCS;
+  HISSTools_Color_Spec *mProgressCS;
+};
+
 #ifndef NO_HISSTOOLS_CONTROL_HELPERS_COMPILE
 #include "HISSTools_Control_Helpers.cpp"
 #endif
