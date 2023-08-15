@@ -860,3 +860,296 @@ void HISSTools_Value::Draw(IGraphics& g)
   }
   mTextParam->Draw(vecDraw);
 }
+
+// HISSTools_Dial
+// Multipurpose dial with auto value display
+// FIX - do your own mousing later...
+
+// Constructor
+
+HISSTools_Dial::HISSTools_Dial(int paramIdx, double x, double y, const char *type, HISSTools_Design_Scheme *designScheme, const char* name)
+  : IKnobControlBase(IRECT(), paramIdx), HISSTools_Control_Layers(), mMouseOver(false)
+{
+  // Calculate Measurements
+
+  double d = designScheme->getDimension("DialDiameter", type);
+
+  mTextArea = designScheme->getDimension("DialTextArea", type);
+
+  mR = d / 2.0;
+  mCx = x + mR;
+  mCy = y + mR;
+
+  // Pointer Appearance
+
+  double pointerCircRatio = designScheme->getDimension("DialPointerRatio", type);
+  double pointerTipRatio = designScheme->getDimension("DialTipRatio", type);
+  double pointerAngle = designScheme->getDimension("DialPointerAngle", type);
+
+  setPointerAppearance(pointerCircRatio, pointerTipRatio, pointerAngle);
+
+  // Set Throw
+
+  mRefValue = designScheme->getDimension("DialRefValue", type);
+  mStartAngle = designScheme->getDimension("DialStartAngle", type);
+  mThrowAngle = designScheme->getDimension("DialThrowAngle", type);
+
+  // Get Appearance
+
+  mOutlineTK = designScheme->getDimension("DialOutline", type);
+  mPointerTK = designScheme->getDimension("DialIndicatorLineWidth", type);
+  mPointerOutlineTK = designScheme->getDimension("DialPointerOutline", type);
+
+  mOutlineSD = designScheme->getShadow("DialOutline", type);
+  mPointerSD = designScheme->getShadow("DialPointer", type);
+
+  mIndicatorCS = designScheme->getColorSpec("DialIndicator", type);
+  mCircleFillCS = designScheme->getColorSpec("DialCircleFill", type);
+  mPointerFillCS = designScheme->getColorSpec("DialPointerFill", type);
+  mOutlineCS = designScheme->getColorSpec("DialOutline", type);
+  mPointerOutlineCS = designScheme->getColorSpec("DialPointerOutline", type);
+  mInactiveOverlayCS = designScheme->getColorSpec("DialInactiveOverlay", type);
+
+  mDrawValOnlyOnMO = designScheme->getFlag("DialDrawValOnlyOnMO");
+
+  // Text 
+
+  mPromptHalfHeight = (0.5 * designScheme->getTextStyle("DialValue", type)->mSize) + designScheme->getDimension("DialPromptPadding", type);
+
+  double textPad = designScheme->getDimension("DialPromptPadding", type);
+  double halfWidth = mR;// * mPromptRatio;// * mPointerCircRadius;
+  double labelHalfWidth = mR * 1.2;
+
+  //FIX - above
+  mTextParam = new HISSTools_Text_Helper_Param(this, mCx - halfWidth, mCy - mPromptHalfHeight, 2. * halfWidth, 2. * mPromptHalfHeight, textPad, kHAlignCenter, kVAlignCenter, "DialValue", type, designScheme);
+  mTextLabel = new HISSTools_Text_Helper_Block(mCx - labelHalfWidth, mCy + mR, 2 * labelHalfWidth, mTextArea, kHAlignCenter, kVAlignBottom, "DialLabel", type, designScheme);
+
+  // Calculate Areas (including shadows and thicknesses)
+
+  HISSTools_Bounds labelBounds(mCx - labelHalfWidth, mCy + mR, 2 * labelHalfWidth, mTextArea);
+  HISSTools_Bounds dialBoxBounds(x, y, d, d);
+  HISSTools_Bounds fullBoxBounds = dialBoxBounds;
+  fullBoxBounds.include(labelBounds);
+  HISSTools_Bounds ptrBoxBounds(mCx - mPointerTipRadius, mCy - mPointerTipRadius, 2 * mPointerTipRadius, 2 * mPointerTipRadius);
+
+  dialBoxBounds.addThickness(mOutlineTK);
+  ptrBoxBounds.addThickness(mPointerOutlineTK);
+
+  fullBoxBounds.include(mOutlineSD->getBlurBounds(dialBoxBounds));
+  fullBoxBounds.include(mPointerSD->getBlurBounds(ptrBoxBounds));
+
+  mRECT = fullBoxBounds;
+  SetTargetRECT(dialBoxBounds);
+
+  SetMouseOverWhenDisabled(true);
+  SetMouseEventsWhenDisabled(true);
+
+  if (name)
+    mDisplayName.Set(name);
+}
+
+HISSTools_Dial::~HISSTools_Dial()
+{
+  delete mTextLabel;
+  delete mTextParam;
+}
+
+void HISSTools_Dial::OnInit()
+{
+  if (mDisplayName.GetLength())
+    mTextLabel->SetText(mDisplayName.Get());
+  else
+    mTextLabel->SetText(GetParam() != nullptr ? GetParam()->GetName() : "");
+}
+
+void HISSTools_Dial::OnMouseDown(float x, float y, const IMouseMod& pMod)
+{
+  OnMouseOver(x, y, pMod);
+
+  mMouseDown = true;
+  mMouseDragValue = GetValue();
+
+  if (pMod.S)
+    SetValueToDefault();
+  else
+    GetUI()->HideMouseCursor();
+}
+
+void HISSTools_Dial::OnMouseDblClick(float x, float y, const IMouseMod& pMod)
+{
+  // FIX - Confirm best key combo...
+
+  if (pMod.S)
+  {
+    OnMouseDown(x, y, pMod);
+    return;
+  }
+
+  mTextParam->PromptUserInput();
+  SetDirty(false);
+}
+
+void HISSTools_Dial::OnMouseOver(float x, float y, const IMouseMod& pMod)
+{
+  if (!mMouseOver)
+  {
+    mMouseOver = true;
+    SetDirty(false);
+  }
+}
+
+void HISSTools_Dial::OnMouseOut()
+{
+  if (mMouseOver)
+  {
+    mMouseOver = false;
+    SetDirty(false);
+  }
+}
+
+void HISSTools_Dial::SetDisabled(bool disable)
+{
+  bool old = mDisabled;
+  mDisabled = disable;
+  if (disable != old)
+    SetDirty(false);
+}
+
+void HISSTools_Dial::SetValueFromUserInput(double value, int valIdx)
+{
+  mTextParam->FinishEdit();
+  IControl::SetValueFromUserInput(value, valIdx);
+}
+
+/*
+ // Mousing Functions
+
+ // FIX - better gearing??
+ // FIX - click through options?
+
+ void OnMouseDown(float x, float y, const IMouseMod& pMod) override
+ {
+ OnMouseDrag(x, y, 0, 0, pMod);
+ }
+
+ void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& pMod) override
+ {
+ IParam *param = GetParam();
+
+ IControl::OnMouseDrag(x, y, 0, 0, pMod);
+
+ if (param && param->Type() != IParam::kTypeDouble && param->Type() != IParam::kTypeNone)
+ {
+ double value = param->Int();
+ double delta;
+
+ if (mDirection == kVertical)
+ delta = -dY;
+ else
+ delta = dX;
+
+ delta /= mGearing;
+ delta = round(delta);
+ value += delta;
+ value -= param->GetMin();
+
+ mValue = value / param->GetRange();
+ }
+
+ SetDirty(true);
+ }*/
+
+// Draw
+
+void HISSTools_Dial::Draw(IGraphics& g)
+{
+  const IParam *param = GetParam();
+  double value, xIntersect, yIntersect;
+
+  HISSTools_VecLib vecDraw(g);
+
+  // Background
+
+  if (StartBackground(vecDraw, mRECT))
+  {
+    // Background Circles
+
+    vecDraw.startShadow(mOutlineSD, mRECT);
+    vecDraw.setColor(mOutlineCS);
+    vecDraw.frameCircle(mCx, mCy, mR, mOutlineTK);
+    vecDraw.renderShadow();
+    vecDraw.setColor(mCircleFillCS);
+    vecDraw.fillCircle(mCx, mCy, mR);
+
+    // Label
+
+    mTextLabel->Draw(vecDraw);
+  }
+
+  RenderBackground(vecDraw, mRECT);
+
+  // Round positions for integer parameters
+
+  if (param != nullptr && param->Type() != IParam::kTypeDouble && param->Type() != IParam::kTypeNone)
+    value = (param->Int() - param->GetMin()) / param->GetRange();
+  else
+    value = GetValue();
+
+  // Calculate Angles
+
+  double iBaseAng = mStartAngle + mRefValue * mThrowAngle;
+  double iDiffAng = ((value - mRefValue) * mThrowAngle);
+  double iPntrAng = iBaseAng + iDiffAng;
+
+  // Indicator Arc
+
+  vecDraw.setColor(mIndicatorCS);
+  vecDraw.fillArc(mCx, mCy, mR, iBaseAng, iDiffAng);
+
+  // Pointer Line
+
+  vecDraw.setColor(mOutlineCS);
+  vecDraw.circleIntersection(mCx, mCy, iPntrAng, mR, &xIntersect, &yIntersect);
+  vecDraw.line(mCx, mCy, xIntersect, yIntersect, mPointerTK);
+
+  // Pointer
+
+  vecDraw.startShadow(mPointerSD, mRECT);
+  vecDraw.setColor(mPointerFillCS);
+  vecDraw.fillCPointer(mCx, mCy, mPointerCircRadius, mPointerTipRadius, iPntrAng, mPointerAngle);
+  vecDraw.setColor(mPointerOutlineCS);
+  vecDraw.frameCPointer(mCx, mCy, mPointerCircRadius, mPointerTipRadius, iPntrAng, mPointerAngle, mPointerOutlineTK);
+  vecDraw.renderShadow();
+
+  if (IsDisabled())
+  {
+    // Inactive Overlay
+
+    vecDraw.setColor(mInactiveOverlayCS);
+    vecDraw.fillCPointer(mCx, mCy, mPointerCircRadius, mPointerTipRadius, iPntrAng, mPointerAngle);
+  }
+  else
+  {
+    if (!(mDrawValOnlyOnMO && !mMouseOver))
+      mTextParam->Draw(vecDraw);
+  }
+}
+
+void HISSTools_Dial::setThrow(double refValue, double startAngle, double throwAngle)
+{
+  mRefValue = refValue;
+  mStartAngle = startAngle;
+  mThrowAngle = throwAngle;
+}
+
+void HISSTools_Dial::setPointerAppearance(double pointerCircRatio, double pointerTipRatio, double pointerAngle)
+{
+  pointerCircRatio = pointerCircRatio > 0.99 ? 0.99 : pointerCircRatio;
+
+  pointerTipRatio = pointerTipRatio > 1.0 / pointerCircRatio ? 1.0 / pointerCircRatio : pointerTipRatio;
+  pointerTipRatio = pointerTipRatio < 1.01 ? 1.01 : pointerTipRatio;
+
+  mPointerCircRadius = mR * pointerCircRatio;
+  mPointerTipRadius = mPointerCircRadius * pointerTipRatio;
+  mPointerAngle = pointerAngle;
+}

@@ -473,6 +473,104 @@ private:
   double mTextArea;
 };
 
+// HISSTools_Dial
+// Multipurpose dial with auto value display
+// FIX - do your own mousing later...
+
+class HISSTools_Dial : public iplug::igraphics::IKnobControlBase, public HISSTools_Control_Layers
+{
+
+public:
+
+  // Constructor
+
+  HISSTools_Dial(int paramIdx, double x, double y, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char* name = nullptr);
+
+  ~HISSTools_Dial();
+
+  void OnInit() override;
+
+  void OnMouseDown(float x, float y, const IMouseMod& pMod) override;
+
+  void OnMouseDblClick(float x, float y, const IMouseMod& pMod) override;
+
+  void OnMouseOver(float x, float y, const IMouseMod& pMod) override;
+
+  void OnMouseOut();
+
+  void SetDisabled(bool disable);
+
+  void SetValueFromUserInput(double value, int valIdx);
+
+  // Draw
+
+  void Draw(IGraphics& g) override;
+
+  void setThrow(double refValue, double startAngle, double throwAngle);
+
+private:
+
+  void setPointerAppearance(double pointerCircRatio, double pointerTipRatio, double pointerAngle);
+
+  // Positioning / Dimensions
+
+  double mCx;
+  double mCy;
+  double mR;
+
+  // Pointer Appearance
+
+  double mPointerCircRadius;
+  double mPointerTipRadius;
+  double mPointerAngle;
+
+  // Display Angles
+
+  double mRefValue;
+  double mStartAngle;
+  double mThrowAngle;
+
+  // Text Area
+
+  double mTextArea;
+
+  // Text Prompt
+
+  double mPromptHalfHeight;
+
+  // Line Thicknesses
+
+  double mOutlineTK;
+  double mPointerTK;
+  double mPointerOutlineTK;
+
+  // Shadow Specs
+
+  HISSTools_Shadow *mOutlineSD;
+  HISSTools_Shadow *mPointerSD;
+
+  // Color Specs
+
+  HISSTools_Color_Spec *mIndicatorCS;
+  HISSTools_Color_Spec *mCircleFillCS;
+  HISSTools_Color_Spec *mPointerFillCS;
+  HISSTools_Color_Spec *mOutlineCS;
+  HISSTools_Color_Spec *mPointerOutlineCS;
+  HISSTools_Color_Spec *mInactiveOverlayCS;
+
+  // Text Blocks
+
+  HISSTools_Text_Helper_Block *mTextLabel;
+  HISSTools_Text_Helper_Param *mTextParam;
+
+  // Values on when mouse is over
+
+  bool mMouseOver;
+  bool mDrawValOnlyOnMO;
+
+  WDL_String mDisplayName;
+};
+
 #ifndef NO_HISSTOOLS_CONTROL_HELPERS_COMPILE
 #include "HISSTools_Control_Helpers.cpp"
 #endif
