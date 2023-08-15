@@ -437,8 +437,7 @@ class HISSTools_Value : public iplug::igraphics::IKnobControlBase, public HISSTo
 
 public:
 
-  HISSTools_Value(int paramIdx, double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char* name = nullptr)
-    : IKnobControlBase(IRECT(), paramIdx), HISSTools_Control_Layers();
+  HISSTools_Value(int paramIdx, double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char* name = nullptr);
 
   ~HISSTools_Value();
 

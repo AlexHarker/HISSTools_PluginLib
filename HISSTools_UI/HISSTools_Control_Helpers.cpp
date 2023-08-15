@@ -733,7 +733,12 @@ int HISSTools_Tabs::clipTabNumber(int tabNumber)
   return tabNumber;
 }
 
-HISSTools_Value::HISSTools_Value(int paramIdx, double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char* name = nullptr)
+// HISSTools_Value
+// Multipurpose numerical / menu control
+// FIX - do your own mousing later...
+
+HISSTools_Value::HISSTools_Value(int paramIdx, double x, double y, double w, double h, const char *type, HISSTools_Design_Scheme *designScheme, const char* name)
+  : IKnobControlBase(IRECT(), paramIdx), HISSTools_Control_Layers()
 {
   // FIX - perhaps just inherit these??
 
@@ -833,7 +838,7 @@ void HISSTools_Value::OnMouseDblClick(float x, float y, const IMouseMod& pMod)
   OnMouseDown(x, y, pMod);
 }
 
-virtual void HISSTools_Value::SetValueFromUserInput(double value, int valIdx)
+void HISSTools_Value::SetValueFromUserInput(double value, int valIdx)
 {
   mDrag = false;
   mTextParam->FinishEdit();
