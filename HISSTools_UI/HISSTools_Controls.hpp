@@ -500,11 +500,11 @@ public:
 
   void OnMouseOver(float x, float y, const IMouseMod& pMod) override;
 
-  void OnMouseOut();
+  void OnMouseOut() override;
 
-  void SetDisabled(bool disable);
+  void SetDisabled(bool disable) override;
 
-  void SetValueFromUserInput(double value, int valIdx);
+  void SetValueFromUserInput(double value, int valIdx) override;
 
   // Draw
 
