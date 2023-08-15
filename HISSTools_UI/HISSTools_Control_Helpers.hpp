@@ -779,6 +779,118 @@ private:
   HISSTools_Color_Spec *mProgressCS;
 };
 
+// HISSTools_VUMeter
+// A VU meter display. Ballistics should be provided on the DSP side
+// The meter supports two on meter levels (drawn in order) and a side value, typically intended for peak hold
+
+class HISSTools_VUMeter : public iplug::igraphics::IControl, public HISSTools_Control_Layers
+{
+
+  enum
+  {
+    kUpdateTag = 0,
+  };
+
+  struct MeterValues
+  {
+    double mVU1;
+    double mVU2;
+    double mSide;
+    bool mPeak;
+    bool mLinear;
+  };
+
+public:
+
+  class Sender
+  {
+
+  public:
+
+    Sender(int controlTag) : mControlTag(controlTag), mQueue(32) {}
+
+    void Set(double VU1, double VU2, double side, bool peak, bool linear = true);
+
+    void UpdateControl(IEditorDelegate& dlg);
+
+    void Reset();
+
+  private:
+
+    int mControlTag;
+    IPlugQueue<MeterValues> mQueue;
+  };
+
+  HISSTools_VUMeter(double x, double y, double w, double h, bool flip = false, double minDB = -60, double maxDB = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme);
+
+  ~HISSTools_VUMeter() {}
+
+  void OnMsgFromDelegate(int messageTag, int dataSize, const void* pData) override;
+
+  // Draw
+
+  void Draw(IGraphics& g) override;
+
+private:
+
+  // N.B. currently we linearly interpolate dB but we could do something nicer here later.....
+
+  double getSize(double value, bool linear);
+
+  void horzTick(HISSTools_VecLib& vecDraw, double x1, double x2, double y, double h, double normPosition, double thickness);
+
+  void vertTick(HISSTools_VecLib& vecDraw, double y1, double y2, double x, double w, double normPosition, double thickness);
+
+  // Positioning / Dimensions
+
+  double mX;
+  double mY;
+  double mW;
+  double mH;
+  double mTick1;
+  double mTick2;
+  double mTick3;
+  double mTick4;
+
+  // Line Thicknesses
+
+  double mOutlineTK;
+  double mTickTK;
+  double mPeakHoldTK;
+
+  // Shadow Spec
+
+  HISSTools_Shadow *mShadow;
+
+  // Drawing parameters
+
+  double mVU1Size;
+  double mVU2Size;
+  double mSideSize;
+
+  bool mPeak;
+
+  // Values
+
+  double mMinDB;
+  double mMaxDB;
+
+  // Color Specs
+
+  HISSTools_Color_Spec *mBackgroundCS;
+  HISSTools_Color_Spec *mOutlineCS;
+  HISSTools_Color_Spec *mVU1CS;
+  HISSTools_Color_Spec *mVU2CS;
+  HISSTools_Color_Spec *mVUSideCS;
+  HISSTools_Color_Spec *mVU1PeakCS;
+  HISSTools_Color_Spec *mVU2PeakCS;
+  HISSTools_Color_Spec *mVUSidePeakCS;
+
+  bool mOverlayFixedGradientBox;
+
+};
+
+
 #ifndef NO_HISSTOOLS_CONTROL_HELPERS_COMPILE
 #include "HISSTools_Control_Helpers.cpp"
 #endif
