@@ -413,6 +413,21 @@ private:
 
 };
 
+// This class allows Live-style tabs that have no explicit selector, and instead are set from the plug via other related controls
+
+class HISSTools_Invisible_Tabs : public iplug::igraphics::IControl, public HISSTools_Tabs
+{
+
+public:
+
+  HISSTools_Invisible_Tabs(int paramIdx) : IControl(IRECT(), paramIdx), HISSTools_Tabs(this) {}
+  void OnInit() override                              { init(); }
+  void Draw(IGraphics& g) override                    { }
+  void Hide(bool hide) override                       { tabHide(hide); }
+  void SetDirty(bool pushParamToPlug, int) override   { tabSetDirty(pushParamToPlug); }
+};
+
+
 
 #ifndef NO_HISSTOOLS_CONTROL_HELPERS_COMPILE
 #include "HISSTools_Control_Helpers.cpp"
