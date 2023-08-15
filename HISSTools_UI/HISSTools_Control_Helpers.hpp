@@ -358,6 +358,8 @@ private:
     bool mLabelMode;
 };
 
+#ifndef NO_HISSTOOLS_CONTROL_HELPERS_COMPILE
 #include "HISSTools_Control_Helpers.cpp"
+#endif
 
 #endif /* __HISSTOOLS_CONTROL_HELPERS__ */
