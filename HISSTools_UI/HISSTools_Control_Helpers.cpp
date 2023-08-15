@@ -1153,3 +1153,137 @@ void HISSTools_Dial::setPointerAppearance(double pointerCircRatio, double pointe
   mPointerTipRadius = mPointerCircRadius * pointerTipRatio;
   mPointerAngle = pointerAngle;
 }
+
+// HISSTools_Switch
+// Multi state control with a number of vertical or horizontal positions
+
+HISSTools_Switch::HISSTools_Switch(int paramIdx, double x, double y, double w, double h, int nStates, const char *type, HISSTools_Design_Scheme *designScheme)
+  : IControl(IRECT(), paramIdx), HISSTools_Control_Layers()
+{
+  // Dimensions
+
+  mX = x;
+  mY = y;
+  mW = w < 0 ? designScheme->getDimension("SwitchWidth", type) : w;
+  mH = h < 0 ? designScheme->getDimension("SwitchHeight", type) : h;
+  mS = std::min(w, h);
+
+  double roundness = designScheme->getDimension("SwitchRoundness", type);
+  mRoundness = roundness < 0 ? mH / 2 : roundness;
+
+  // Number of States
+
+  // FIX - get from parameters if <= 0 ??
+
+  mNStates = nStates < 2 ? 2 : nStates;
+
+  // Get Appearance
+
+  mHandleTK = designScheme->getDimension("SwitchHandleOutline", type);
+  mBoxOutlineTK = designScheme->getDimension("SwitchBoxOutline", type);
+
+  mShadow = designScheme->getShadow("Switch", type);
+
+  mHandleFillCS = designScheme->getColorSpec("SwitchHandleFill", type);
+  mHandleOutlineCS = designScheme->getColorSpec("SwitchHandleOutline", type);
+  mBoxFillCS = designScheme->getColorSpec("SwitchBoxFill", type);
+  mBoxOutlineCS = designScheme->getColorSpec("SwitchOutline", type);
+  mInactiveOverlayCS = designScheme->getColorSpec("SwitchInactiveOverlay", type);
+
+  // Calculate Areas (including shadows and thicknesses)
+
+  HISSTools_Bounds boxBounds(mX, mY, mW, mH);
+  HISSTools_Bounds fullBounds(mX, mY, mW, mH);
+
+  boxBounds.addThickness(mBoxOutlineTK);
+  fullBounds.addThickness(mHandleTK);
+
+  fullBounds = mShadow->getBlurBounds(fullBounds);
+  fullBounds.include(boxBounds);
+
+  mRECT = fullBounds;
+  SetTargetRECT(boxBounds);
+
+  SetMouseOverWhenDisabled(true);
+  SetMouseEventsWhenDisabled(true);
+}
+
+// Mousing Functions
+
+void HISSTools_Switch::OnMouseDown(float x, float y, const IMouseMod& pMod)
+{
+  OnMouseDrag(x, y, 0, 0, pMod);
+}
+
+void HISSTools_Switch::OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& pMod)
+{
+  // FIX - retina support for position data!
+
+  if (mW > mH)
+    SetValue(round(std::max(0.0, std::min(1.0, ((x - mX) / mW))) * (mNStates - 1)) / (mNStates - 1));
+  else
+    SetValue(round(std::max(0.0, std::min(1.0, ((y - mY) / mH))) * (mNStates - 1)) / (mNStates - 1));
+
+  SetDirty();
+}
+
+// Draw
+
+void HISSTools_Switch::Draw(IGraphics& g)
+{
+  HISSTools_VecLib vecDraw(g);
+
+  // Calculate position (according to orientation)
+
+  double xPos, yPos;
+
+  if (mW > mH)
+  {
+    xPos = mX + (mW - mS) * GetValue();
+    yPos = mY;
+  }
+  else
+  {
+    xPos = mX;
+    yPos = mY + (mH - mS) * GetValue();
+  }
+
+  // Background
+
+  if (StartBackground(vecDraw, mRECT))
+  {
+    // Background Rectangle
+
+    vecDraw.setColor(mBoxFillCS);
+    vecDraw.fillRoundRect(mX, mY, mW, mH, mRoundness);
+    vecDraw.setColor(mBoxOutlineCS);
+    vecDraw.frameRoundRect(mX, mY, mW, mH, mRoundness, mBoxOutlineTK);
+  }
+
+  RenderBackground(vecDraw, mRECT);
+
+  // Handle
+
+  vecDraw.setColor(mHandleFillCS);
+  vecDraw.startShadow(mShadow, mRECT);
+  vecDraw.fillRoundRect(xPos, yPos, mS, mS, mRoundness);
+  vecDraw.setColor(mHandleOutlineCS);
+  vecDraw.frameRoundRect(xPos, yPos, mS, mS, mRoundness, mHandleTK);
+  vecDraw.renderShadow();
+
+  // Fix - Labels (Control Name and Value)
+  // Label
+
+  //vecDraw.setColor(textColor);
+  //vecDraw.text(&txt, "Load", mRECT.L, mRECT.R, mRECT.T, mRECT.B);
+
+  // Inactive
+
+  if (IsDisabled())
+  {
+    // Inactive Overlay
+
+    vecDraw.setColor(mInactiveOverlayCS);
+    vecDraw.fillRoundRect(mX, mY, mW, mH, mRoundness);
+  }
+}

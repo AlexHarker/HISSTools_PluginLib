@@ -571,6 +571,60 @@ private:
   WDL_String mDisplayName;
 };
 
+// HISSTools_Switch
+// Switch - multi state control with a number of vertical or horizontal positions
+
+class HISSTools_Switch : public iplug::igraphics::IControl, public HISSTools_Control_Layers
+{
+
+public:
+
+  // Constructor
+
+  HISSTools_Switch(int paramIdx, double x, double y, double w, double h, int nStates = 2, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme);
+
+  // Mousing Functions
+
+  void OnMouseDown(float x, float y, const IMouseMod& pMod) override;
+
+  void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& pMod) override;
+
+  // Draw
+
+  void Draw(IGraphics& g) override;
+
+private:
+
+  // Positioning / Dimensions
+
+  double mX;
+  double mY;
+  double mW;
+  double mH;
+  double mS;
+  double mRoundness;
+
+  // Line Thicknesses
+
+  double mHandleTK;
+  double mBoxOutlineTK;
+
+  // Shadow Spec
+
+  HISSTools_Shadow *mShadow;
+
+  // Color Specs
+
+  HISSTools_Color_Spec *mHandleFillCS;
+  HISSTools_Color_Spec *mHandleOutlineCS;
+  HISSTools_Color_Spec *mBoxFillCS;
+  HISSTools_Color_Spec *mBoxOutlineCS;
+  HISSTools_Color_Spec *mInactiveOverlayCS;
+
+  // Number of States
+
+  int mNStates;
+};
 #ifndef NO_HISSTOOLS_CONTROL_HELPERS_COMPILE
 #include "HISSTools_Control_Helpers.cpp"
 #endif
