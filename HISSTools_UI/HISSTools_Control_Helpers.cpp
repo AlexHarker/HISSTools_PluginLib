@@ -676,3 +676,59 @@ void HISSTools_Button::Draw(IGraphics& g)
         vl.fillRoundRect(mX, mY, mLabelMode ? mH : mW, mH, mRoundness);
     }
 }
+
+// HISSTools_Tabs
+// An abstract class to control tabs in plug-ins
+
+void HISSTools_Tabs::init()
+{
+  mParam = mTabControl->GetParam();
+  mMaxTabNumber = mParam != nullptr ? round(mParam->GetRange()) : 0;
+  tabSetDirty(false);
+}
+
+void HISSTools_Tabs::attachControl(iplug::igraphics::IControl *control, int tabNumber)
+{
+  // N.B. - mMaxTabNumber is one lass than the number of actual tabs (zero referenced)
+
+  mItems.push_back(TabItem(control, tabNumber));
+  updateItems();
+}
+
+void HISSTools_Tabs::tabHide(bool hide)
+{
+  mTabControl->IControl::Hide(hide);
+  updateItems();
+}
+
+void HISSTools_Tabs::tabSetDirty(bool pushParamToPlug)
+{
+  mTabControl->IControl::SetDirty(pushParamToPlug);
+  mCurrentTabNumber = mParam ? clipTabNumber(mParam->Int() - mParam->GetMin()) : 0;
+  updateItems();
+}
+
+/*
+void setTabFromPlug(int tabNumber)
+{
+  if (mParam)
+    mParam->Set(tabNumber + mParam->GetMin());
+
+  tabSetDirty(false);
+}*/
+
+void HISSTools_Tabs::updateItems()
+{
+  bool tabObjectHidden = mTabControl->IsHidden();
+
+  for (auto it = mItems.begin(); it != mItems.end(); it++)
+    it->mControl->Hide(tabObjectHidden || clipTabNumber(it->mTabNumber) != mCurrentTabNumber);
+}
+
+int HISSTools_Tabs::clipTabNumber(int tabNumber)
+{
+  tabNumber = tabNumber < 0 ? 0 : tabNumber;
+  tabNumber = tabNumber > mMaxTabNumber ? mMaxTabNumber : tabNumber;
+
+  return tabNumber;
+}

@@ -358,6 +358,62 @@ private:
     bool mLabelMode;
 };
 
+// HISSTools_Tabs
+// An abstract class to control tabs in plug-ins
+
+class HISSTools_Tabs : protected virtual HISSTools_Graphics_Types
+{
+
+public:
+
+  // Constructor
+
+  // You should pass the inheriting class here, after constructing the control, which must be mapped to a valid parameter of the plug - the tabs are tied to the parameter, rather than the control
+
+  HISSTools_Tabs(iplug::igraphics::IControl *tabControl) : mTabControl(tabControl), mParam(nullptr) {}
+
+public:
+
+  // Call this from OnInit in the inheriting class
+  void init();
+
+  void attachControl(iplug::igraphics::IControl *control, int tabNumber);
+
+  void tabHide(bool hide);
+
+  void tabSetDirty(bool pushPararmToPlug);
+
+  //void setTabFromPlug(int tabNumber);
+
+  // These functions should be declared in any inheriting classes, and should call the related tab versions
+
+  virtual void Hide(bool hide) = 0;
+  virtual void SetDirty(bool pushParamToPlug, int) = 0;
+
+private:
+
+  struct TabItem
+  {
+    iplug::igraphics::IControl *mControl;
+    int mTabNumber;
+
+    TabItem(iplug::igraphics::IControl *control, int tabNumber) : mControl(control), mTabNumber(tabNumber) {}
+  };
+
+  const IParam* mParam;
+  iplug::igraphics::IControl *mTabControl;
+  std::vector<TabItem> mItems;
+
+  int mCurrentTabNumber;
+  int mMaxTabNumber;
+
+  void updateItems();
+
+  int clipTabNumber(int tabNumber);
+
+};
+
+
 #ifndef NO_HISSTOOLS_CONTROL_HELPERS_COMPILE
 #include "HISSTools_Control_Helpers.cpp"
 #endif
