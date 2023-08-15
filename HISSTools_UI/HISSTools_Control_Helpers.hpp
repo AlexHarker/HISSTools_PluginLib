@@ -428,7 +428,53 @@ public:
   void SetDirty(bool pushParamToPlug, int) override   { tabSetDirty(pushParamToPlug); }
 };
 
+// HISSTools_Value
+// Multipurpose numerical / menu control
+// FIX - do your own mousing later...
 
+class HISSTools_Value : public iplug::igraphics::IKnobControlBase, public HISSTools_Control_Layers
+{
+
+public:
+
+  HISSTools_Value(int paramIdx, double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char* name = nullptr)
+    : IKnobControlBase(IRECT(), paramIdx), HISSTools_Control_Layers();
+
+  ~HISSTools_Value();
+
+  void OnInit() override;
+
+  void OnMouseDown(float x, float y, const IMouseMod& pMod) override;
+
+  void OnMouseUp(float x, float y, const IMouseMod& pMod) override;
+
+  void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& pMod) override;
+
+  void OnMouseDblClick(float x, float y, const IMouseMod& pMod) override;
+
+  virtual void SetValueFromUserInput(double value, int valIdx) override;
+
+  void Draw(IGraphics& g) override;
+
+private:
+
+  // Text
+
+  HISSTools_Text_Helper_Param *mTextParam;
+  HISSTools_Text_Helper_Block *mTextLabel;
+
+  // Name
+
+  WDL_String mDisplayName;
+
+  // Mousing
+
+  bool mDrag;
+
+  // Stored Dimensions
+
+  double mTextArea;
+};
 
 #ifndef NO_HISSTOOLS_CONTROL_HELPERS_COMPILE
 #include "HISSTools_Control_Helpers.cpp"

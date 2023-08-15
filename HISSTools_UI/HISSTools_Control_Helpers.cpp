@@ -732,3 +732,126 @@ int HISSTools_Tabs::clipTabNumber(int tabNumber)
 
   return tabNumber;
 }
+
+HISSTools_Value::HISSTools_Value(int paramIdx, double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char* name = nullptr)
+{
+  // FIX - perhaps just inherit these??
+
+  bool labelBelow = designScheme->getFlag("ValueLabelBelow", type);
+  bool label = designScheme->getFlag("ValueDrawLabel", type);
+  mTextArea = designScheme->getDimension("ValueTextArea", type);
+
+  mTextParam = new HISSTools_Text_Helper_Param(this, x, y, w, h, 1, kHAlignCenter, kVAlignCenter, "Value", type, designScheme);
+
+  if (label && labelBelow)
+    mTextLabel = new HISSTools_Text_Helper_Block(x, y + h, w, mTextArea, kHAlignCenter, kVAlignBottom, "ValueLabel", type, designScheme);
+  else if (label)
+    mTextLabel = new HISSTools_Text_Helper_Block(x, y - mTextArea, w, mTextArea, kHAlignCenter, kVAlignTop, "ValueLabel", type, designScheme);
+  else
+    mTextLabel = nullptr;
+
+  SetTargetRECT(HISSTools_Bounds(x, y, w, h));
+
+  HISSTools_Bounds fullBoxBounds = mTextParam->Bounds();
+  if (mTextLabel)
+    fullBoxBounds.include(mTextLabel->Bounds());
+  mRECT = fullBoxBounds;
+
+  SetMouseOverWhenDisabled(true);
+  SetMouseEventsWhenDisabled(true);
+
+  if (name)
+    mDisplayName.Set(name);
+}
+
+HISSTools_Value::~HISSTools_Value()
+{
+  delete mTextParam;
+  delete mTextLabel;
+}
+
+void HISSTools_Value::OnInit()
+{
+  if (mTextLabel)
+  {
+    if (mDisplayName.GetLength())
+      mTextLabel->SetText(mDisplayName.Get());
+    else
+      mTextLabel->SetText((GetParam() != nullptr) ? GetParam()->GetName() : "");
+  }
+}
+
+void HISSTools_Value::OnMouseDown(float x, float y, const IMouseMod& pMod)
+{
+  mMouseDown = true;
+  mMouseDragValue = GetValue();
+
+  if (pMod.S)
+  {
+    SetValueToDefault();
+    return;
+  }
+
+  if (mTextParam->menuParam())
+  {
+    if (mTextParam->PromptUserInput(x, y) == false && GetParam())
+    {
+      double value = round(GetValue() * (GetParam()->GetRange()) + 1) / (GetParam()->GetRange());
+      SetValue(value > 1.0 ? 0 : value);
+    }
+  }
+  else
+    mTextParam->Hilite(true);
+
+  mDrag = false;
+  SetDirty();
+}
+
+void HISSTools_Value::OnMouseUp(float x, float y, const IMouseMod& pMod)
+{
+  if (mDrag == false)
+  {
+    if (mTextParam->menuParam() == false)
+      mTextParam->PromptUserInput();
+  }
+  else
+    mTextParam->Hilite(false);
+
+  mMouseDown = false;
+  SetDirty(false);
+}
+
+void HISSTools_Value::OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& pMod)
+{
+  mDrag = true;
+
+  IKnobControlBase::OnMouseDrag(x, y, dX, dY, pMod);
+}
+
+void HISSTools_Value::OnMouseDblClick(float x, float y, const IMouseMod& pMod)
+{
+  OnMouseDown(x, y, pMod);
+}
+
+virtual void HISSTools_Value::SetValueFromUserInput(double value, int valIdx)
+{
+  mDrag = false;
+  mTextParam->FinishEdit();
+  mTextParam->Hilite(false);
+  IKnobControlBase::SetValueFromUserInput(value, valIdx);
+}
+
+void HISSTools_Value::Draw(IGraphics& g)
+{
+  HISSTools_VecLib vecDraw(g);
+
+  // Label
+
+  if (mTextLabel)
+  {
+    if (StartBackground(vecDraw, mRECT))
+      mTextLabel->Draw(vecDraw);
+    RenderBackground(vecDraw, mRECT);
+  }
+  mTextParam->Draw(vecDraw);
+}
