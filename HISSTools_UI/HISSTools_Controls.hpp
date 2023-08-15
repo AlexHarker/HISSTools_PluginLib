@@ -401,9 +401,9 @@ private:
     int mCurrentTabNumber;
     int mMaxTabNumber;
 
-    void updateItems();
+    void UpdateItems();
 
-    int clipTabNumber(int tabNumber);
+    int ClipTabNumber(int tabNumber);
 };
 
 // HISSTools_Invisible_Tabs
@@ -499,7 +499,7 @@ public:
 
 private:
 
-    void setPointerAppearance(double pointerCircRatio, double pointerTipRatio, double pointerAngle);
+    void SetPointerAppearance(double pointerCircRatio, double pointerTipRatio, double pointerAngle);
 
     // Positioning / Dimensions
 
@@ -651,8 +651,8 @@ public:
 
 private:
 
-    bool coordsToIndices(double x, double y, int *xPos, int *yPos);
-    virtual void reportToPlug(int xPos, int yPos, const IMouseMod& mod, MousingAction action, float wheel = 0.f)
+    bool CoordsToIndices(double x, double y, int *xPos, int *yPos);
+    virtual void ReportToPlug(int xPos, int yPos, const IMouseMod& mod, MousingAction action, float wheel = 0.f)
     {}
 
     // Size (Dimension)
@@ -793,11 +793,11 @@ private:
 
     // N.B. currently we linearly interpolate dB but we could do something nicer here later.....
 
-    double getSize(double value, bool linear);
+    double GetSize(double value, bool linear);
 
-    void horzTick(HISSTools_VecLib& vecDraw, double x1, double x2, double y, double h, double normPosition, double thickness);
+    void HorzTick(HISSTools_VecLib& vecDraw, double x1, double x2, double y, double h, double normPosition, double thickness);
 
-    void vertTick(HISSTools_VecLib& vecDraw, double y1, double y2, double x, double w, double normPosition, double thickness);
+    void VertTick(HISSTools_VecLib& vecDraw, double y1, double y2, double x, double w, double normPosition, double thickness);
 
     // Positioning / Dimensions
 
@@ -882,7 +882,7 @@ public:
 
 private:
 
-    virtual void reportToPlug() {}
+    virtual void ReportToPlug() {}
 
     // Strings
 

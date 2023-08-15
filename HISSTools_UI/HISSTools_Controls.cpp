@@ -692,20 +692,20 @@ void HISSTools_Tabs::attachControl(iplug::igraphics::IControl *control, int tabN
     // N.B. - mMaxTabNumber is one lass than the number of actual tabs (zero referenced)
 
     mItems.push_back(TabItem(control, tabNumber));
-    updateItems();
+    UpdateItems();
 }
 
 void HISSTools_Tabs::tabHide(bool hide)
 {
     mTabControl->IControl::Hide(hide);
-    updateItems();
+    UpdateItems();
 }
 
 void HISSTools_Tabs::tabSetDirty(bool pushParamToPlug)
 {
     mTabControl->IControl::SetDirty(pushParamToPlug);
-    mCurrentTabNumber = mParam ? clipTabNumber(mParam->Int() - mParam->GetMin()) : 0;
-    updateItems();
+    mCurrentTabNumber = mParam ? ClipTabNumber(mParam->Int() - mParam->GetMin()) : 0;
+    UpdateItems();
 }
 
 /*
@@ -717,15 +717,15 @@ void setTabFromPlug(int tabNumber)
   tabSetDirty(false);
 }*/
 
-void HISSTools_Tabs::updateItems()
+void HISSTools_Tabs::UpdateItems()
 {
     bool tabObjectHidden = mTabControl->IsHidden();
 
     for (auto it = mItems.begin(); it != mItems.end(); it++)
-        it->mControl->Hide(tabObjectHidden || clipTabNumber(it->mTabNumber) != mCurrentTabNumber);
+        it->mControl->Hide(tabObjectHidden || ClipTabNumber(it->mTabNumber) != mCurrentTabNumber);
 }
 
-int HISSTools_Tabs::clipTabNumber(int tabNumber)
+int HISSTools_Tabs::ClipTabNumber(int tabNumber)
 {
     tabNumber = tabNumber < 0 ? 0 : tabNumber;
     tabNumber = tabNumber > mMaxTabNumber ? mMaxTabNumber : tabNumber;
@@ -886,7 +886,7 @@ HISSTools_Dial::HISSTools_Dial(int paramIdx, double x, double y, const char *typ
     double pointerTipRatio = designScheme->getDimension("DialTipRatio", type);
     double pointerAngle = designScheme->getDimension("DialPointerAngle", type);
 
-    setPointerAppearance(pointerCircRatio, pointerTipRatio, pointerAngle);
+    SetPointerAppearance(pointerCircRatio, pointerTipRatio, pointerAngle);
 
     // Set Throw
 
@@ -1142,7 +1142,7 @@ void HISSTools_Dial::setThrow(double refValue, double startAngle, double throwAn
     mThrowAngle = throwAngle;
 }
 
-void HISSTools_Dial::setPointerAppearance(double pointerCircRatio, double pointerTipRatio, double pointerAngle)
+void HISSTools_Dial::SetPointerAppearance(double pointerCircRatio, double pointerTipRatio, double pointerAngle)
 {
     pointerCircRatio = pointerCircRatio > 0.99 ? 0.99 : pointerCircRatio;
 
@@ -1388,9 +1388,9 @@ int HISSTools_Matrix::getYPos() const
 
 bool HISSTools_Matrix::OnMousing(float x, float y, const IMouseMod& mod, MousingAction action, float wheel)
 {
-    if (coordsToIndices(x, y, &mXPos, &mYPos))
+    if (CoordsToIndices(x, y, &mXPos, &mYPos))
     {
-        reportToPlug(mXPos, mYPos, mod, action, wheel);
+        ReportToPlug(mXPos, mYPos, mod, action, wheel);
 
         return true;
     }
@@ -1436,7 +1436,7 @@ void HISSTools_Matrix::OnMouseOut()
     mXPos = -1;
     mXPos = -1;
 
-    reportToPlug(-1, -1, IMouseMod(), kMouseOut);
+    ReportToPlug(-1, -1, IMouseMod(), kMouseOut);
 
     SetDirty(false);
 }
@@ -1531,7 +1531,7 @@ void HISSTools_Matrix::SetHilite(bool on)
     SetDirty(false);
 }
 
-bool HISSTools_Matrix::coordsToIndices(double x, double y, int *xPos, int *yPos)
+bool HISSTools_Matrix::CoordsToIndices(double x, double y, int *xPos, int *yPos)
 {
     *xPos = -1;
     *yPos = -1;
@@ -1745,9 +1745,9 @@ void HISSTools_VUMeter::OnMsgFromDelegate(int messageTag, int dataSize, const vo
     {
         MeterValues* pTypedData = (MeterValues*)pData;
 
-        mVU1Size = getSize(pTypedData->mVU1, pTypedData->mLinear);
-        mVU2Size = getSize(pTypedData->mVU2, pTypedData->mLinear);
-        mSideSize = getSize(pTypedData->mSide, pTypedData->mLinear);
+        mVU1Size = GetSize(pTypedData->mVU1, pTypedData->mLinear);
+        mVU2Size = GetSize(pTypedData->mVU2, pTypedData->mLinear);
+        mSideSize = GetSize(pTypedData->mSide, pTypedData->mLinear);
         mPeak = pTypedData->mPeak;
 
         SetDirty(false);
@@ -1823,10 +1823,10 @@ void HISSTools_VUMeter::Draw(IGraphics& g)
 
     if (mW < mH)
         for (int i = 0; i < nTicks; i++)
-            horzTick(vecDraw, mTick1, mTick2, mY, mH, (i / (double)(nTicks - 1)), mTickTK);
+            HorzTick(vecDraw, mTick1, mTick2, mY, mH, (i / (double)(nTicks - 1)), mTickTK);
     else
         for (int i = 0; i < nTicks; i++)
-            vertTick(vecDraw, mTick1, mTick2, mX, mW, (i / (double)(nTicks - 1)), mTickTK);
+            VertTick(vecDraw, mTick1, mTick2, mX, mW, (i / (double)(nTicks - 1)), mTickTK);
 
     // Side VU
 
@@ -1840,9 +1840,9 @@ void HISSTools_VUMeter::Draw(IGraphics& g)
             vecDraw.setColor(mVUSideCS);
 
         if (mW < mH)
-            horzTick(vecDraw, mTick3, mTick4, mY, mH, mSideSize, mPeakHoldTK);
+            HorzTick(vecDraw, mTick3, mTick4, mY, mH, mSideSize, mPeakHoldTK);
         else
-            vertTick(vecDraw, mTick3, mTick4, mX, mW, mSideSize, mPeakHoldTK);
+            VertTick(vecDraw, mTick3, mTick4, mX, mW, mSideSize, mPeakHoldTK);
     }
 
     vecDraw.forceGradientBox();
@@ -1860,7 +1860,7 @@ void HISSTools_VUMeter::Draw(IGraphics& g)
 
 // N.B. currently we linearly interpolate dB but we could do something nicer here later.....
 
-double HISSTools_VUMeter::getSize(double value, bool linear)
+double HISSTools_VUMeter::GetSize(double value, bool linear)
 {
     double db = linear ? 20. * log10(value) : value;
     double size = (db - mMinDB) / (mMaxDB - mMinDB);
@@ -1873,14 +1873,14 @@ double HISSTools_VUMeter::getSize(double value, bool linear)
     return size;
 }
 
-void HISSTools_VUMeter::horzTick(HISSTools_VecLib& vecDraw, double x1, double x2, double y, double h, double normPosition, double thickness)
+void HISSTools_VUMeter::HorzTick(HISSTools_VecLib& vecDraw, double x1, double x2, double y, double h, double normPosition, double thickness)
 {
     double yPos = y + h * (1 - normPosition);
 
     vecDraw.line(x1, yPos, x2, yPos, thickness);
 }
 
-void HISSTools_VUMeter::vertTick(HISSTools_VecLib& vecDraw, double y1, double y2, double x, double w, double normPosition, double thickness)
+void HISSTools_VUMeter::VertTick(HISSTools_VecLib& vecDraw, double y1, double y2, double x, double w, double normPosition, double thickness)
 {
     double xPos = x + w * normPosition;
 
@@ -1928,7 +1928,7 @@ void HISSTools_FileSelector::OnMouseUp(float x, float y, const IMouseMod& pMod)
             mState = kFSDone;
 
             mFile.Set("");
-            reportToPlug();
+            ReportToPlug();
         }
         else
         {
@@ -1939,7 +1939,7 @@ void HISSTools_FileSelector::OnMouseUp(float x, float y, const IMouseMod& pMod)
             if (tempFile.GetLength())
             {
                 mFile.Set(tempFile.Get());
-                reportToPlug();
+                ReportToPlug();
             }
         }
 
