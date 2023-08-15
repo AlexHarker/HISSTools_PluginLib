@@ -8,16 +8,7 @@
 #include <IPlugQueue.h>
 #include <IControl.h>
 
-enum MousingAction
-{
-  kMouseDown,
-  kMouseUp,
-  kMouseDblClick,
-  kMouseDrag,
-  kMouseWheel,
-  kMouseOver,
-  kMouseOut
-};
+enum MousingAction { kMouseDown, kMouseUp, kMouseDblClick, kMouseDrag, kMouseWheel, kMouseOver, kMouseOut };
 
 // HISSTools_Graphics_Types
 // A base struct to bring iplug and igraphics items into scope
@@ -786,10 +777,7 @@ private:
 class HISSTools_VUMeter : public iplug::igraphics::IControl, public HISSTools_Control_Layers
 {
 
-  enum
-  {
-    kUpdateTag = 0,
-  };
+  enum { kUpdateTag = 0, };
 
   struct MeterValues
   {
