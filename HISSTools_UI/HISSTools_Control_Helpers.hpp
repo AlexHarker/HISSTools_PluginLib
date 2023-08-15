@@ -413,6 +413,7 @@ private:
 
 };
 
+// HISSTools_Invisible_Tabs
 // This class allows Live-style tabs that have no explicit selector, and instead are set from the plug via other related controls
 
 class HISSTools_Invisible_Tabs : public iplug::igraphics::IControl, public HISSTools_Tabs
