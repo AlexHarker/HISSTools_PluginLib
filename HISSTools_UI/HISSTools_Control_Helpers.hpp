@@ -878,6 +878,60 @@ private:
 
 };
 
+// HISSTools_FileSelector
+// 
+
+class HISSTools_FileSelector : public HISSTools_Button
+{
+
+public:
+
+  enum EFileSelectorState { kFSNone, kFSSelecting, kFSDone };
+
+  // FIX - turn automation off (also for matrix)
+
+  // Constructor
+
+  HISSTools_FileSelector(int paramIdx, double x, double y, double w, double h, EFileAction action, char* dir = "", char* extensions = "", const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char *label = "")
+    : HISSTools_Button(paramIdx, x, y, w, h, type, designScheme, label), mState(kFSNone), mFileAction(action), mDir(dir), mExtensions(extensions)
+  {}
+
+  // Mousing Functions
+
+  void OnMouseDown(float x, float y, const IMouseMod& pMod) override;
+
+  void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& pMod) override;
+
+  void OnMouseUp(float x, float y, const IMouseMod& pMod) override;
+
+  // Draw
+
+  void Draw(IGraphics& g) override;
+
+  // File Functions
+
+  const WDL_String& GetLastSelectedFileForPlug();
+
+  void SetLastSelectedFileFromPlug(const char* file);
+
+  void SetExtensions(char *extensions);
+
+private:
+
+  virtual void reportToPlug() {}
+
+  // Strings
+
+  WDL_String mDir;
+  WDL_String mFile;
+  WDL_String mExtensions;
+
+  // States
+
+  EFileAction mFileAction;
+  EFileSelectorState mState;
+
+};
 
 #ifndef NO_HISSTOOLS_CONTROL_HELPERS_COMPILE
 #include "HISSTools_Control_Helpers.cpp"

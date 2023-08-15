@@ -1887,3 +1887,98 @@ void HISSTools_VUMeter::vertTick(HISSTools_VecLib& vecDraw, double y1, double y2
   vecDraw.line(xPos, y1, xPos, y2, thickness);
 }
 
+// HISSTools_FileSelector
+//
+
+// Mousing Functions
+
+void HISSTools_FileSelector::OnMouseDown(float x, float y, const IMouseMod& pMod)
+{
+  mState = kFSSelecting;
+  SetDirty(false);
+}
+
+void HISSTools_FileSelector::OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& pMod)
+{
+  if (mRECT.Contains(x, y))
+  {
+    if (mState != kFSSelecting)
+      SetDirty(false);
+    mState = kFSSelecting;
+  }
+  else
+  {
+    if (mState != kFSNone)
+      SetDirty(false);
+    mState = kFSNone;
+  }
+}
+
+void HISSTools_FileSelector::OnMouseUp(float x, float y, const IMouseMod& pMod)
+{
+  if (!mRECT.Contains(x, y))
+    return;
+
+  if (GetUI())
+  {
+    WDL_String tempFile;
+
+    if (pMod.A)
+    {
+      mState = kFSDone;
+
+      mFile.Set("");
+      reportToPlug();
+    }
+    else
+    {
+      GetUI()->PromptForFile(tempFile, mDir, mFileAction, mExtensions.Get());
+
+      mState = kFSDone;
+
+      if (tempFile.GetLength())
+      {
+        mFile.Set(tempFile.Get());
+        reportToPlug();
+      }
+    }
+
+    SetDirty(false);
+  }
+}
+
+// Draw
+
+void HISSTools_FileSelector::Draw(IGraphics& g)
+{
+  switch (mState)
+  {
+  case kFSDone:
+  case kFSNone:
+    SetValue(0);
+    break;
+
+  case kFSSelecting:
+    SetValue(1);
+    break;
+  }
+
+  HISSTools_Button::Draw(g);
+}
+
+// File Functions
+
+const WDL_String& HISSTools_FileSelector::GetLastSelectedFileForPlug()
+{
+  return mFile;
+}
+
+void HISSTools_FileSelector::SetLastSelectedFileFromPlug(const char* file)
+{
+  mFile.Set(file);
+}
+
+void HISSTools_FileSelector::SetExtensions(char *extensions)
+{
+  mExtensions.Set(extensions);
+}
