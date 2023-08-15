@@ -5,6 +5,7 @@
 #include "../HISSTools_Graphics/HISSTools_VecLib.hpp"
 #include "HISSTools_Design_Scheme.hpp"
 
+#include <IPlugQueue.h>
 #include <IControl.h>
 
 // HISSTools_Graphics_Types
