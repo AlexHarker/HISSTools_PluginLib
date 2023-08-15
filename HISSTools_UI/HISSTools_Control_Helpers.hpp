@@ -372,8 +372,6 @@ public:
 
   HISSTools_Tabs(iplug::igraphics::IControl *tabControl) : mTabControl(tabControl), mParam(nullptr) {}
 
-public:
-
   // Call this from OnInit in the inheriting class
   void init();
 
