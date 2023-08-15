@@ -16,7 +16,7 @@ enum MousingAction { kMouseDown, kMouseUp, kMouseDblClick, kMouseDrag, kMouseWhe
 // A base struct to bring iplug and igraphics items into scope
 
 struct HISSTools_Graphics_Types
-{    
+{
     using IEditorDelegate = iplug::IEditorDelegate;
     template <typename T>
     using IPlugQueue = iplug::IPlugQueue<T>;
@@ -37,7 +37,7 @@ struct HISSTools_Graphics_Types
     using IMouseMod = iplug::igraphics::IMouseMod;
     using IActionFunction = iplug::igraphics::IActionFunction;
     using ILayerPtr = iplug::igraphics::ILayerPtr;
-    
+
     using EBlend = iplug::igraphics::EBlend;
     using EAlign = iplug::igraphics::EAlign;
     using EVAlign = iplug::igraphics::EVAlign;
@@ -59,15 +59,14 @@ struct HISSTools_Graphics_Types
 
 class HISSTools_Control_Layers : protected virtual HISSTools_Graphics_Types
 {
-    
 public:
-	
+
     bool StartBackground(HISSTools_VecLib& vl, IRECT area);
     void RenderBackground(HISSTools_VecLib& vl, IRECT area);
     void RedrawBackground();
-    
+
 private:
-    
+
     ILayerPtr mBackground;
     const static bool sNoCaching = false;
 };
@@ -78,45 +77,44 @@ private:
 
 class HISSTools_Text_Helper_Block : protected virtual HISSTools_Graphics_Types
 {
-		
 public:
-	
-	// Constructors
-	
-    HISSTools_Text_Helper_Block(double x, double y, double w, double h,  HTextAlign hAlign, VTextAlign vAlign, const char *name, const char *type, HISSTools_Design_Scheme *scheme);
-	
+
+    // Constructors
+
+    HISSTools_Text_Helper_Block(double x, double y, double w, double h, HTextAlign hAlign, VTextAlign vAlign, const char *name, const char *type, HISSTools_Design_Scheme *scheme);
+
     HISSTools_Text_Helper_Block(HTextAlign hAlign, VTextAlign vAlign, const char *name, const char *type, HISSTools_Design_Scheme *scheme)
-    : HISSTools_Text_Helper_Block(0, 0, 0, 0 , hAlign, vAlign, name, type, scheme)
+        : HISSTools_Text_Helper_Block(0, 0, 0, 0, hAlign, vAlign, name, type, scheme)
     {}
-	
+
     void Draw(HISSTools_VecLib& vl);
-	
+
     void ResizeText(double x, double y, double w, double h);
-	
+
     void SetTextColor(HISSTools_Color_Spec *colorSpec);
     void SetText(const char *str);
-	
+
     HISSTools_Bounds Bounds();
-    
+
 protected:
-    
+
     // Dimensions
-    
+
     double mX;
     double mY;
     double mW;
     double mH;
-    
+
     // Appearance
-    
+
     HISSTools_Text *mTextTS;
     HISSTools_Color_Spec *mTextCS;
     HISSTools_Shadow *mTextSD;
     HTextAlign mHAlign;
     VTextAlign mVAlign;
-    
+
     // String
-    
+
     WDL_String mStr;
 };
 
@@ -126,45 +124,44 @@ protected:
 
 class HISSTools_Text_Helper_Panel : public HISSTools_Text_Helper_Block
 {
-
 public:
-	
+
     HISSTools_Text_Helper_Panel(double x, double y, double w, double h, double wPad, double hPad, HTextAlign hAlign, VTextAlign vAlign, const char *name, const char *type, HISSTools_Design_Scheme *scheme);
-	
+
     HISSTools_Text_Helper_Panel(HTextAlign hAlign, VTextAlign vAlign, const char *name, const char *type, HISSTools_Design_Scheme *scheme)
-    : HISSTools_Text_Helper_Panel(0, 0, 0, 0, 0, 0, hAlign, vAlign, name, type, scheme)
+        : HISSTools_Text_Helper_Panel(0, 0, 0, 0, 0, 0, hAlign, vAlign, name, type, scheme)
     {}
-	
+
     void Draw(HISSTools_VecLib& vl, bool drawText);
 
     void ChangePadding(double lPad, double rPad, double hPad);
     void ChangePadding(double wPad, double hPad);
 
     void Resize(double x, double y, double w, double h);
-	
+
     void SetPanelColor(HISSTools_Color_Spec *colorSpec);
     void SetOutlineColor(HISSTools_Color_Spec *colorSpec);
-	
+
     HISSTools_Bounds Bounds();
-		
+
 protected:
-    
+
     bool DoDrawOutline();
     bool DoDrawPanel();
 
     // Dimensions
-    
+
     double mX;
     double mY;
     double mW;
     double mH;
-    
+
     double mLPad;
     double mRPad;
     double mHPad;
-    
+
     // Appearance
-    
+
     HISSTools_Color_Spec *mPanelFillCS;
     HISSTools_Color_Spec *mPanelOutlineCS;
     HISSTools_Shadow *mPanelSD;
@@ -178,54 +175,53 @@ protected:
 
 class HISSTools_Text_Helper_Param : public HISSTools_Text_Helper_Panel
 {
-	
 public:
-	
-	// Constructors
-	
+
+    // Constructors
+
     HISSTools_Text_Helper_Param(iplug::igraphics::IControl *control, double x, double y, double w, double h, double pad, HTextAlign hAlign, VTextAlign vAlign, const char *name, const char *type, HISSTools_Design_Scheme *scheme);
-	
+
     bool menuParam();
-	
+
     void FinishEdit();
     void Hilite(bool on);
 
     void PromptUserInput();
     bool PromptUserInput(float x, float y);
-		
+
     void Draw(HISSTools_VecLib& vl);
-    
+
 private:
-    
+
     void SetControlText();
-    
+
     double RoundnessCompensate(double menuTriangleHeight);
-    
+
     iplug::igraphics::IControl *mControl;
-    
+
     double mPromptRatio;
     double mTextHPad;
     double mSeparatorX;
-    
+
     bool mDrawSeparator;
     bool mDrawTriangle;
     bool mMenuFlipTriangle;
     bool mInEdit;
-    
+
     double mMenuTriangleTop;
     double mMenuTriangleBtm;
     double mMenuTriangleL;
     double mMenuTriangleR;
-    
+
     HISSTools_Color_Spec *mTextHiliteCS;
     HISSTools_Color_Spec *mPanelHiliteCS;
     HISSTools_Color_Spec *mOutlineHiliteCS;
     HISSTools_Color_Spec *mTextCS;
     HISSTools_Color_Spec *mPanelFillCS;
     HISSTools_Color_Spec *mPanelOutlineCS;
-    
+
     // Show Units
-    
+
     bool mShowUnits;
 };
 
@@ -235,11 +231,11 @@ private:
 // A Text Block
 
 struct HISSTools_TextBlock : public HISSTools_Text_Helper_Block, public iplug::igraphics::IControl, public HISSTools_Control_Layers
-{    
+{
     HISSTools_TextBlock(double x, double y, double w, double h, const char* str = "", HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter, const char* type = 0, HISSTools_Design_Scheme *scheme = &DefaultDesignScheme);
-    
+
     void Draw(IGraphics& g) override;
-    
+
     void SetText(const char *str);
 };
 
@@ -247,49 +243,49 @@ struct HISSTools_TextBlock : public HISSTools_Text_Helper_Block, public iplug::i
 // HISSTools_Panel
 // Panel with or without outline and with dropshadow
 
-class HISSTools_Panel: public iplug::igraphics::IControl, public HISSTools_Control_Layers
+class HISSTools_Panel : public iplug::igraphics::IControl, public HISSTools_Control_Layers
 {
     double GetRoundness(const char *name, const char *type, HISSTools_Design_Scheme *scheme);
-    
+
 public:
-    
+
     // Constructor
-    
+
     HISSTools_Panel(double x, double y, double w = 0, double h = 0, const char *type = 0, HISSTools_Design_Scheme *scheme = &DefaultDesignScheme);
-    
+
 public:
-    
+
     // Draw
-    
+
     void Draw(IGraphics& g) override;
-    
+
 private:
-    
+
     // Positioning / Dimensions
-    
+
     double mX;
     double mY;
     double mW;
     double mH;
-    
+
     double mRoundnessTL;
     double mRoundnessTR;
     double mRoundnessBL;
     double mRoundnessBR;
-    
+
     // Line Thicknesses
-    
+
     double mOutlineTK;
-    
+
     // Shadow Spec
-    
+
     HISSTools_Shadow *mShadow;
-    
+
     // Color Specs
-    
+
     HISSTools_Color_Spec *mPanelCS;
     HISSTools_Color_Spec *mOutlineCS;
-    
+
     bool mDrawOutline;
 };
 
@@ -297,58 +293,57 @@ private:
 // On/Off button with text on or off the handle
 // FIX - Momentary action and extensibility!!
 
-class HISSTools_Button: public iplug::igraphics::IControl, public HISSTools_Control_Layers
+class HISSTools_Button : public iplug::igraphics::IControl, public HISSTools_Control_Layers
 {
-    
 public:
-    
+
     // Constructor
-    
+
     HISSTools_Button(int paramIdx, double x, double y, double w = 0, double h = 0, const char *type = 0, HISSTools_Design_Scheme *scheme = &DefaultDesignScheme, const char *name = "");
-    
+
 public:
-    
+
     void OnInit() override;
-    
+
     // Mousing Functions
-    
+
     void OnMouseDown(float x, float y, const IMouseMod& pMod) override;
-    
+
     // Draw
-    
+
     void Draw(IGraphics& g) override;
-    
+
 protected:
-    
+
     // Text
-    
+
     WDL_String mDisplayName;
-    
+
 private:
-    
+
     // Positioning / Dimensions
-    
+
     double mX;
     double mY;
     double mW;
     double mH;
     double mTextPad;
     double mRoundness;
-    
+
     // Line Thicknesses
-    
+
     double mOutlineTK;
-    
+
     // Shadow Spec
-    
+
     HISSTools_Shadow *mShadow;
-    
+
     // Text Spec
-    
+
     HISSTools_Text *mTextStyle;
-    
+
     // Color Specs
-    
+
     HISSTools_Color_Spec *mOnCS;
     HISSTools_Color_Spec *mOffCS;
     HISSTools_Color_Spec *mOutlineCS;
@@ -356,9 +351,9 @@ private:
     HISSTools_Color_Spec *mHandleLabelOffCS;
     HISSTools_Color_Spec *mBackgroundLabelCS;
     HISSTools_Color_Spec *mInactiveOverlayCS;
-    
+
     // Label Mode
-    
+
     bool mLabelMode;
 };
 
@@ -367,51 +362,48 @@ private:
 
 class HISSTools_Tabs : protected virtual HISSTools_Graphics_Types
 {
-
 public:
 
-  // Constructor
+    // Constructor
 
-  // You should pass the inheriting class here, after constructing the control, which must be mapped to a valid parameter of the plug - the tabs are tied to the parameter, rather than the control
+    // You should pass the inheriting class here, after constructing the control, which must be mapped to a valid parameter of the plug - the tabs are tied to the parameter, rather than the control
 
-  HISSTools_Tabs(iplug::igraphics::IControl *tabControl) : mTabControl(tabControl), mParam(nullptr) {}
+    HISSTools_Tabs(iplug::igraphics::IControl *tabControl) : mTabControl(tabControl), mParam(nullptr) {}
 
-  // Call this from OnInit in the inheriting class
-  void init();
+    // Call this from OnInit in the inheriting class
+    void init();
 
-  void attachControl(iplug::igraphics::IControl *control, int tabNumber);
+    void attachControl(iplug::igraphics::IControl *control, int tabNumber);
+    void tabHide(bool hide);
+    void tabSetDirty(bool pushPararmToPlug);
 
-  void tabHide(bool hide);
+    //void setTabFromPlug(int tabNumber);
 
-  void tabSetDirty(bool pushPararmToPlug);
+    // These functions should be declared in any inheriting classes, and should call the related tab versions
 
-  //void setTabFromPlug(int tabNumber);
-
-  // These functions should be declared in any inheriting classes, and should call the related tab versions
-
-  virtual void Hide(bool hide) = 0;
-  virtual void SetDirty(bool pushParamToPlug, int) = 0;
+    virtual void Hide(bool hide) = 0;
+    virtual void SetDirty(bool pushParamToPlug, int) = 0;
 
 private:
 
-  struct TabItem
-  {
-    iplug::igraphics::IControl *mControl;
-    int mTabNumber;
+    struct TabItem
+    {
+        iplug::igraphics::IControl *mControl;
+        int mTabNumber;
 
-    TabItem(iplug::igraphics::IControl *control, int tabNumber) : mControl(control), mTabNumber(tabNumber) {}
-  };
+        TabItem(iplug::igraphics::IControl *control, int tabNumber) : mControl(control), mTabNumber(tabNumber) {}
+    };
 
-  const IParam* mParam;
-  iplug::igraphics::IControl *mTabControl;
-  std::vector<TabItem> mItems;
+    const IParam* mParam;
+    iplug::igraphics::IControl *mTabControl;
+    std::vector<TabItem> mItems;
 
-  int mCurrentTabNumber;
-  int mMaxTabNumber;
+    int mCurrentTabNumber;
+    int mMaxTabNumber;
 
-  void updateItems();
+    void updateItems();
 
-  int clipTabNumber(int tabNumber);
+    int clipTabNumber(int tabNumber);
 
 };
 
@@ -420,14 +412,13 @@ private:
 
 class HISSTools_Invisible_Tabs : public iplug::igraphics::IControl, public HISSTools_Tabs
 {
-
 public:
 
-  HISSTools_Invisible_Tabs(int paramIdx) : IControl(IRECT(), paramIdx), HISSTools_Tabs(this) {}
-  void OnInit() override                              { init(); }
-  void Draw(IGraphics& g) override                    { }
-  void Hide(bool hide) override                       { tabHide(hide); }
-  void SetDirty(bool pushParamToPlug, int) override   { tabSetDirty(pushParamToPlug); }
+    HISSTools_Invisible_Tabs(int paramIdx) : IControl(IRECT(), paramIdx), HISSTools_Tabs(this) {}
+    void OnInit() override { init(); }
+    void Draw(IGraphics& g) override {}
+    void Hide(bool hide) override { tabHide(hide); }
+    void SetDirty(bool pushParamToPlug, int) override { tabSetDirty(pushParamToPlug); }
 };
 
 // HISSTools_Value
@@ -436,45 +427,45 @@ public:
 
 class HISSTools_Value : public iplug::igraphics::IKnobControlBase, public HISSTools_Control_Layers
 {
-
 public:
 
-  HISSTools_Value(int paramIdx, double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char* name = nullptr);
+    // Constructor and Destructor
 
-  ~HISSTools_Value();
+    HISSTools_Value(int paramIdx, double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char* name = nullptr);
+    ~HISSTools_Value();
 
-  void OnInit() override;
+    void OnInit() override;
 
-  void OnMouseDown(float x, float y, const IMouseMod& pMod) override;
+    // Mousing Functions
 
-  void OnMouseUp(float x, float y, const IMouseMod& pMod) override;
+    void OnMouseDown(float x, float y, const IMouseMod& pMod) override;
+    void OnMouseUp(float x, float y, const IMouseMod& pMod) override;
+    void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& pMod) override;
+    void OnMouseDblClick(float x, float y, const IMouseMod& pMod) override;
+    virtual void SetValueFromUserInput(double value, int valIdx) override;
 
-  void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& pMod) override;
+    // Draw
 
-  void OnMouseDblClick(float x, float y, const IMouseMod& pMod) override;
-
-  virtual void SetValueFromUserInput(double value, int valIdx) override;
-
-  void Draw(IGraphics& g) override;
+    void Draw(IGraphics& g) override;
 
 private:
 
-  // Text
+    // Text
 
-  HISSTools_Text_Helper_Param *mTextParam;
-  HISSTools_Text_Helper_Block *mTextLabel;
+    HISSTools_Text_Helper_Param *mTextParam;
+    HISSTools_Text_Helper_Block *mTextLabel;
 
-  // Name
+    // Name
 
-  WDL_String mDisplayName;
+    WDL_String mDisplayName;
 
-  // Mousing
+    // Mousing
 
-  bool mDrag;
+    bool mDrag;
 
-  // Stored Dimensions
+    // Stored Dimensions
 
-  double mTextArea;
+    double mTextArea;
 };
 
 // HISSTools_Dial
@@ -483,96 +474,91 @@ private:
 
 class HISSTools_Dial : public iplug::igraphics::IKnobControlBase, public HISSTools_Control_Layers
 {
-
 public:
 
-  // Constructor
+    // Constructor and Destructor
 
-  HISSTools_Dial(int paramIdx, double x, double y, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char* name = nullptr);
+    HISSTools_Dial(int paramIdx, double x, double y, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char* name = nullptr);
+    ~HISSTools_Dial();
 
-  ~HISSTools_Dial();
+    void OnInit() override;
 
-  void OnInit() override;
+    // Mousing Functions
 
-  void OnMouseDown(float x, float y, const IMouseMod& pMod) override;
+    void OnMouseDown(float x, float y, const IMouseMod& pMod) override;
+    void OnMouseDblClick(float x, float y, const IMouseMod& pMod) override;
+    void OnMouseOver(float x, float y, const IMouseMod& pMod) override;
+    void OnMouseOut() override;
+    void SetDisabled(bool disable) override;
+    void SetValueFromUserInput(double value, int valIdx) override;
 
-  void OnMouseDblClick(float x, float y, const IMouseMod& pMod) override;
+    // Draw
 
-  void OnMouseOver(float x, float y, const IMouseMod& pMod) override;
+    void Draw(IGraphics& g) override;
 
-  void OnMouseOut() override;
-
-  void SetDisabled(bool disable) override;
-
-  void SetValueFromUserInput(double value, int valIdx) override;
-
-  // Draw
-
-  void Draw(IGraphics& g) override;
-
-  void setThrow(double refValue, double startAngle, double throwAngle);
+    void setThrow(double refValue, double startAngle, double throwAngle);
 
 private:
 
-  void setPointerAppearance(double pointerCircRatio, double pointerTipRatio, double pointerAngle);
+    void setPointerAppearance(double pointerCircRatio, double pointerTipRatio, double pointerAngle);
 
-  // Positioning / Dimensions
+    // Positioning / Dimensions
 
-  double mCx;
-  double mCy;
-  double mR;
+    double mCx;
+    double mCy;
+    double mR;
 
-  // Pointer Appearance
+    // Pointer Appearance
 
-  double mPointerCircRadius;
-  double mPointerTipRadius;
-  double mPointerAngle;
+    double mPointerCircRadius;
+    double mPointerTipRadius;
+    double mPointerAngle;
 
-  // Display Angles
+    // Display Angles
 
-  double mRefValue;
-  double mStartAngle;
-  double mThrowAngle;
+    double mRefValue;
+    double mStartAngle;
+    double mThrowAngle;
 
-  // Text Area
+    // Text Area
 
-  double mTextArea;
+    double mTextArea;
 
-  // Text Prompt
+    // Text Prompt
 
-  double mPromptHalfHeight;
+    double mPromptHalfHeight;
 
-  // Line Thicknesses
+    // Line Thicknesses
 
-  double mOutlineTK;
-  double mPointerTK;
-  double mPointerOutlineTK;
+    double mOutlineTK;
+    double mPointerTK;
+    double mPointerOutlineTK;
 
-  // Shadow Specs
+    // Shadow Specs
 
-  HISSTools_Shadow *mOutlineSD;
-  HISSTools_Shadow *mPointerSD;
+    HISSTools_Shadow *mOutlineSD;
+    HISSTools_Shadow *mPointerSD;
 
-  // Color Specs
+    // Color Specs
 
-  HISSTools_Color_Spec *mIndicatorCS;
-  HISSTools_Color_Spec *mCircleFillCS;
-  HISSTools_Color_Spec *mPointerFillCS;
-  HISSTools_Color_Spec *mOutlineCS;
-  HISSTools_Color_Spec *mPointerOutlineCS;
-  HISSTools_Color_Spec *mInactiveOverlayCS;
+    HISSTools_Color_Spec *mIndicatorCS;
+    HISSTools_Color_Spec *mCircleFillCS;
+    HISSTools_Color_Spec *mPointerFillCS;
+    HISSTools_Color_Spec *mOutlineCS;
+    HISSTools_Color_Spec *mPointerOutlineCS;
+    HISSTools_Color_Spec *mInactiveOverlayCS;
 
-  // Text Blocks
+    // Text Blocks
 
-  HISSTools_Text_Helper_Block *mTextLabel;
-  HISSTools_Text_Helper_Param *mTextParam;
+    HISSTools_Text_Helper_Block *mTextLabel;
+    HISSTools_Text_Helper_Param *mTextParam;
 
-  // Values on when mouse is over
+    // Values on when mouse is over
 
-  bool mMouseOver;
-  bool mDrawValOnlyOnMO;
+    bool mMouseOver;
+    bool mDrawValOnlyOnMO;
 
-  WDL_String mDisplayName;
+    WDL_String mDisplayName;
 };
 
 // HISSTools_Switch
@@ -580,54 +566,52 @@ private:
 
 class HISSTools_Switch : public iplug::igraphics::IControl, public HISSTools_Control_Layers
 {
-
 public:
 
-  // Constructor
+    // Constructor
 
-  HISSTools_Switch(int paramIdx, double x, double y, double w, double h, int nStates = 2, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme);
+    HISSTools_Switch(int paramIdx, double x, double y, double w, double h, int nStates = 2, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme);
 
-  // Mousing Functions
+    // Mousing Functions
 
-  void OnMouseDown(float x, float y, const IMouseMod& pMod) override;
+    void OnMouseDown(float x, float y, const IMouseMod& pMod) override;
+    void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& pMod) override;
 
-  void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& pMod) override;
+    // Draw
 
-  // Draw
-
-  void Draw(IGraphics& g) override;
+    void Draw(IGraphics& g) override;
 
 private:
 
-  // Positioning / Dimensions
+    // Positioning / Dimensions
 
-  double mX;
-  double mY;
-  double mW;
-  double mH;
-  double mS;
-  double mRoundness;
+    double mX;
+    double mY;
+    double mW;
+    double mH;
+    double mS;
+    double mRoundness;
 
-  // Line Thicknesses
+    // Line Thicknesses
 
-  double mHandleTK;
-  double mBoxOutlineTK;
+    double mHandleTK;
+    double mBoxOutlineTK;
 
-  // Shadow Spec
+    // Shadow Spec
 
-  HISSTools_Shadow *mShadow;
+    HISSTools_Shadow *mShadow;
 
-  // Color Specs
+    // Color Specs
 
-  HISSTools_Color_Spec *mHandleFillCS;
-  HISSTools_Color_Spec *mHandleOutlineCS;
-  HISSTools_Color_Spec *mBoxFillCS;
-  HISSTools_Color_Spec *mBoxOutlineCS;
-  HISSTools_Color_Spec *mInactiveOverlayCS;
+    HISSTools_Color_Spec *mHandleFillCS;
+    HISSTools_Color_Spec *mHandleOutlineCS;
+    HISSTools_Color_Spec *mBoxFillCS;
+    HISSTools_Color_Spec *mBoxOutlineCS;
+    HISSTools_Color_Spec *mInactiveOverlayCS;
 
-  // Number of States
+    // Number of States
 
-  int mNStates;
+    int mNStates;
 };
 
 // HISSTools_Matrix
@@ -635,99 +619,89 @@ private:
 
 class HISSTools_Matrix : public iplug::igraphics::IControl, public HISSTools_Control_Layers
 {
-
 public:
 
-  // Constructor and Destructor
+    // Constructor and Destructor
 
-  HISSTools_Matrix(int paramIdx, double x, double y, int xDim, int yDim, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, HISSTools_Design_Scheme *stateScheme = 0);
+    HISSTools_Matrix(int paramIdx, double x, double y, int xDim, int yDim, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, HISSTools_Design_Scheme *stateScheme = 0);
 
-  ~HISSTools_Matrix();
+    ~HISSTools_Matrix();
 
-  int getXPos() const;
-  int getYPos() const;
+    int getXPos() const;
+    int getYPos() const;
 
-  // Mousing Functions
+    // Mousing Functions
 
-  bool OnMousing(float x, float y, const IMouseMod& mod, MousingAction action, float wheel = 0.f);
+    bool OnMousing(float x, float y, const IMouseMod& mod, MousingAction action, float wheel = 0.f);
+    void OnMouseDown(float x, float y, const IMouseMod& mod) override;
+    void OnMouseUp(float x, float y, const IMouseMod& mod) override;
+    void OnMouseDblClick(float x, float y, const IMouseMod& mod) override;
+    void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& mod) override;
+    void OnMouseWheel(float x, float y, const IMouseMod& pMod, float d) override;
+    void OnMouseOver(float x, float y, const IMouseMod& mod) override;
+    virtual void OnMouseOut() override;
 
-  void OnMouseDown(float x, float y, const IMouseMod& mod) override;
+    // Draw
 
-  void OnMouseUp(float x, float y, const IMouseMod& mod) override;
+    void Draw(IGraphics& g) override;
 
-  void OnMouseDblClick(float x, float y, const IMouseMod& mod) override;
+    void SetState(int x, int y, char state);
+    unsigned char GetState(int x, int y);
 
-  void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& mod) override;
-
-  void OnMouseWheel(float x, float y, const IMouseMod& pMod, float d) override;
-
-  void OnMouseOver(float x, float y, const IMouseMod& mod) override;
-
-  virtual void OnMouseOut() override;
-
-  // Draw
-
-  void Draw(IGraphics& g) override;
-
-  void SetState(int x, int y, char state);
-
-  unsigned char GetState(int x, int y);
-
-  void SetHilite(bool on);
+    void SetHilite(bool on);
 
 private:
 
-  bool coordsToIndices(double x, double y, int *xPos, int *yPos);
+    bool coordsToIndices(double x, double y, int *xPos, int *yPos);
+    virtual void reportToPlug(int xPos, int yPos, const IMouseMod& mod, MousingAction action, float wheel = 0.f)
+    {}
 
-  virtual void reportToPlug(int xPos, int yPos, const IMouseMod& mod, MousingAction action, float wheel = 0.f)
-  {}
+    // Size (Dimension)
 
-  // Size (Dimension)
+    int mXDim;
+    int mYDim;
 
-  int mXDim;
-  int mYDim;
+    // Positioning / Dimensions
 
-  // Positioning / Dimensions
+    double mX;
+    double mY;
+    double mW;
+    double mH;
+    double mS;
+    double mRoundness;
+    double mGap;
+    double mUnit;
 
-  double mX;
-  double mY;
-  double mW;
-  double mH;
-  double mS;
-  double mRoundness;
-  double mGap;
-  double mUnit;
+    // Line Thicknesses
 
-  // Line Thicknesses
+    double mHandleEmptyOutlineTK;
+    double mHandleFilledOutlineTK;
+    double mHiliteTK;
 
-  double mHandleEmptyOutlineTK;
-  double mHandleFilledOutlineTK;
-  double mHiliteTK;
+    // Shadow Spec
 
-  // Shadow Spec
+    HISSTools_Shadow *mShadow;
 
-  HISSTools_Shadow *mShadow;
+    // Color Specs
 
-  // Color Specs
+    HISSTools_Color_Spec *mStateCS[256];
+    HISSTools_Color_Spec *mOutlineCS;
+    HISSTools_Color_Spec *mHiliteCS;
 
-  HISSTools_Color_Spec *mStateCS[256];
-  HISSTools_Color_Spec *mOutlineCS;
-  HISSTools_Color_Spec *mHiliteCS;
+    // States
 
-  // States
+    unsigned char *mStates;
+    unsigned char mNStates;
 
-  unsigned char *mStates;
-  unsigned char mNStates;
+    // Hilite
 
-  // Hilite
+    int mXHilite;
+    int mYHilite;
 
-  int mXHilite;
-  int mYHilite;
+    // Mousing Info
 
-  // Mousing Info
-
-  int mXPos;
-  int mYPos;
+    int mXPos;
+    int mYPos;
 };
 
 // HISSTools_Progress
@@ -735,41 +709,40 @@ private:
 
 class HISSTools_Progress : public iplug::igraphics::IControl, public HISSTools_Control_Layers
 {
-
 public:
 
-  // Constructor and Destructor
+    // Constructor and Destructor
 
-  HISSTools_Progress(double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme);
+    HISSTools_Progress(double x, double y, double w, double h, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme);
 
-  ~HISSTools_Progress() {}
+    ~HISSTools_Progress() {}
 
-  // Draw
-  
-  void Draw(IGraphics& g);
+    // Draw
+
+    void Draw(IGraphics& g);
 
 private:
 
-  // Positioning / Dimensions
+    // Positioning / Dimensions
 
-  double mX;
-  double mY;
-  double mW;
-  double mH;
+    double mX;
+    double mY;
+    double mW;
+    double mH;
 
-  // Line Thicknesses
+    // Line Thicknesses
 
-  double mOutlineTK;
+    double mOutlineTK;
 
-  // Shadow Spec
+    // Shadow Spec
 
-  HISSTools_Shadow *mShadow;
+    HISSTools_Shadow *mShadow;
 
-  // Color Specs
+    // Color Specs
 
-  HISSTools_Color_Spec *mBackgroundCS;
-  HISSTools_Color_Spec *mOutlineCS;
-  HISSTools_Color_Spec *mProgressCS;
+    HISSTools_Color_Spec *mBackgroundCS;
+    HISSTools_Color_Spec *mOutlineCS;
+    HISSTools_Color_Spec *mProgressCS;
 };
 
 // HISSTools_VUMeter
@@ -778,105 +751,101 @@ private:
 
 class HISSTools_VUMeter : public iplug::igraphics::IControl, public HISSTools_Control_Layers
 {
+    enum { kUpdateTag = 0, };
 
-  enum { kUpdateTag = 0, };
-
-  struct MeterValues
-  {
-    double mVU1;
-    double mVU2;
-    double mSide;
-    bool mPeak;
-    bool mLinear;
-  };
+    struct MeterValues
+    {
+        double mVU1;
+        double mVU2;
+        double mSide;
+        bool mPeak;
+        bool mLinear;
+    };
 
 public:
 
-  class Sender
-  {
+    class Sender
+    {
+    public:
 
-  public:
+        Sender(int controlTag) : mControlTag(controlTag), mQueue(32) {}
 
-    Sender(int controlTag) : mControlTag(controlTag), mQueue(32) {}
+        void Set(double VU1, double VU2, double side, bool peak, bool linear = true);
+        void UpdateControl(IEditorDelegate& dlg);
+        void Reset();
 
-    void Set(double VU1, double VU2, double side, bool peak, bool linear = true);
+    private:
 
-    void UpdateControl(IEditorDelegate& dlg);
+        int mControlTag;
+        IPlugQueue<MeterValues> mQueue;
+    };
 
-    void Reset();
+    HISSTools_VUMeter(double x, double y, double w, double h, bool flip = false, double minDB = -60, double maxDB = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme);
 
-  private:
+    ~HISSTools_VUMeter() {}
 
-    int mControlTag;
-    IPlugQueue<MeterValues> mQueue;
-  };
+    void OnMsgFromDelegate(int messageTag, int dataSize, const void* pData) override;
 
-  HISSTools_VUMeter(double x, double y, double w, double h, bool flip = false, double minDB = -60, double maxDB = 0, const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme);
+    // Draw
 
-  ~HISSTools_VUMeter() {}
-
-  void OnMsgFromDelegate(int messageTag, int dataSize, const void* pData) override;
-
-  // Draw
-
-  void Draw(IGraphics& g) override;
+    void Draw(IGraphics& g) override;
 
 private:
 
-  // N.B. currently we linearly interpolate dB but we could do something nicer here later.....
+    // N.B. currently we linearly interpolate dB but we could do something nicer here later.....
 
-  double getSize(double value, bool linear);
+    double getSize(double value, bool linear);
 
-  void horzTick(HISSTools_VecLib& vecDraw, double x1, double x2, double y, double h, double normPosition, double thickness);
+    void horzTick(HISSTools_VecLib& vecDraw, double x1, double x2, double y, double h, double normPosition, double thickness);
 
-  void vertTick(HISSTools_VecLib& vecDraw, double y1, double y2, double x, double w, double normPosition, double thickness);
+    void vertTick(HISSTools_VecLib& vecDraw, double y1, double y2, double x, double w, double normPosition, double thickness);
 
-  // Positioning / Dimensions
+    // Positioning / Dimensions
 
-  double mX;
-  double mY;
-  double mW;
-  double mH;
-  double mTick1;
-  double mTick2;
-  double mTick3;
-  double mTick4;
+    double mX;
+    double mY;
+    double mW;
+    double mH;
+    double mTick1;
+    double mTick2;
+    double mTick3;
+    double mTick4;
 
-  // Line Thicknesses
+    // Line Thicknesses
 
-  double mOutlineTK;
-  double mTickTK;
-  double mPeakHoldTK;
+    double mOutlineTK;
+    double mTickTK;
+    double mPeakHoldTK;
 
-  // Shadow Spec
+    // Shadow Spec
 
-  HISSTools_Shadow *mShadow;
+    HISSTools_Shadow *mShadow;
 
-  // Drawing parameters
+    // Drawing parameters
 
-  double mVU1Size;
-  double mVU2Size;
-  double mSideSize;
+    double mVU1Size;
+    double mVU2Size;
+    double mSideSize;
 
-  bool mPeak;
+    bool mPeak;
 
-  // Values
+    // Values
 
-  double mMinDB;
-  double mMaxDB;
+    double mMinDB;
+    double mMaxDB;
 
-  // Color Specs
+    // Color Specs
 
-  HISSTools_Color_Spec *mBackgroundCS;
-  HISSTools_Color_Spec *mOutlineCS;
-  HISSTools_Color_Spec *mVU1CS;
-  HISSTools_Color_Spec *mVU2CS;
-  HISSTools_Color_Spec *mVUSideCS;
-  HISSTools_Color_Spec *mVU1PeakCS;
-  HISSTools_Color_Spec *mVU2PeakCS;
-  HISSTools_Color_Spec *mVUSidePeakCS;
+    HISSTools_Color_Spec *mBackgroundCS;
+    HISSTools_Color_Spec *mOutlineCS;
+    HISSTools_Color_Spec *mVU1CS;
+    HISSTools_Color_Spec *mVU2CS;
+    HISSTools_Color_Spec *mVUSideCS;
+    HISSTools_Color_Spec *mVU1PeakCS;
+    HISSTools_Color_Spec *mVU2PeakCS;
+    HISSTools_Color_Spec *mVUSidePeakCS;
 
-  bool mOverlayFixedGradientBox;
+    bool mOverlayFixedGradientBox;
 
 };
 
@@ -885,53 +854,48 @@ private:
 
 class HISSTools_FileSelector : public HISSTools_Button
 {
-
 public:
 
-  enum EFileSelectorState { kFSNone, kFSSelecting, kFSDone };
+    enum EFileSelectorState { kFSNone, kFSSelecting, kFSDone };
 
-  // FIX - turn automation off (also for matrix)
+    // FIX - turn automation off (also for matrix)
 
-  // Constructor
+    // Constructor
 
-  HISSTools_FileSelector(int paramIdx, double x, double y, double w, double h, EFileAction action, char* dir = "", char* extensions = "", const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char *label = "")
-    : HISSTools_Button(paramIdx, x, y, w, h, type, designScheme, label), mState(kFSNone), mFileAction(action), mDir(dir), mExtensions(extensions)
-  {}
+    HISSTools_FileSelector(int paramIdx, double x, double y, double w, double h, EFileAction action, char* dir = "", char* extensions = "", const char *type = 0, HISSTools_Design_Scheme *designScheme = &DefaultDesignScheme, const char *label = "")
+        : HISSTools_Button(paramIdx, x, y, w, h, type, designScheme, label), mState(kFSNone), mFileAction(action), mDir(dir), mExtensions(extensions)
+    {}
 
-  // Mousing Functions
+    // Mousing Functions
 
-  void OnMouseDown(float x, float y, const IMouseMod& pMod) override;
+    void OnMouseDown(float x, float y, const IMouseMod& pMod) override;
+    void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& pMod) override;
+    void OnMouseUp(float x, float y, const IMouseMod& pMod) override;
 
-  void OnMouseDrag(float x, float y, float dX, float dY, const IMouseMod& pMod) override;
+    // Draw
 
-  void OnMouseUp(float x, float y, const IMouseMod& pMod) override;
+    void Draw(IGraphics& g) override;
 
-  // Draw
+    // File Functions
 
-  void Draw(IGraphics& g) override;
-
-  // File Functions
-
-  const WDL_String& GetLastSelectedFileForPlug();
-
-  void SetLastSelectedFileFromPlug(const char* file);
-
-  void SetExtensions(char *extensions);
+    const WDL_String& GetLastSelectedFileForPlug();
+    void SetLastSelectedFileFromPlug(const char* file);
+    void SetExtensions(char *extensions);
 
 private:
 
-  virtual void reportToPlug() {}
+    virtual void reportToPlug() {}
 
-  // Strings
+    // Strings
 
-  WDL_String mDir;
-  WDL_String mFile;
-  WDL_String mExtensions;
+    WDL_String mDir;
+    WDL_String mFile;
+    WDL_String mExtensions;
 
-  // States
+    // States
 
-  EFileAction mFileAction;
-  EFileSelectorState mState;
+    EFileAction mFileAction;
+    EFileSelectorState mState;
 
 };
 
