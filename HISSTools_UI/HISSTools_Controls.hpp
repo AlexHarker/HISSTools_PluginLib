@@ -181,7 +181,7 @@ public:
 
     HISSTools_Text_Helper_Param(iplug::igraphics::IControl *control, double x, double y, double w, double h, double pad, HTextAlign hAlign, VTextAlign vAlign, const char *name, const char *type, HISSTools_Design_Scheme *scheme);
 
-    bool menuParam();
+    bool MenuParam();
 
     void FinishEdit();
     void Hilite(bool on);
@@ -371,11 +371,11 @@ public:
     HISSTools_Tabs(iplug::igraphics::IControl *tabControl) : mTabControl(tabControl), mParam(nullptr) {}
 
     // Call this from OnInit in the inheriting class
-    void init();
+    void Init();
 
-    void attachControl(iplug::igraphics::IControl *control, int tabNumber);
-    void tabHide(bool hide);
-    void tabSetDirty(bool pushPararmToPlug);
+    void AttachControl(iplug::igraphics::IControl *control, int tabNumber);
+    void TabHide(bool hide);
+    void TabSetDirty(bool pushPararmToPlug);
 
     //void setTabFromPlug(int tabNumber);
 
@@ -414,10 +414,10 @@ class HISSTools_Invisible_Tabs : public iplug::igraphics::IControl, public HISST
 public:
 
     HISSTools_Invisible_Tabs(int paramIdx) : IControl(IRECT(), paramIdx), HISSTools_Tabs(this) {}
-    void OnInit() override { init(); }
+    void OnInit() override { Init(); }
     void Draw(IGraphics& g) override {}
-    void Hide(bool hide) override { tabHide(hide); }
-    void SetDirty(bool pushParamToPlug, int) override { tabSetDirty(pushParamToPlug); }
+    void Hide(bool hide) override { TabHide(hide); }
+    void SetDirty(bool pushParamToPlug, int) override { TabSetDirty(pushParamToPlug); }
 };
 
 // HISSTools_Value
@@ -626,8 +626,8 @@ public:
 
     ~HISSTools_Matrix();
 
-    int getXPos() const;
-    int getYPos() const;
+    int GetXPos() const;
+    int GetYPos() const;
 
     // Mousing Functions
 

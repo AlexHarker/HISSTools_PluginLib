@@ -288,7 +288,7 @@ HISSTools_Text_Helper_Param::HISSTools_Text_Helper_Param(iplug::igraphics::ICont
     }
 }
 
-bool HISSTools_Text_Helper_Param::menuParam()
+bool HISSTools_Text_Helper_Param::MenuParam()
 {
     if (mControl->GetParam() == nullptr)
         return false;
@@ -309,7 +309,7 @@ void HISSTools_Text_Helper_Param::PromptUserInput()
     HISSTools_Bounds entryBounds;
     IRECT iEntryBounds;
 
-    mInEdit = menuParam() ? false : true;
+    mInEdit = MenuParam() ? false : true;
 
     // FIX - Widths ??
     // FIX - Text Prompt Vertical Centering??
@@ -321,7 +321,7 @@ void HISSTools_Text_Helper_Param::PromptUserInput()
         return;
 
     double textHeight = mTextTS->mSize;
-    double promptHeight = menuParam() ? 0 : textHeight + (2.0 * mTextHPad);
+    double promptHeight = MenuParam() ? 0 : textHeight + (2.0 * mTextHPad);
 
     // FIX - Set Padding, rather than variable???
     // FIX - is this one justified?
@@ -346,7 +346,7 @@ void HISSTools_Text_Helper_Param::PromptUserInput()
         break;
     }
 
-    if (mDrawSeparator && menuParam() && DoDrawOutline())
+    if (mDrawSeparator && MenuParam() && DoDrawOutline())
     {
         promptTop = mY + mH;
         promptLeft = mMenuFlipTriangle ? mX : mSeparatorX;
@@ -384,7 +384,7 @@ void HISSTools_Text_Helper_Param::Hilite(bool on)
 
 void HISSTools_Text_Helper_Param::Draw(HISSTools_VecLib& vl)
 {
-    if (mDrawTriangle && menuParam())
+    if (mDrawTriangle && MenuParam())
     {
         // FIX - Padding! (see constructor also)
 
@@ -421,7 +421,7 @@ void HISSTools_Text_Helper_Param::Draw(HISSTools_VecLib& vl)
 
     // Menu Separator / Triangle
 
-    if (mDrawTriangle && menuParam())
+    if (mDrawTriangle && MenuParam())
     {
         // Separator
 
@@ -680,14 +680,14 @@ void HISSTools_Button::Draw(IGraphics& g)
 // HISSTools_Tabs
 // An abstract class to control tabs in plug-ins
 
-void HISSTools_Tabs::init()
+void HISSTools_Tabs::Init()
 {
     mParam = mTabControl->GetParam();
     mMaxTabNumber = mParam != nullptr ? round(mParam->GetRange()) : 0;
-    tabSetDirty(false);
+    TabSetDirty(false);
 }
 
-void HISSTools_Tabs::attachControl(iplug::igraphics::IControl *control, int tabNumber)
+void HISSTools_Tabs::AttachControl(iplug::igraphics::IControl *control, int tabNumber)
 {
     // N.B. - mMaxTabNumber is one lass than the number of actual tabs (zero referenced)
 
@@ -695,13 +695,13 @@ void HISSTools_Tabs::attachControl(iplug::igraphics::IControl *control, int tabN
     UpdateItems();
 }
 
-void HISSTools_Tabs::tabHide(bool hide)
+void HISSTools_Tabs::TabHide(bool hide)
 {
     mTabControl->IControl::Hide(hide);
     UpdateItems();
 }
 
-void HISSTools_Tabs::tabSetDirty(bool pushParamToPlug)
+void HISSTools_Tabs::TabSetDirty(bool pushParamToPlug)
 {
     mTabControl->IControl::SetDirty(pushParamToPlug);
     mCurrentTabNumber = mParam ? ClipTabNumber(mParam->Int() - mParam->GetMin()) : 0;
@@ -797,7 +797,7 @@ void HISSTools_Value::OnMouseDown(float x, float y, const IMouseMod& pMod)
         return;
     }
 
-    if (mTextParam->menuParam())
+    if (mTextParam->MenuParam())
     {
         if (mTextParam->PromptUserInput(x, y) == false && GetParam())
         {
@@ -816,7 +816,7 @@ void HISSTools_Value::OnMouseUp(float x, float y, const IMouseMod& pMod)
 {
     if (mDrag == false)
     {
-        if (mTextParam->menuParam() == false)
+        if (mTextParam->MenuParam() == false)
             mTextParam->PromptUserInput();
     }
     else
@@ -1375,11 +1375,11 @@ HISSTools_Matrix::~HISSTools_Matrix()
     delete[] mStates;
 }
 
-int HISSTools_Matrix::getXPos() const
+int HISSTools_Matrix::GetXPos() const
 {
     return mXPos;
 }
-int HISSTools_Matrix::getYPos() const
+int HISSTools_Matrix::GetYPos() const
 {
     return mYPos;
 }
