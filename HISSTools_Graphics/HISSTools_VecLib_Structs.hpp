@@ -169,7 +169,7 @@ struct HISSTools_LICE_VGradient : public HISSTools_LICE_HVGradient
 struct HISSTools_Shadow : public iplug::igraphics::IShadow
 {
     using IRECT = iplug::igraphics::IRECT;
-
+    
     HISSTools_Shadow(HISSTools_Color_Spec& shadowColor, double xOffset, double yOffset, double blurSize)
     : IShadow(shadowColor.getPattern(), static_cast<float>(blurSize), static_cast<float>(xOffset), static_cast<float>(yOffset), 1.f, true)
     {}

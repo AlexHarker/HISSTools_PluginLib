@@ -20,7 +20,7 @@ class HISSTools_VecLib
     using EVAlign = iplug::igraphics::EVAlign;
     
     const double PI = iplug::PI;
-
+    
 public:
     
     HISSTools_VecLib(IGraphics& graphics) : mGraphics(graphics), mShadow(nullptr), mForceGradientBox(false), mColor(&defaultColor), mCSOrientation(kCSOrientHorizontal)
@@ -320,7 +320,7 @@ private:
     // IGraphics
     
     IGraphics& mGraphics;
-
+    
     // Gradients
     
     HISSTools_Bounds mGradientArea;
@@ -333,3 +333,4 @@ private:
     HISSTools_Color_Spec *mColor;
     HISSTools_Shadow *mShadow;
 };
+
