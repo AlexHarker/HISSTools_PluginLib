@@ -44,14 +44,14 @@ public:
     HISSTools_Design_Scheme(bool defaultScheme = false)
     {
         if (defaultScheme)
-            setDefaults();
+            SetDefaults();
     }
 
     ~HISSTools_Design_Scheme()
     {
-        deletePointers(mColorSpecs);
-        deletePointers(mShadowSpecs);
-        deletePointers(mTextStyles);
+        DeletePointers(mColorSpecs);
+        DeletePointers(mShadowSpecs);
+        DeletePointers(mTextStyles);
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -71,7 +71,7 @@ private:
     // Searching Template
 
     template <class T>
-    T findByName(std::vector<HISSTools_Label<T>>& searchSpace, const char *searchName, const char *searchSubTypes, T defaultValue)
+    T FindByName(std::vector<HISSTools_Label<T>>& searchSpace, const char *searchName, const char *searchSubTypes, T defaultValue)
     {
         if (searchSubTypes)
         {
@@ -98,7 +98,7 @@ private:
     // Addition Template For Pointers
 
     template <class T>
-    void addPointer(std::vector<HISSTools_Label<T*>>& searchSpace, const char *name, const char *subType, T *newValue)
+    void AddPointer(std::vector<HISSTools_Label<T*>>& searchSpace, const char *name, const char *subType, T *newValue)
     {
         for (auto it = searchSpace.begin(); it != searchSpace.end(); it++)
         {
@@ -115,7 +115,7 @@ private:
     // Deletion Template for Pointers
 
     template <class T>
-    void deletePointers(std::vector<HISSTools_Label<T*>>& searchSpace)
+    void DeletePointers(std::vector<HISSTools_Label<T*>>& searchSpace)
     {
         for (auto it = searchSpace.begin(); it != searchSpace.end(); it++)
         {
@@ -132,87 +132,87 @@ public:
 
     // Color Specs
 
-    void addColorSpec(const char *name, const char *subType, HISSTools_Color_Spec *spec)
+    void AddColorSpec(const char *name, const char *subType, HISSTools_Color_Spec *spec)
     {
-        addPointer(mColorSpecs, name, subType, spec);
+        AddPointer(mColorSpecs, name, subType, spec);
     }
 
-    void addColorSpec(const char *name, HISSTools_Color_Spec *spec)
+    void AddColorSpec(const char *name, HISSTools_Color_Spec *spec)
     {
-        addColorSpec(name, nullptr, spec);
+        AddColorSpec(name, nullptr, spec);
     }
 
-    HISSTools_Color_Spec *getColorSpec(const char *name, const char *subType = 0)
+    HISSTools_Color_Spec *GetColorSpec(const char *name, const char *subType = 0)
     {
-        return findByName(mColorSpecs, name, subType, (HISSTools_Color_Spec *)NULL);
+        return FindByName(mColorSpecs, name, subType, (HISSTools_Color_Spec *)NULL);
     }
 
     // Dimensions
 
-    void addDimension(const char *name, const char *subType, double thickness)
+    void AddDimension(const char *name, const char *subType, double thickness)
     {
         mDimensions.push_back(HISSTools_Label<double>(thickness, name, subType));
     }
 
-    void addDimension(const char *name, double thickness)
+    void AddDimension(const char *name, double thickness)
     {
-        addDimension(name, nullptr, thickness);
+        AddDimension(name, nullptr, thickness);
     }
 
-    double getDimension(const char *name, const char *subType = 0)
+    double GetDimension(const char *name, const char *subType = 0)
     {
-        return findByName(mDimensions, name, subType, 0.0);
+        return FindByName(mDimensions, name, subType, 0.0);
     }
 
     // Text
 
-    void addTextStyle(const char *name, const char *subType, HISSTools_Text *spec)
+    void AddTextStyle(const char *name, const char *subType, HISSTools_Text *spec)
     {
-        addPointer(mTextStyles, name, subType, spec);
+        AddPointer(mTextStyles, name, subType, spec);
     }
 
-    void addTextStyle(const char *name, HISSTools_Text *spec)
+    void AddTextStyle(const char *name, HISSTools_Text *spec)
     {
-        addTextStyle(name, nullptr, spec);
+        AddTextStyle(name, nullptr, spec);
     }
 
-    HISSTools_Text *getTextStyle(const char *name, const char *subType = 0)
+    HISSTools_Text *GetTextStyle(const char *name, const char *subType = 0)
     {
-        return findByName(mTextStyles, name, subType, (HISSTools_Text *)NULL);
+        return FindByName(mTextStyles, name, subType, (HISSTools_Text *)NULL);
     }
 
     // Shadows
 
-    void addShadow(const char *name, const char *subType, HISSTools_Shadow *spec)
+    void AddShadow(const char *name, const char *subType, HISSTools_Shadow *spec)
     {
-        addPointer(mShadowSpecs, name, subType, spec);
+        AddPointer(mShadowSpecs, name, subType, spec);
     }
 
-    void addShadow(const char *name, HISSTools_Shadow *spec)
+    void AddShadow(const char *name, HISSTools_Shadow *spec)
     {
-        addShadow(name, nullptr, spec);
+        AddShadow(name, nullptr, spec);
     }
 
-    HISSTools_Shadow *getShadow(const char *name, const char *subType = 0)
+    HISSTools_Shadow *GetShadow(const char *name, const char *subType = 0)
     {
-        return findByName(mShadowSpecs, name, subType, (HISSTools_Shadow *)NULL);
+        return FindByName(mShadowSpecs, name, subType, (HISSTools_Shadow *)NULL);
     }
 
     // Flags
 
-    void addFlag(const char *name, const char *subType, bool flag)
+    void AddFlag(const char *name, const char *subType, bool flag)
     {
         mFlags.push_back(HISSTools_Label<bool>(flag, name, subType));
     }
 
-    void addFlag(const char *name, bool flag)
+    void AddFlag(const char *name, bool flag)
     {
-        addFlag(name, nullptr, flag);
+        AddFlag(name, nullptr, flag);
     }
 
-    bool getFlag(const char *name, const char *subType = 0)
+    bool GetFlag(const char *name, const char *subType = 0)
     {
-        return findByName(mFlags, name, subType, (bool)false);
+        return FindByName(mFlags, name, subType, (bool)false);
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -221,50 +221,50 @@ public:
 
 private:
 
-    void setDefaults()
+    void SetDefaults()
     {
         // FIX - NEATEN THIS
         // FIX - default option for controls (so as to allow no scheme when no plugin....)
 
         // Dial Throw
 
-        addDimension("DialRefValue", 0.0);
-        addDimension("DialRefValue", "bipolar", 0.5);
-        addDimension("DialStartAngle", 0.33);
-        addDimension("DialThrowAngle", 0.84);
+        AddDimension("DialRefValue", 0.0);
+        AddDimension("DialRefValue", "bipolar", 0.5);
+        AddDimension("DialStartAngle", 0.33);
+        AddDimension("DialThrowAngle", 0.84);
 
         // Dial Pointer Appearance
 
-        addDimension("DialPointerRatio", 0.60);
-        addDimension("DialTipRatio", 1.30);
-        addDimension("DialPointerAngle", 0.03);
+        AddDimension("DialPointerRatio", 0.60);
+        AddDimension("DialTipRatio", 1.30);
+        AddDimension("DialPointerAngle", 0.03);
 
-        addDimension("DialPointerAngle", "tiny", 0.1);
+        AddDimension("DialPointerAngle", "tiny", 0.1);
 
         // Dial Prompts
 
-        addDimension("DialPromptPadding", 1.0);
-        addDimension("DialValuePromptRatio", 0.5);
-        addDimension("ValuePromptRatio", 0.4);
+        AddDimension("DialPromptPadding", 1.0);
+        AddDimension("DialValuePromptRatio", 0.5);
+        AddDimension("ValuePromptRatio", 0.4);
 
         // Flags
 
-        addFlag("ButtonLabelMode", false);
-        addFlag("ButtonLabelMode", "label", true);
+        AddFlag("ButtonLabelMode", false);
+        AddFlag("ButtonLabelMode", "label", true);
 
-        addFlag("ValueDrawTriangle", true);
-        addFlag("ValueDrawSeparator", true);
+        AddFlag("ValueDrawTriangle", true);
+        AddFlag("ValueDrawSeparator", true);
 
-        addFlag("DialBiPolar", false);
-        addFlag("DialBiPolar", "bipolar", true);
+        AddFlag("DialBiPolar", false);
+        AddFlag("DialBiPolar", "bipolar", true);
 
-        addFlag("ShowUnits", true);
-        addFlag("ShowUnits", "nounits", false);
+        AddFlag("ShowUnits", true);
+        AddFlag("ShowUnits", "nounits", false);
 
-        addFlag("VUOverlayFixedGradientBox", false);
-        addFlag("PanelDrawOutline", false);
+        AddFlag("VUOverlayFixedGradientBox", false);
+        AddFlag("PanelDrawOutline", false);
 
-        addFlag("ValueDrawLabel", true);
+        AddFlag("ValueDrawLabel", true);
 
         // Shadows
 
@@ -284,17 +284,17 @@ private:
         HISSTools_Shadow *shadowSpec4 = new HISSTools_Shadow(shadowCS3, 2, 2, 3);
         HISSTools_Shadow *shadowSpec5 = new HISSTools_Shadow(shadowCS2, 2, 2, 8);
 
-        addShadow("ValuePanel", shadowSpec1);
+        AddShadow("ValuePanel", shadowSpec1);
 
-        addShadow("DialOutline", shadowSpec1);
-        addShadow("DialPointer", shadowSpec2);
-        addShadow("Switch", shadowSpec3);
-        addShadow("Button", shadowSpec3);
-        addShadow("Matrix", shadowSpec4);
-        addShadow("Meter", shadowSpec5);
-        addShadow("Progress", shadowSpec5);
-        addShadow("Panel", shadowSpec3);
-        addShadow("TextBlock", 0);
+        AddShadow("DialOutline", shadowSpec1);
+        AddShadow("DialPointer", shadowSpec2);
+        AddShadow("Switch", shadowSpec3);
+        AddShadow("Button", shadowSpec3);
+        AddShadow("Matrix", shadowSpec4);
+        AddShadow("Meter", shadowSpec5);
+        AddShadow("Progress", shadowSpec5);
+        AddShadow("Panel", shadowSpec3);
+        AddShadow("TextBlock", 0);
 
         // Text Styles
         /*
@@ -307,110 +307,110 @@ private:
         HISSTools_Text *medTxt = new HISSTools_Text(12, "Arial Bold");
         HISSTools_Text *smallTxt = new HISSTools_Text(10, "Arial Bold");
 
-        addTextStyle("Value", defaultTxt);
+        AddTextStyle("Value", defaultTxt);
 
-        addTextStyle("ValueLabel", defaultTxt);
-        addTextStyle("DialLabel", defaultTxt);
-        addTextStyle("DialValue", defaultTxt);
-        addTextStyle("DialLabel", "small", medTxt);
-        addTextStyle("DialValue", "small", medTxt);
-        addTextStyle("DialLabel", "tiny", smallTxt);
-        addTextStyle("DialValue", "tiny", smallTxt);
-        addTextStyle("TextBlock", defaultTxt);
-        addTextStyle("TextBlock", "small", medTxt);
-        addTextStyle("Button", defaultTxt);
+        AddTextStyle("ValueLabel", defaultTxt);
+        AddTextStyle("DialLabel", defaultTxt);
+        AddTextStyle("DialValue", defaultTxt);
+        AddTextStyle("DialLabel", "small", medTxt);
+        AddTextStyle("DialValue", "small", medTxt);
+        AddTextStyle("DialLabel", "tiny", smallTxt);
+        AddTextStyle("DialValue", "tiny", smallTxt);
+        AddTextStyle("TextBlock", defaultTxt);
+        AddTextStyle("TextBlock", "small", medTxt);
+        AddTextStyle("Button", defaultTxt);
 
         // Line Thicknesses
 
-        addDimension("SpectralDisplayFrame", 1);
-        addDimension("SpectralDisplayGrid", 1);
-        addDimension("SpectralDisplayTick", 1);
+        AddDimension("SpectralDisplayFrame", 1);
+        AddDimension("SpectralDisplayGrid", 1);
+        AddDimension("SpectralDisplayTick", 1);
 
-        addDimension("ValuePanelOutline", 0.75);
+        AddDimension("ValuePanelOutline", 0.75);
 
-        addDimension("DialPointerOutline", 0.5);
-        addDimension("DialOutline", 1.5);
-        addDimension("DialIndicatorLineWidth", 0.4);
+        AddDimension("DialPointerOutline", 0.5);
+        AddDimension("DialOutline", 1.5);
+        AddDimension("DialIndicatorLineWidth", 0.4);
 
-        addDimension("SwitchHandleOutline", 0.6);
-        addDimension("SwitchBoxOutline", 0.9);
+        AddDimension("SwitchHandleOutline", 0.6);
+        AddDimension("SwitchBoxOutline", 0.9);
 
-        addDimension("ButtonOutline", 0.6);
+        AddDimension("ButtonOutline", 0.6);
 
-        addDimension("MatrixShadowOutline", 2);
-        addDimension("MatrixOutline", 1.2);
-        addDimension("MatrixHilite", 3);
+        AddDimension("MatrixShadowOutline", 2);
+        AddDimension("MatrixOutline", 1.2);
+        AddDimension("MatrixHilite", 3);
 
-        addDimension("MatrixShadowOutline", "round", 0.75);
-        addDimension("MatrixOutline", "round", 0.5);
+        AddDimension("MatrixShadowOutline", "round", 0.75);
+        AddDimension("MatrixOutline", "round", 0.5);
 
-        addDimension("ProgressOutline", 1.);
+        AddDimension("ProgressOutline", 1.);
 
-        addDimension("VUOutline", 1.);
-        addDimension("VUTick", 0.5);
-        addDimension("VUPeakHold", 2);
+        AddDimension("VUOutline", 1.);
+        AddDimension("VUTick", 0.5);
+        AddDimension("VUPeakHold", 2);
 
-        addDimension("PanelOutline", 0.6);
+        AddDimension("PanelOutline", 0.6);
 
         // Rounding 
 
-        addDimension("MatrixHandleRoundness", 3);
-        addDimension("MatrixHandleRoundness", "round", -1);
+        AddDimension("MatrixHandleRoundness", 3);
+        AddDimension("MatrixHandleRoundness", "round", -1);
 
-        addDimension("ValuePanelRoundness", -1);
+        AddDimension("ValuePanelRoundness", -1);
 
-        addDimension("ButtonRoundness", -1);
-        addDimension("ButtonRoundness", "tight", 2);
+        AddDimension("ButtonRoundness", -1);
+        AddDimension("ButtonRoundness", "tight", 2);
 
-        addDimension("SwitchRoundness", -1);
+        AddDimension("SwitchRoundness", -1);
 
-        addDimension("PanelRoundnessTL", 60);
-        addDimension("PanelRoundnessTR", 60);
-        addDimension("PanelRoundnessBL", 40);
-        addDimension("PanelRoundnessBR", 40);
-        addDimension("PanelRoundnessTL", "tight", 10);
-        addDimension("PanelRoundnessTR", "tight", 10);
-        addDimension("PanelRoundnessBL", "tight", 10);
-        addDimension("PanelRoundnessBR", "tight", 10);
+        AddDimension("PanelRoundnessTL", 60);
+        AddDimension("PanelRoundnessTR", 60);
+        AddDimension("PanelRoundnessBL", 40);
+        AddDimension("PanelRoundnessBR", 40);
+        AddDimension("PanelRoundnessTL", "tight", 10);
+        AddDimension("PanelRoundnessTR", "tight", 10);
+        AddDimension("PanelRoundnessBL", "tight", 10);
+        AddDimension("PanelRoundnessBR", "tight", 10);
 
         // Sizes
 
-        addDimension("DialDiameter", 90);
-        addDimension("DialDiameter", "small", 60);
-        addDimension("DialDiameter", "tiny", 40);
-        addDimension("DialTextArea", 25);
-        addDimension("ValueTextArea", 20);
-
-        addDimension("ButtonWidth", 100);
-        addDimension("ButtonHeight", 30);
-        addDimension("ButtonTextPad", 10);
-
-        addDimension("SwitchWidth", 60);
-        addDimension("SwitchHeight", 20);
-
-        addDimension("MatrixHandleSize", 12);
-        addDimension("MatrixHandleGap", 6);
-
-        addDimension("MatrixHandleSize", "round", 9);
-        addDimension("MatrixHandleGap", "round", 9);
-
-        addDimension("PanelWidth", 200);
-        addDimension("PanelHeight", 200);
+        AddDimension("DialDiameter", 90);
+        AddDimension("DialDiameter", "small", 60);
+        AddDimension("DialDiameter", "tiny", 40);
+        AddDimension("DialTextArea", 25);
+        AddDimension("ValueTextArea", 20);
+        
+        AddDimension("ButtonWidth", 100);
+        AddDimension("ButtonHeight", 30);
+        AddDimension("ButtonTextPad", 10);
+        
+        AddDimension("SwitchWidth", 60);
+        AddDimension("SwitchHeight", 20);
+        
+        AddDimension("MatrixHandleSize", 12);
+        AddDimension("MatrixHandleGap", 6);
+        
+        AddDimension("MatrixHandleSize", "round", 9);
+        AddDimension("MatrixHandleGap", "round", 9);
+        
+        AddDimension("PanelWidth", 200);
+        AddDimension("PanelHeight", 200);
 
         // Other
 
-        addDimension("SpectralDisplayFreqMin", 20);
-        addDimension("SpectralDisplayFreqMax", 22050);
-        addDimension("SpectralDisplayDbMin", -100);
-        addDimension("SpectralDisplayDbMax", 20);
+        AddDimension("SpectralDisplayFreqMin", 20);
+        AddDimension("SpectralDisplayFreqMax", 22050);
+        AddDimension("SpectralDisplayDbMin", -100);
+        AddDimension("SpectralDisplayDbMax", 20);
 
-        addDimension("SpectralDisplayGridOctaveSpacing", 1.0 / 3.0);
-        addDimension("SpectralDisplayGridFreqReference", 1000.0);
-        addDimension("SpectralDisplayGridDbSpacing", 10.0);
-        addDimension("SpectralDisplayGridDbReference", 0.0);
+        AddDimension("SpectralDisplayGridOctaveSpacing", 1.0 / 3.0);
+        AddDimension("SpectralDisplayGridFreqReference", 1000.0);
+        AddDimension("SpectralDisplayGridDbSpacing", 10.0);
+        AddDimension("SpectralDisplayGridDbReference", 0.0);
 
-        addDimension("MenuTriangleWidthRatio", 0.6);
-        addDimension("MenuTriangleHeightRatio", 0.5);
+        AddDimension("MenuTriangleWidthRatio", 0.6);
+        AddDimension("MenuTriangleHeightRatio", 0.5);
 
         // Color Specs
 
@@ -515,68 +515,68 @@ private:
         HISSTools_Color_Spec *VUPeak = new HISSTools_Color_Spec(HISSTools_Color(0.9, 0.0, 0.0, 1.0));
         HISSTools_Color_Spec *VUOverlayPeak = new HISSTools_Color_Spec(HISSTools_Color(0.4, 0.4, 0.4, 0.4));
 
-        addColorSpec("SpectralDisplayTick", buttonOutlineCS);
-        addColorSpec("SpectralDisplayFrame", buttonOutlineCS);
-        addColorSpec("SpectralDisplayGrid", spectralDisplayGridCS);
-        addColorSpec("SpectralDisplayBackground", spectralDisplayBackgroundCS);
+        AddColorSpec("SpectralDisplayTick", buttonOutlineCS);
+        AddColorSpec("SpectralDisplayFrame", buttonOutlineCS);
+        AddColorSpec("SpectralDisplayGrid", spectralDisplayGridCS);
+        AddColorSpec("SpectralDisplayBackground", spectralDisplayBackgroundCS);
 
-        addColorSpec("Value", handleTextCS);
-        addColorSpec("ValuePanel", valueFillCS);
-        addColorSpec("ValuePanelOutline", dialPointerOutlineCS);
-        addColorSpec("ValueHilite", valueAlterCS);
+        AddColorSpec("Value", handleTextCS);
+        AddColorSpec("ValuePanel", valueFillCS);
+        AddColorSpec("ValuePanelOutline", dialPointerOutlineCS);
+        AddColorSpec("ValueHilite", valueAlterCS);
 
-        addColorSpec("DialPointerFill", handleFillCS);
-        addColorSpec("DialCircleFill", dialCircleFillGradient);
-        addColorSpec("DialValue", handleTextCS);
-        addColorSpec("DialLabel", labelTextCS);
-        addColorSpec("ValueLabel", labelTextCS);
-        addColorSpec("DialInactiveOverlay", inactiveOverlayCS);
-        addColorSpec("DialOutline", dialOutlineCS);
-        addColorSpec("DialPointerOutline", dialPointerOutlineCS);
-        addColorSpec("DialIndicator", dialIndicatorRed);
-        addColorSpec("DialIndicator", "red", dialIndicatorRed);
-        addColorSpec("DialIndicator", "green", dialIndicatorGreen);
+        AddColorSpec("DialPointerFill", handleFillCS);
+        AddColorSpec("DialCircleFill", dialCircleFillGradient);
+        AddColorSpec("DialValue", handleTextCS);
+        AddColorSpec("DialLabel", labelTextCS);
+        AddColorSpec("ValueLabel", labelTextCS);
+        AddColorSpec("DialInactiveOverlay", inactiveOverlayCS);
+        AddColorSpec("DialOutline", dialOutlineCS);
+        AddColorSpec("DialPointerOutline", dialPointerOutlineCS);
+        AddColorSpec("DialIndicator", dialIndicatorRed);
+        AddColorSpec("DialIndicator", "red", dialIndicatorRed);
+        AddColorSpec("DialIndicator", "green", dialIndicatorGreen);
 
-        addColorSpec("Progress", dialIndicatorRed);
-        addColorSpec("ProgressOutline", VUOutlineCS);
-        addColorSpec("ProgressBackground", VUBackground);
+        AddColorSpec("Progress", dialIndicatorRed);
+        AddColorSpec("ProgressOutline", VUOutlineCS);
+        AddColorSpec("ProgressBackground", VUBackground);
 
-        addColorSpec("TextBlock", labelTextCS);
+        AddColorSpec("TextBlock", labelTextCS);
 
-        addColorSpec("ButtonHandleOn", onHandleFillCS);
-        addColorSpec("ButtonHandleOff", offHandleFillCS);
-        addColorSpec("ButtonOutline", buttonOutlineCS);
-        addColorSpec("ButtonHandleLabel", handleTextCS);
-        addColorSpec("ButtonBackgroundLabel", labelTextCS);
-        addColorSpec("ButtonInactiveOverlay", inactiveOverlayCS);
-        addColorSpec("ButtonHandleLabelOff", 0);
+        AddColorSpec("ButtonHandleOn", onHandleFillCS);
+        AddColorSpec("ButtonHandleOff", offHandleFillCS);
+        AddColorSpec("ButtonOutline", buttonOutlineCS);
+        AddColorSpec("ButtonHandleLabel", handleTextCS);
+        AddColorSpec("ButtonBackgroundLabel", labelTextCS);
+        AddColorSpec("ButtonInactiveOverlay", inactiveOverlayCS);
+        AddColorSpec("ButtonHandleLabelOff", 0);
 
-        addColorSpec("SwitchHandleFill", onHandleFillCS);
-        addColorSpec("SwitchHandleOutline", buttonOutlineCS);
-        addColorSpec("SwitchBoxFill", boxFill);
-        addColorSpec("SwitchOutline", buttonOutlineCS);
-        addColorSpec("SwitchInactiveOverlay", inactiveOverlayCS);
+        AddColorSpec("SwitchHandleFill", onHandleFillCS);
+        AddColorSpec("SwitchHandleOutline", buttonOutlineCS);
+        AddColorSpec("SwitchBoxFill", boxFill);
+        AddColorSpec("SwitchOutline", buttonOutlineCS);
+        AddColorSpec("SwitchInactiveOverlay", inactiveOverlayCS);
 
-        addColorSpec("MatrixOutline", matrixOutlineCS);
-        addColorSpec("MatrixHilite", matrixHiliteCS);
-        addColorSpec("MatrixState0", transparentCS);
-        addColorSpec("MatrixState1", greyishCS);
-        addColorSpec("MatrixState2", matrixFillCS);
-        addColorSpec("MatrixState3", matrixHalfFillCS);
+        AddColorSpec("MatrixOutline", matrixOutlineCS);
+        AddColorSpec("MatrixHilite", matrixHiliteCS);
+        AddColorSpec("MatrixState0", transparentCS);
+        AddColorSpec("MatrixState1", greyishCS);
+        AddColorSpec("MatrixState2", matrixFillCS);
+        AddColorSpec("MatrixState3", matrixHalfFillCS);
 
-        addColorSpec("VUBackground", VUBackground);
-        addColorSpec("VUOutline", VUOutlineCS);
-        addColorSpec("VU1", VUGradient);
-        addColorSpec("VU2", VUOverlay);
-        addColorSpec("VUSide", VUGradient);
-        addColorSpec("VU1Peak", VUPeak);
-        addColorSpec("VU2Peak", VUOverlayPeak);
-        addColorSpec("VUSidePeak", VUPeak);
+        AddColorSpec("VUBackground", VUBackground);
+        AddColorSpec("VUOutline", VUOutlineCS);
+        AddColorSpec("VU1", VUGradient);
+        AddColorSpec("VU2", VUOverlay);
+        AddColorSpec("VUSide", VUGradient);
+        AddColorSpec("VU1Peak", VUPeak);
+        AddColorSpec("VU2Peak", VUOverlayPeak);
+        AddColorSpec("VUSidePeak", VUPeak);
 
-        addColorSpec("PanelFill", PanelFillCS);
-        addColorSpec("PanelFill", "grey", PanelFillGreyCS);
+        AddColorSpec("PanelFill", PanelFillCS);
+        AddColorSpec("PanelFill", "grey", PanelFillGreyCS);
 
-        addColorSpec("PanelOutline", buttonOutlineCS);
+        AddColorSpec("PanelOutline", buttonOutlineCS);
 
         // VU Leds
 
@@ -588,20 +588,20 @@ private:
         HISSTools_Color_Spec *VULedCS5 = new HISSTools_Color_Spec(HISSTools_Color(0.933, 0.800, 0.000, 0.940));
         HISSTools_Color_Spec *VULedCS6 = new HISSTools_Color_Spec(HISSTools_Color(0.769, 0.000, 0.000, 1.000));
 
-        addColorSpec("MatrixState0", "VU_Leds", VULedCS0);
-        addColorSpec("MatrixState1", "VU_Leds", VULedCS1);
-        addColorSpec("MatrixState2", "VU_Leds", VULedCS2);
-        addColorSpec("MatrixState3", "VU_Leds", VULedCS3);
-        addColorSpec("MatrixState4", "VU_Leds", VULedCS4);
-        addColorSpec("MatrixState5", "VU_Leds", VULedCS5);
-        addColorSpec("MatrixState6", "VU_Leds", VULedCS6);
+        AddColorSpec("MatrixState0", "VU_Leds", VULedCS0);
+        AddColorSpec("MatrixState1", "VU_Leds", VULedCS1);
+        AddColorSpec("MatrixState2", "VU_Leds", VULedCS2);
+        AddColorSpec("MatrixState3", "VU_Leds", VULedCS3);
+        AddColorSpec("MatrixState4", "VU_Leds", VULedCS4);
+        AddColorSpec("MatrixState5", "VU_Leds", VULedCS5);
+        AddColorSpec("MatrixState6", "VU_Leds", VULedCS6);
 
         // TEMP
 
         HISSTools_Color_Spec *spectralCurveCS = new HISSTools_Color_Spec(HISSTools_Color(1., 1., 1., 1));
-        addColorSpec("SpectralCurve", spectralCurveCS);
-        addDimension("SpectralCurve", 3.0);
-        addDimension("SpectralCurveSubSample", 1.0);
+        AddColorSpec("SpectralCurve", spectralCurveCS);
+        AddDimension("SpectralCurve", 3.0);
+        AddDimension("SpectralCurveSubSample", 1.0);
     }
 };
 
