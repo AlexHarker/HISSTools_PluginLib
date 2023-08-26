@@ -19,8 +19,8 @@ struct HISSTools_Bounds : public iplug::igraphics::IRECT
             static_cast<float>(h > 0 ? y + h : y))
     {}
     
-    void include(HISSTools_Bounds inc)      { *this = Union(inc); }
-    void addThickness(double thickness)     { Pad(static_cast<float>(std::max(0.0, thickness) * 0.5)); }
+    void Include(HISSTools_Bounds inc)      { *this = Union(inc); }
+    void AddThickness(double thickness)     { Pad(static_cast<float>(std::max(0.0, thickness) * 0.5)); }
 };
 
 // Colors and Color Specs
@@ -67,7 +67,7 @@ public:
     {}
     
     HISSTools_Color_Spec(HISSTools_Color color)
-    : mPattern(clampColor(color))
+    : mPattern(ClampColor(color))
     {}
     
     HISSTools_Color_Spec(double r, double g, double b, double a)
@@ -76,22 +76,22 @@ public:
     
     virtual ~HISSTools_Color_Spec(){}
     
-    const IColor& getColor() const { return mPattern.GetStop(0).mColor; }
+    const IColor& GetColor() const { return mPattern.GetStop(0).mColor; }
     
-    virtual IPattern getPattern() const { return IPattern(getColor()); }
+    virtual IPattern GetPattern() const { return IPattern(GetColor()); }
     
-    virtual void setRect(const IRECT r, ColorOrientation CSOrientation) {}
+    virtual void SetRect(const IRECT r, ColorOrientation CSOrientation) {}
     
 private:
     
-    int clampToInt(double x)
+    int ClampToInt(double x)
     {
         return std::min(255, std::max(0, static_cast<int>(x * 255.0)));
     }
     
-    IColor clampColor(HISSTools_Color c)
+    IColor ClampColor(HISSTools_Color c)
     {
-        return IColor(clampToInt(c.a), clampToInt(c.r), clampToInt(c.g), clampToInt(c.b));
+        return IColor(ClampToInt(c.a), ClampToInt(c.r), ClampToInt(c.g), ClampToInt(c.b));
     }
     
 protected:
@@ -106,7 +106,7 @@ protected:
     
     enum EMode { kModeHorzVert, kModeHVFlip, kModeHorz, kModeVert };
     
-    void setMode(EMode mode) { mMode = mode; }
+    void SetMode(EMode mode) { mMode = mode; }
     
 public:
     
@@ -115,13 +115,13 @@ public:
         mPattern = IPattern(EPatternType::Linear);
     }
     
-    void addStop(HISSTools_Color color, double offset)
+    void AddStop(HISSTools_Color color, double offset)
     {
         HISSTools_Color_Spec colorClamp = HISSTools_Color_Spec(color);
-        mPattern.AddStop(colorClamp.getColor(), static_cast<float>(offset));
+        mPattern.AddStop(colorClamp.GetColor(), static_cast<float>(offset));
     }
     
-    virtual void setRect(const IRECT r, ColorOrientation CSOrientation) override
+    virtual void SetRect(const IRECT r, ColorOrientation CSOrientation) override
     {
         if ((CSOrientation == kCSOrientHorizontal && mMode != kModeVert) || mMode == kModeHorz)
             mBox = IRECT(r.L, r.T, r.R, r.T);
@@ -134,7 +134,7 @@ public:
         }
     }
     
-    IPattern getPattern() const override
+    IPattern GetPattern() const override
     {
         IPattern pattern = IPattern::CreateLinearGradient(mBox.L, mBox.T, mBox.R, mBox.B);
         
@@ -155,13 +155,13 @@ private:
 
 struct HISSTools_LICE_HGradient : public HISSTools_LICE_HVGradient
 {
-    HISSTools_LICE_HGradient() : HISSTools_LICE_HVGradient() { setMode(kModeHorz); }
+    HISSTools_LICE_HGradient() : HISSTools_LICE_HVGradient() { SetMode(kModeHorz); }
 };
 
 
 struct HISSTools_LICE_VGradient : public HISSTools_LICE_HVGradient
 {
-    HISSTools_LICE_VGradient() : HISSTools_LICE_HVGradient(false) { setMode(kModeVert); }
+    HISSTools_LICE_VGradient() : HISSTools_LICE_HVGradient(false) { SetMode(kModeVert); }
 };
 
 // Shadows
@@ -171,13 +171,13 @@ struct HISSTools_Shadow : public iplug::igraphics::IShadow
     using IRECT = iplug::igraphics::IRECT;
     
     HISSTools_Shadow(HISSTools_Color_Spec& shadowColor, double xOffset, double yOffset, double blurSize)
-    : IShadow(shadowColor.getPattern(), static_cast<float>(blurSize), static_cast<float>(xOffset), static_cast<float>(yOffset), 1.f, true)
+    : IShadow(shadowColor.GetPattern(), static_cast<float>(blurSize), static_cast<float>(xOffset), static_cast<float>(yOffset), 1.f, true)
     {}
     
-    HISSTools_Bounds getBlurBounds(HISSTools_Bounds currentBounds)
+    HISSTools_Bounds GetBlurBounds(HISSTools_Bounds currentBounds)
     {
         IRECT rect = currentBounds.GetPadded(mBlurSize - 1);
-        currentBounds.include(rect.GetTranslated(mXOffset, mYOffset));
+        currentBounds.Include(rect.GetTranslated(mXOffset, mYOffset));
         
         return currentBounds;
     }

@@ -26,203 +26,203 @@ public:
     HISSTools_VecLib(IGraphics& graphics) : mGraphics(graphics), mShadow(nullptr), mForceGradientBox(false), mColor(&defaultColor), mCSOrientation(kCSOrientHorizontal)
     {}
     
-    void setClip()
+    void SetClip()
     {
         mGraphics.PathClipRegion();
     }
     
-    void setClip(HISSTools_Bounds clip)
+    void SetClip(HISSTools_Bounds clip)
     {
         mGraphics.PathClipRegion(clip);
     }
     
-    void setClip(double xLo, double yLo, double xHi, double yHi)
+    void SetClip(double xLo, double yLo, double xHi, double yHi)
     {
-        setClip(HISSTools_Bounds(xLo, yLo, xHi - xLo, yHi - yLo));
+        SetClip(HISSTools_Bounds(xLo, yLo, xHi - xLo, yHi - yLo));
     }
     
-    void setClip(const IRECT& rect)
+    void SetClip(const IRECT& rect)
     {
-        setClip(rect.L, rect.T, rect.R, rect.B);
+        SetClip(rect.L, rect.T, rect.R, rect.B);
     }
     
-    void startGroup(const IRECT& r)
+    void StartGroup(const IRECT& r)
     {
         mGraphics.StartLayer(nullptr, r);
     }
     
-    ILayerPtr endGroup()
+    ILayerPtr EndGroup()
     {
         return mGraphics.EndLayer();
     }
     
-    void renderGroup(const ILayerPtr& layer)
+    void RenderGroup(const ILayerPtr& layer)
     {
         mGraphics.DrawLayer(layer);
     }
     
-    bool checkGroup(const ILayerPtr& layer)
+    bool CheckGroup(const ILayerPtr& layer)
     {
         return mGraphics.CheckLayer(layer);
     }
     
-    void setColor(HISSTools_Color_Spec *color)
+    void SetColor(HISSTools_Color_Spec *color)
     {
         mColor = color;
     }
     
     // Orientation allows gradient rotation ONLY for relevant Color Specs
     
-    void setColorOrientation(ColorOrientation CSOrientation)
+    void SetColorOrientation(ColorOrientation CSOrientation)
     {
         mCSOrientation = CSOrientation;
     }
     
-    void forceGradientBox()     { mForceGradientBox = false; }
+    void ForceGradientBox()     { mForceGradientBox = false; }
     
-    void forceGradientBox(double xLo, double yLo, double xHi, double yHi)
+    void ForceGradientBox(double xLo, double yLo, double xHi, double yHi)
     {
         mGradientArea = HISSTools_Bounds(xLo, yLo, xHi - xLo, yHi - yLo);
         mForceGradientBox = true;
     }
     
-    void startMultiLine(double x, double y, double thickness)
+    void StartMultiLine(double x, double y, double thickness)
     {
         mMultiLineThickness = thickness;
         mGraphics.PathMoveTo(x, y);
     }
     
-    void continueMultiLine(double x, double y)
+    void ContinueMultiLine(double x, double y)
     {
         mGraphics.PathLineTo(x, y);
     }
     
-    void finishMultiLine()
+    void FinishMultiLine()
     {
-        stroke(mMultiLineThickness);
+        Stroke(mMultiLineThickness);
     }
     
-    void circleIntersection(double cx, double cy, double ang, double r, double *retX, double *retY)
+    void CircleIntersection(double cx, double cy, double ang, double r, double *retX, double *retY)
     {
         *retX = cos(2.0 * ang * PI) * r + cx;
         *retY = sin(2.0 * ang * PI) * r + cy;
     }
     
-    void frameArc(double cx, double cy, double r, double begAng, double arcAng, double thickness)
+    void FrameArc(double cx, double cy, double r, double begAng, double arcAng, double thickness)
     {
-        arc(cx, cy, r, begAng, arcAng);
-        stroke(thickness);
+        Arc(cx, cy, r, begAng, arcAng);
+        Stroke(thickness);
     }
     
-    void fillArc(double cx, double cy, double r, double begAng, double arcAng)
+    void FillArc(double cx, double cy, double r, double begAng, double arcAng)
     {
         mGraphics.PathClear();
-        arc(cx, cy, r, begAng, arcAng);
+        Arc(cx, cy, r, begAng, arcAng);
         mGraphics.PathLineTo(cx, cy);
         mGraphics.PathClose();
-        fill();
+        Fill();
     }
     
-    void fillCircle(double cx, double cy, double r)
+    void FillCircle(double cx, double cy, double r)
     {
         mGraphics.PathCircle(cx, cy, r);
-        setShapeGradient(HISSTools_Bounds(cx - r, cy - r, 2.0 * r, 2.0 * r));
-        fill();
+        SetShapeGradient(HISSTools_Bounds(cx - r, cy - r, 2.0 * r, 2.0 * r));
+        Fill();
     }
     
-    void frameCircle(double cx, double cy, double r, double thickness)
+    void FrameCircle(double cx, double cy, double r, double thickness)
     {
-        frameArc(cx, cy, r, 0.0, 1.0, thickness);
+        FrameArc(cx, cy, r, 0.0, 1.0, thickness);
     }
     
-    void frameTriangle(double x1, double y1, double x2, double y2, double x3, double y3, double thickness)
+    void FrameTriangle(double x1, double y1, double x2, double y2, double x3, double y3, double thickness)
     {
-        triangle(x1, y1, x2, y2, x3, y3);
-        stroke(thickness);
+        Triangle(x1, y1, x2, y2, x3, y3);
+        Stroke(thickness);
     }
     
-    void fillTriangle(double x1, double y1, double x2, double y2, double x3, double y3)
+    void FillTriangle(double x1, double y1, double x2, double y2, double x3, double y3)
     {
-        triangle(x1, y1, x2, y2, x3, y3);
-        fill();
+        Triangle(x1, y1, x2, y2, x3, y3);
+        Fill();
     }
     
-    void fillRect(double x, double y, double w, double h)
+    void FillRect(double x, double y, double w, double h)
     {
-        rectangle(x, y, w, h);
-        fill();
+        Rectangle(x, y, w, h);
+        Fill();
     }
     
-    void frameRect(double x, double y, double w, double h, double thickness)
+    void FrameRect(double x, double y, double w, double h, double thickness)
     {
-        rectangle(x, y, w, h);
-        stroke(thickness);
+        Rectangle(x, y, w, h);
+        Stroke(thickness);
     }
     
-    void fillRoundRect(double x, double y, double w, double h, double rtl, double rtr, double rbl, double rbr)
+    void FillRoundRect(double x, double y, double w, double h, double rtl, double rtr, double rbl, double rbr)
     {
-        roundedRectangle(x, y, w, h, rtl, rtr, rbl, rbr);
-        fill();
+        RoundedRectangle(x, y, w, h, rtl, rtr, rbl, rbr);
+        Fill();
     }
     
-    void frameRoundRect(double x, double y, double w, double h, double rtl, double rtr, double rbl, double rbr, double thickness)
+    void FrameRoundRect(double x, double y, double w, double h, double rtl, double rtr, double rbl, double rbr, double thickness)
     {
-        roundedRectangle(x, y, w, h, rtl, rtr, rbl, rbr);
-        stroke(thickness);
+        RoundedRectangle(x, y, w, h, rtl, rtr, rbl, rbr);
+        Stroke(thickness);
     }
     
-    void fillRoundRect(double x, double y, double w, double h, double r)
+    void FillRoundRect(double x, double y, double w, double h, double r)
     {
-        fillRoundRect(x, y, w, h, r, r, r, r);
+        FillRoundRect(x, y, w, h, r, r, r, r);
     }
     
-    void frameRoundRect(double x, double y, double w, double h, double r, double thickness)
+    void FrameRoundRect(double x, double y, double w, double h, double r, double thickness)
     {
-        frameRoundRect(x, y, w, h, r, r, r, r, thickness);
+        FrameRoundRect(x, y, w, h, r, r, r, r, thickness);
     }
     
-    void fillCPointer(double cx, double cy, double r, double pr, double ang, double pAng)
-    {
-        cPointer(cx, cy, r, pr, ang, pAng);
-        fill();
-    }
-    
-    void frameCPointer(double cx, double cy, double r, double pr, double ang, double pAng, double thickness)
+    void FillCPointer(double cx, double cy, double r, double pr, double ang, double pAng)
     {
         cPointer(cx, cy, r, pr, ang, pAng);
-        stroke(thickness);
+        Fill();
     }
     
-    void line(double x1, double y1, double x2, double y2, double thickness)
+    void FrameCPointer(double cx, double cy, double r, double pr, double ang, double pAng, double thickness)
+    {
+        cPointer(cx, cy, r, pr, ang, pAng);
+        Stroke(thickness);
+    }
+    
+    void Line(double x1, double y1, double x2, double y2, double thickness)
     {
         mGraphics.PathLine(x1, y1, x2, y2);
-        setShapeGradient(HISSTools_Bounds(std::min(x1, x2), std::min(y1, y2), std::abs(x1 - x2), std::abs(y1 - y2)));
-        stroke(thickness);
+        SetShapeGradient(HISSTools_Bounds(std::min(x1, x2), std::min(y1, y2), std::abs(x1 - x2), std::abs(y1 - y2)));
+        Stroke(thickness);
     }
     
-    void text(HISSTools_Text *pTxt, const char *str, double x, double y, double w, double h, HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter)
+    void Text(HISSTools_Text *pTxt, const char *str, double x, double y, double w, double h, HTextAlign hAlign = kHAlignCenter, VTextAlign vAlign = kVAlignCenter)
     {
-        IText textSpec(pTxt->mSize, mColor->getColor(), pTxt->mFont, (EAlign) hAlign, (EVAlign) vAlign, 0);
+        IText textSpec(pTxt->mSize, mColor->GetColor(), pTxt->mFont, (EAlign) hAlign, (EVAlign) vAlign, 0);
         HISSTools_Bounds rect(x, y, w, h);
         mGraphics.DrawText(textSpec, str, rect);
         
-        setShapeGradient(rect);
+        SetShapeGradient(rect);
     }
     
-    static double getTextLineHeight(HISSTools_Text *pTxt)
+    static double GetTextLineHeight(HISSTools_Text *pTxt)
     {
         return pTxt->mSize;
     }
     
-    void startShadow(HISSTools_Shadow *shadow, const IRECT& rect)
+    void StartShadow(HISSTools_Shadow *shadow, const IRECT& rect)
     {
         mShadow = shadow;
-        startGroup(rect);
+        StartGroup(rect);
     }
     
-    void renderShadow(bool renderImage = true)
+    void RenderShadow(bool renderImage = true)
     {
-        ILayerPtr shadowLayer = endGroup();
+        ILayerPtr shadowLayer = EndGroup();
         
         // Check there is a shadow specified (otherwise only render original image)
         
@@ -238,17 +238,17 @@ public:
     
 private:
     
-    void fill()
+    void Fill()
     {
-        mGraphics.PathFill(mColor->getPattern());
+        mGraphics.PathFill(mColor->GetPattern());
     }
     
-    void stroke(double thickness)
+    void Stroke(double thickness)
     {
-        mGraphics.PathStroke(mColor->getPattern(), thickness);
+        mGraphics.PathStroke(mColor->GetPattern(), thickness);
     }
     
-    double sanitizeRadius(double r, double w, double h)
+    double SanitizeRadius(double r, double w, double h)
     {
         r = r < 0 ? 0 : r;
         r = ((r * 2.0) > w) ? w / 2.0: r;
@@ -257,32 +257,32 @@ private:
         return r;
     }
     
-    void arc(double cx, double cy, double r, double begAng, double arcAng)
+    void Arc(double cx, double cy, double r, double begAng, double arcAng)
     {
         begAng = begAng * 360.0 + 90.f;
         arcAng = begAng + (arcAng * 360.0);
         
         mGraphics.PathArc(cx, cy, r, std::min(begAng, arcAng), std::max(arcAng, begAng));
-        setShapeGradient(HISSTools_Bounds(cx - r, cy - r, 2.0 * r, 2.0 * r));
+        SetShapeGradient(HISSTools_Bounds(cx - r, cy - r, 2.0 * r, 2.0 * r));
     }
     
-    void rectangle(double x, double y, double w, double h)
+    void Rectangle(double x, double y, double w, double h)
     {
         HISSTools_Bounds r(x, y, w, h);
         mGraphics.PathRect(r);
-        setShapeGradient(r);
+        SetShapeGradient(r);
     }
     
-    void roundedRectangle(double x, double y, double w, double h, double rtl, double rtr, double rbl, double rbr)
+    void RoundedRectangle(double x, double y, double w, double h, double rtl, double rtr, double rbl, double rbr)
     {
-        rtl = sanitizeRadius(rtl, w, h);
-        rtr = sanitizeRadius(rtr, w, h);
-        rbl = sanitizeRadius(rbl, w, h);
-        rbr = sanitizeRadius(rbr, w, h);
+        rtl = SanitizeRadius(rtl, w, h);
+        rtr = SanitizeRadius(rtr, w, h);
+        rbl = SanitizeRadius(rbl, w, h);
+        rbr = SanitizeRadius(rbr, w, h);
         
         HISSTools_Bounds r(x, y, w, h);
         mGraphics.PathRoundRect(r, rtl, rtr, rbl, rbr);
-        setShapeGradient(r);
+        SetShapeGradient(r);
     }
     
     void cPointer(double cx, double cy, double r, double pr, double ang, double pAng)
@@ -299,22 +299,22 @@ private:
         mGraphics.PathClose();
         
         // FIX - revise...
-        setShapeGradient(HISSTools_Bounds(cx - pr, cy - pr, 2.0 * pr, 2.0 * pr));
+        SetShapeGradient(HISSTools_Bounds(cx - pr, cy - pr, 2.0 * pr, 2.0 * pr));
     }
     
-    void triangle(double x1, double y1, double x2, double y2, double x3, double y3)
+    void Triangle(double x1, double y1, double x2, double y2, double x3, double y3)
     {
         mGraphics.PathTriangle(x1, y1, x2, y2, x3, y3);
         double l = std::min(x1, std::min(x2, x3));
         double r = std::max(x1, std::max(x2, x3));
         double t = std::min(y1, std::min(y2, y3));
         double b = std::max(y1, std::max(y2, y3));
-        setShapeGradient(HISSTools_Bounds(l, t, r - l, b - t));
+        SetShapeGradient(HISSTools_Bounds(l, t, r - l, b - t));
     }
     
-    void setShapeGradient(const HISSTools_Bounds& r)
+    void SetShapeGradient(const HISSTools_Bounds& r)
     {
-        mColor->setRect(mForceGradientBox ? mGradientArea : r, mCSOrientation);
+        mColor->SetRect(mForceGradientBox ? mGradientArea : r, mCSOrientation);
     }
     
     // IGraphics

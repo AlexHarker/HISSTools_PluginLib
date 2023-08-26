@@ -433,49 +433,49 @@ private:
 
         // Gradient Specs
 
-        PanelFillCS->addStop(HISSTools_Color(0.7, 0.7, 0.7, 0.4), 0.0);   // SUPER LUMINESCENT    (USED in shadow bitmap)
-        PanelFillCS->addStop(HISSTools_Color(0.2, 0.2, 0.2, 0.5), 0.9);
-        PanelFillCS->addStop(HISSTools_Color(0.075, 0.075, 0.075, 0.6), 1.0);
+        PanelFillCS->AddStop(HISSTools_Color(0.7, 0.7, 0.7, 0.4), 0.0);   // SUPER LUMINESCENT    (USED in shadow bitmap)
+        PanelFillCS->AddStop(HISSTools_Color(0.2, 0.2, 0.2, 0.5), 0.9);
+        PanelFillCS->AddStop(HISSTools_Color(0.075, 0.075, 0.075, 0.6), 1.0);
 
-        PanelFillGreyCS->addStop(HISSTools_Color(0.05, 0.05, 0.08, 0.3), 0.0);
-        PanelFillGreyCS->addStop(HISSTools_Color(0.05, 0.05, 0.08, 0.4), 1.0);
+        PanelFillGreyCS->AddStop(HISSTools_Color(0.05, 0.05, 0.08, 0.3), 0.0);
+        PanelFillGreyCS->AddStop(HISSTools_Color(0.05, 0.05, 0.08, 0.4), 1.0);
 
-        matrixFillCS->addStop(HISSTools_Color(0.3, 0.3, 0.3, 1.0), 0.8);
-        matrixFillCS->addStop(HISSTools_Color(0.1, 0.1, 0.1, 1.0), 1.0);
+        matrixFillCS->AddStop(HISSTools_Color(0.3, 0.3, 0.3, 1.0), 0.8);
+        matrixFillCS->AddStop(HISSTools_Color(0.1, 0.1, 0.1, 1.0), 1.0);
 
-        matrixHalfFillCS->addStop(HISSTools_Color(0.3, 0.3, 0.3, 0.7), 0.5);
-        matrixHalfFillCS->addStop(HISSTools_Color(0.1, 0.1, 0.1, 0.7), 1.0);
+        matrixHalfFillCS->AddStop(HISSTools_Color(0.3, 0.3, 0.3, 0.7), 0.5);
+        matrixHalfFillCS->AddStop(HISSTools_Color(0.1, 0.1, 0.1, 0.7), 1.0);
 
-        handleFillCS->addStop(HISSTools_Color(0.6, 0.6, 0.6, 1.0), 0.0);
-        handleFillCS->addStop(HISSTools_Color(0.15, 0.15, 0.15, 1.0), 0.9);
+        handleFillCS->AddStop(HISSTools_Color(0.6, 0.6, 0.6, 1.0), 0.0);
+        handleFillCS->AddStop(HISSTools_Color(0.15, 0.15, 0.15, 1.0), 0.9);
 
-        valueFillCS->addStop(HISSTools_Color(0.3, 0.3, 0.3, 0.75), 0.0);
-        valueFillCS->addStop(HISSTools_Color(0.15, 0.15, 0.15, 0.75), 0.9);
+        valueFillCS->AddStop(HISSTools_Color(0.3, 0.3, 0.3, 0.75), 0.0);
+        valueFillCS->AddStop(HISSTools_Color(0.15, 0.15, 0.15, 0.75), 0.9);
 
-        offHandleFillCS->addStop(HISSTools_Color(0.415, 0.415, 0.415, 1.0), 0.0);
-        offHandleFillCS->addStop(HISSTools_Color(0.169, 0.169, 0.169, 1.0), 1.0);
+        offHandleFillCS->AddStop(HISSTools_Color(0.415, 0.415, 0.415, 1.0), 0.0);
+        offHandleFillCS->AddStop(HISSTools_Color(0.169, 0.169, 0.169, 1.0), 1.0);
 
         //onHandleFillCS->addStop(HISSTools_Color(0.66, 0.00, 0.00, 1.0), 0);
         //onHandleFillCS->addStop(HISSTools_Color(0.33, 0.00, 0.00, 1.0), 1.);
 
-        onHandleFillCS->addStop(HISSTools_Color(0.66, 0.66, 0.66, 1.0), 0);
-        onHandleFillCS->addStop(HISSTools_Color(0.33, 0.33, 0.33, 1.0), 1.);
+        onHandleFillCS->AddStop(HISSTools_Color(0.66, 0.66, 0.66, 1.0), 0);
+        onHandleFillCS->AddStop(HISSTools_Color(0.33, 0.33, 0.33, 1.0), 1.);
 
-        dialCircleFillGradient->addStop(HISSTools_Color(0.3, 0.3, 0.3, 0.5), 0.0);
-        dialCircleFillGradient->addStop(HISSTools_Color(0.86, 0.86, 0.86, 0.5), 0.6);   // SUPER LUMINESCENT    (USED in shadow bitmap)
+        dialCircleFillGradient->AddStop(HISSTools_Color(0.3, 0.3, 0.3, 0.5), 0.0);
+        dialCircleFillGradient->AddStop(HISSTools_Color(0.86, 0.86, 0.86, 0.5), 0.6);   // SUPER LUMINESCENT    (USED in shadow bitmap)
 
-        boxFill->addStop(HISSTools_Color(0.76, 0.76, 0.76, 1.), 0);
-        boxFill->addStop(HISSTools_Color(0.90, 0.90, 0.90, 1.), 1.);
+        boxFill->AddStop(HISSTools_Color(0.76, 0.76, 0.76, 1.), 0);
+        boxFill->AddStop(HISSTools_Color(0.90, 0.90, 0.90, 1.), 1.);
 
-        dialIndicatorRed->addStop(HISSTools_Color(0.54, 0, 0, 1), 0.);
-        dialIndicatorRed->addStop(HISSTools_Color(0.91, 0, 0, 1), 0.6);
+        dialIndicatorRed->AddStop(HISSTools_Color(0.54, 0, 0, 1), 0.);
+        dialIndicatorRed->AddStop(HISSTools_Color(0.91, 0, 0, 1), 0.6);
 
-        dialIndicatorGreen->addStop(HISSTools_Color(0., 0.42, 0.0, 1.0), 0.);
-        dialIndicatorGreen->addStop(HISSTools_Color(0., 0.70, 0.0, 1.0), 0.6);
+        dialIndicatorGreen->AddStop(HISSTools_Color(0., 0.42, 0.0, 1.0), 0.);
+        dialIndicatorGreen->AddStop(HISSTools_Color(0., 0.70, 0.0, 1.0), 0.6);
 
-        VUOverlay->addStop(HISSTools_Color(0.6, 0.6, 0.6, 0.4), 0.05);  // SL    (never used on shadow bitmap)
-        VUOverlay->addStop(HISSTools_Color(0.7, 0.7, 0.7, 0.4), 0.6);   // SL    (never used on shadow bitmap)
-        VUOverlay->addStop(HISSTools_Color(0.4, 0.4, 0.4, 0.4), 0.9);
+        VUOverlay->AddStop(HISSTools_Color(0.6, 0.6, 0.6, 0.4), 0.05);  // SL    (never used on shadow bitmap)
+        VUOverlay->AddStop(HISSTools_Color(0.7, 0.7, 0.7, 0.4), 0.6);   // SL    (never used on shadow bitmap)
+        VUOverlay->AddStop(HISSTools_Color(0.4, 0.4, 0.4, 0.4), 0.9);
 
         //VUOverlay->addStop(HISSTools_Color(0.075, 0.267, 0.000, 0.3), 0.000);
         //VUOverlay->addStop(HISSTools_Color(0.220, 0.769, 0.000, 0.3), 0.549);
@@ -483,11 +483,11 @@ private:
         //VUOverlay->addStop(HISSTools_Color(0.933, 0.800, 0.000, 0.3), 0.789);
         //VUOverlay->addStop(HISSTools_Color(0.769, 0.000, 0.000, 0.3), 0.996);
 
-        VUGradient->addStop(HISSTools_Color(0.075, 0.267, 0.000, 1.0), 0.000);
-        VUGradient->addStop(HISSTools_Color(0.220, 0.769, 0.000, 1.0), 0.549);
-        VUGradient->addStop(HISSTools_Color(1.000, 0.882, 0.169, 1.0), 0.730);
-        VUGradient->addStop(HISSTools_Color(0.933, 0.800, 0.000, 1.0), 0.789);
-        VUGradient->addStop(HISSTools_Color(0.769, 0.000, 0.000, 1.0), 0.996);
+        VUGradient->AddStop(HISSTools_Color(0.075, 0.267, 0.000, 1.0), 0.000);
+        VUGradient->AddStop(HISSTools_Color(0.220, 0.769, 0.000, 1.0), 0.549);
+        VUGradient->AddStop(HISSTools_Color(1.000, 0.882, 0.169, 1.0), 0.730);
+        VUGradient->AddStop(HISSTools_Color(0.933, 0.800, 0.000, 1.0), 0.789);
+        VUGradient->AddStop(HISSTools_Color(0.769, 0.000, 0.000, 1.0), 0.996);
 
         // Static Colors
 
