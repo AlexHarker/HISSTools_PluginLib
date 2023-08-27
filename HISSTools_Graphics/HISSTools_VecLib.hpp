@@ -181,15 +181,15 @@ public:
         FrameRoundRect(x, y, w, h, r, r, r, r, thickness);
     }
     
-    void FillCPointer(double cx, double cy, double r, double pr, double ang, double pAng)
+    void FillCircularPointer(double cx, double cy, double r, double pr, double ang, double pAng)
     {
-        cPointer(cx, cy, r, pr, ang, pAng);
+        CircularPointer(cx, cy, r, pr, ang, pAng);
         Fill();
     }
     
-    void FrameCPointer(double cx, double cy, double r, double pr, double ang, double pAng, double thickness)
+    void FrameCircularPointer(double cx, double cy, double r, double pr, double ang, double pAng, double thickness)
     {
-        cPointer(cx, cy, r, pr, ang, pAng);
+        CircularPointer(cx, cy, r, pr, ang, pAng);
         Stroke(thickness);
     }
     
@@ -285,7 +285,7 @@ private:
         SetShapeGradient(r);
     }
     
-    void cPointer(double cx, double cy, double r, double pr, double ang, double pAng)
+    void CircularPointer(double cx, double cy, double r, double pr, double ang, double pAng)
     {
         double xx = cx + cos(2.0 * PI * ang) * pr;
         double yy = cy + sin(2.0 * PI * ang) * pr;

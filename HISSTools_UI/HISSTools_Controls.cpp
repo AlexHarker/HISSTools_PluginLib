@@ -1116,9 +1116,9 @@ void HISSTools_Dial::Draw(IGraphics& g)
 
     vecDraw.StartShadow(mPointerSD, mRECT);
     vecDraw.SetColor(mPointerFillCS);
-    vecDraw.FillCPointer(mCx, mCy, mPointerCircRadius, mPointerTipRadius, iPntrAng, mPointerAngle);
+    vecDraw.FillCircularPointer(mCx, mCy, mPointerCircRadius, mPointerTipRadius, iPntrAng, mPointerAngle);
     vecDraw.SetColor(mPointerOutlineCS);
-    vecDraw.FrameCPointer(mCx, mCy, mPointerCircRadius, mPointerTipRadius, iPntrAng, mPointerAngle, mPointerOutlineTK);
+    vecDraw.FrameCircularPointer(mCx, mCy, mPointerCircRadius, mPointerTipRadius, iPntrAng, mPointerAngle, mPointerOutlineTK);
     vecDraw.RenderShadow();
 
     if (IsDisabled())
@@ -1126,7 +1126,7 @@ void HISSTools_Dial::Draw(IGraphics& g)
         // Inactive Overlay
 
         vecDraw.SetColor(mInactiveOverlayCS);
-        vecDraw.FillCPointer(mCx, mCy, mPointerCircRadius, mPointerTipRadius, iPntrAng, mPointerAngle);
+        vecDraw.FillCircularPointer(mCx, mCy, mPointerCircRadius, mPointerTipRadius, iPntrAng, mPointerAngle);
     }
     else
     {
