@@ -43,9 +43,9 @@ HISSTools_Text_Helper_Block::HISSTools_Text_Helper_Block(double x, double y, dou
 
     // Get Appearance
 
-    mTextTS = scheme->getTextStyle(name, type);
-    mTextCS = scheme->getColorSpec(name, type);
-    mTextSD = scheme->getShadow(name, type);
+    mTextTS = scheme->GetTextStyle(name, type);
+    mTextCS = scheme->GetColorSpec(name, type);
+    mTextSD = scheme->GetShadow(name, type);
     mHAlign = hAlign;
     mVAlign = vAlign;
 }
@@ -110,17 +110,17 @@ HISSTools_Text_Helper_Panel::HISSTools_Text_Helper_Panel(double x, double y, dou
 
     sprintf(concatenatedName, "%sPanel", name);
 
-    mPanelFillCS = scheme->getColorSpec(concatenatedName, type);
-    mPanelSD = scheme->getShadow(concatenatedName, type);
+    mPanelFillCS = scheme->GetColorSpec(concatenatedName, type);
+    mPanelSD = scheme->GetShadow(concatenatedName, type);
 
     sprintf(concatenatedName, "%sPanelOutline", name);
 
-    mPanelOutlineCS = scheme->getColorSpec(concatenatedName, type);
-    mPanelOutlineTK = scheme->getDimension(concatenatedName, type);
+    mPanelOutlineCS = scheme->GetColorSpec(concatenatedName, type);
+    mPanelOutlineTK = scheme->GetDimension(concatenatedName, type);
 
     sprintf(concatenatedName, "%sPanelRoundness", name);
 
-    double roundness = scheme->getDimension(concatenatedName, type);
+    double roundness = scheme->GetDimension(concatenatedName, type);
     roundness = ((roundness * 2) > mW) ? mW / 2. : roundness;
     roundness = ((roundness * 2) > mH) ? mH / 2. : roundness;
     mPanelRoundness = roundness < 0 ? mH / 2 : roundness;
@@ -234,16 +234,16 @@ HISSTools_Text_Helper_Param::HISSTools_Text_Helper_Param(iplug::igraphics::ICont
     bool drawMenuTriangle;
 
     sprintf(concatenatedName, "%sDrawTriangle", name);
-    drawMenuTriangle = scheme->getFlag(concatenatedName, type);
+    drawMenuTriangle = scheme->GetFlag(concatenatedName, type);
     sprintf(concatenatedName, "%sPromptRatio", name);
-    mPromptRatio = scheme->getDimension(concatenatedName, type);
+    mPromptRatio = scheme->GetDimension(concatenatedName, type);
     sprintf(concatenatedName, "%sHilite", name);
-    mTextHiliteCS = scheme->getColorSpec(concatenatedName, type);
+    mTextHiliteCS = scheme->GetColorSpec(concatenatedName, type);
     sprintf(concatenatedName, "%sPanelHilite", name);
-    mPanelHiliteCS = scheme->getColorSpec(concatenatedName, type);
+    mPanelHiliteCS = scheme->GetColorSpec(concatenatedName, type);
     sprintf(concatenatedName, "%sPanelOutlineHilite", name);
-    mOutlineHiliteCS = scheme->getColorSpec(concatenatedName, type);
-    mShowUnits = scheme->getFlag("ShowUnits", type);
+    mOutlineHiliteCS = scheme->GetColorSpec(concatenatedName, type);
+    mShowUnits = scheme->GetFlag("ShowUnits", type);
 
     // FIX - Padding! (see Draw also)
 
@@ -257,12 +257,12 @@ HISSTools_Text_Helper_Param::HISSTools_Text_Helper_Param(iplug::igraphics::ICont
     {
         mDrawTriangle = true;
         sprintf(concatenatedName, "%sDrawSeparator", name);
-        mDrawSeparator = scheme->getFlag(concatenatedName, type);
+        mDrawSeparator = scheme->GetFlag(concatenatedName, type);
         sprintf(concatenatedName, "%sFlipTriangle", name);
-        mMenuFlipTriangle = scheme->getFlag(concatenatedName, type);
+        mMenuFlipTriangle = scheme->GetFlag(concatenatedName, type);
 
-        double menuTriangleWidthRatio = scheme->getDimension("MenuTriangleWidthRatio", type);
-        double menuTriangleHeightRatio = scheme->getDimension("MenuTriangleHeightRatio", type);
+        double menuTriangleWidthRatio = scheme->GetDimension("MenuTriangleWidthRatio", type);
+        double menuTriangleHeightRatio = scheme->GetDimension("MenuTriangleHeightRatio", type);
         double menuTriangleWidth = textHeight * menuTriangleWidthRatio;
         double menuTriangleHeight = textHeight * menuTriangleHeightRatio;
 
@@ -500,7 +500,7 @@ void HISSTools_TextBlock::SetText(const char *str)
 
 double HISSTools_Panel::GetRoundness(const char *name, const char *type, HISSTools_Design_Scheme *scheme)
 {
-    double roundness = scheme->getDimension(name, type);
+    double roundness = scheme->GetDimension(name, type);
 
     // FIX - Why height?
 
@@ -516,8 +516,8 @@ HISSTools_Panel::HISSTools_Panel(double x, double y, double w, double h, const c
 
     mX = x;
     mY = y;
-    mW = w <= 0 ? scheme->getDimension("PanelWidth", type) : w;
-    mH = h <= 0 ? scheme->getDimension("PanelHeight", type) : h;
+    mW = w <= 0 ? scheme->GetDimension("PanelWidth", type) : w;
+    mH = h <= 0 ? scheme->GetDimension("PanelHeight", type) : h;
 
     mRoundnessTL = GetRoundness("PanelRoundnessTL", type, scheme);
     mRoundnessTR = GetRoundness("PanelRoundnessTR", type, scheme);
@@ -526,14 +526,14 @@ HISSTools_Panel::HISSTools_Panel(double x, double y, double w, double h, const c
 
     // Get Appearance
 
-    mOutlineTK = scheme->getDimension("PanelOutline", type);
+    mOutlineTK = scheme->GetDimension("PanelOutline", type);
 
-    mShadow = scheme->getShadow("Panel", type);
+    mShadow = scheme->GetShadow("Panel", type);
 
-    mDrawOutline = scheme->getFlag("PanelDrawOutline", type);
+    mDrawOutline = scheme->GetFlag("PanelDrawOutline", type);
 
-    mPanelCS = scheme->getColorSpec("PanelFill", type);
-    mOutlineCS = scheme->getColorSpec("PanelOutline", type);
+    mPanelCS = scheme->GetColorSpec("PanelFill", type);
+    mOutlineCS = scheme->GetColorSpec("PanelOutline", type);
 
     // Calculate Areas (including shadows and thicknesses)
 
@@ -584,34 +584,34 @@ HISSTools_Button::HISSTools_Button(int paramIdx, double x, double y, double w, d
 
     mX = x;
     mY = y;
-    mW = w <= 0 ? scheme->getDimension("ButtonWidth", type) : w;
-    mH = h <= 0 ? scheme->getDimension("ButtonHeight", type) : h;
+    mW = w <= 0 ? scheme->GetDimension("ButtonWidth", type) : w;
+    mH = h <= 0 ? scheme->GetDimension("ButtonHeight", type) : h;
 
-    double roundness = scheme->getDimension("ButtonRoundness", type);
+    double roundness = scheme->GetDimension("ButtonRoundness", type);
     mRoundness = roundness < 0 ? mH / 2 : roundness;
 
-    mTextPad = scheme->getDimension("ButtonTextPad", type);
+    mTextPad = scheme->GetDimension("ButtonTextPad", type);
 
     // Label Mode
 
-    mLabelMode = scheme->getFlag("ButtonLabelMode", type);
+    mLabelMode = scheme->GetFlag("ButtonLabelMode", type);
 
     // Get Appearance
 
-    mOutlineTK = scheme->getDimension("ButtonOutline", type);
+    mOutlineTK = scheme->GetDimension("ButtonOutline", type);
 
-    mShadow = scheme->getShadow("Button", type);
+    mShadow = scheme->GetShadow("Button", type);
 
-    mTextStyle = scheme->getTextStyle("Button", type);
+    mTextStyle = scheme->GetTextStyle("Button", type);
 
-    mOnCS = scheme->getColorSpec("ButtonHandleOn", type);
-    mOffCS = scheme->getColorSpec("ButtonHandleOff", type);
-    mHandleLabelCS = scheme->getColorSpec("ButtonHandleLabel", type);
-    mHandleLabelOffCS = scheme->getColorSpec("ButtonHandleLabelOff", type);
+    mOnCS = scheme->GetColorSpec("ButtonHandleOn", type);
+    mOffCS = scheme->GetColorSpec("ButtonHandleOff", type);
+    mHandleLabelCS = scheme->GetColorSpec("ButtonHandleLabel", type);
+    mHandleLabelOffCS = scheme->GetColorSpec("ButtonHandleLabelOff", type);
     mHandleLabelOffCS = mHandleLabelOffCS ? mHandleLabelOffCS : mHandleLabelCS;
-    mOutlineCS = scheme->getColorSpec("ButtonOutline", type);
-    mBackgroundLabelCS = scheme->getColorSpec("ButtonBackgroundLabel", type);
-    mInactiveOverlayCS = scheme->getColorSpec("ButtonInactiveOverlay", type);
+    mOutlineCS = scheme->GetColorSpec("ButtonOutline", type);
+    mBackgroundLabelCS = scheme->GetColorSpec("ButtonBackgroundLabel", type);
+    mInactiveOverlayCS = scheme->GetColorSpec("ButtonInactiveOverlay", type);
 
     // Calculate Areas (including shadows and thicknesses)
 
@@ -742,9 +742,9 @@ HISSTools_Value::HISSTools_Value(int paramIdx, double x, double y, double w, dou
 {
     // FIX - perhaps just inherit these??
 
-    bool labelBelow = designScheme->getFlag("ValueLabelBelow", type);
-    bool label = designScheme->getFlag("ValueDrawLabel", type);
-    mTextArea = designScheme->getDimension("ValueTextArea", type);
+    bool labelBelow = designScheme->GetFlag("ValueLabelBelow", type);
+    bool label = designScheme->GetFlag("ValueDrawLabel", type);
+    mTextArea = designScheme->GetDimension("ValueTextArea", type);
 
     mTextParam = new HISSTools_Text_Helper_Param(this, x, y, w, h, 1, kHAlignCenter, kVAlignCenter, "Value", type, designScheme);
 
@@ -872,9 +872,9 @@ HISSTools_Dial::HISSTools_Dial(int paramIdx, double x, double y, const char *typ
 {
     // Calculate Measurements
 
-    double d = designScheme->getDimension("DialDiameter", type);
+    double d = designScheme->GetDimension("DialDiameter", type);
 
-    mTextArea = designScheme->getDimension("DialTextArea", type);
+    mTextArea = designScheme->GetDimension("DialTextArea", type);
 
     mR = d / 2.0;
     mCx = x + mR;
@@ -882,41 +882,41 @@ HISSTools_Dial::HISSTools_Dial(int paramIdx, double x, double y, const char *typ
 
     // Pointer Appearance
 
-    double pointerCircRatio = designScheme->getDimension("DialPointerRatio", type);
-    double pointerTipRatio = designScheme->getDimension("DialTipRatio", type);
-    double pointerAngle = designScheme->getDimension("DialPointerAngle", type);
+    double pointerCircRatio = designScheme->GetDimension("DialPointerRatio", type);
+    double pointerTipRatio = designScheme->GetDimension("DialTipRatio", type);
+    double pointerAngle = designScheme->GetDimension("DialPointerAngle", type);
 
     SetPointerAppearance(pointerCircRatio, pointerTipRatio, pointerAngle);
 
     // Set Throw
 
-    mRefValue = designScheme->getDimension("DialRefValue", type);
-    mStartAngle = designScheme->getDimension("DialStartAngle", type);
-    mThrowAngle = designScheme->getDimension("DialThrowAngle", type);
+    mRefValue = designScheme->GetDimension("DialRefValue", type);
+    mStartAngle = designScheme->GetDimension("DialStartAngle", type);
+    mThrowAngle = designScheme->GetDimension("DialThrowAngle", type);
 
     // Get Appearance
 
-    mOutlineTK = designScheme->getDimension("DialOutline", type);
-    mPointerTK = designScheme->getDimension("DialIndicatorLineWidth", type);
-    mPointerOutlineTK = designScheme->getDimension("DialPointerOutline", type);
+    mOutlineTK = designScheme->GetDimension("DialOutline", type);
+    mPointerTK = designScheme->GetDimension("DialIndicatorLineWidth", type);
+    mPointerOutlineTK = designScheme->GetDimension("DialPointerOutline", type);
 
-    mOutlineSD = designScheme->getShadow("DialOutline", type);
-    mPointerSD = designScheme->getShadow("DialPointer", type);
+    mOutlineSD = designScheme->GetShadow("DialOutline", type);
+    mPointerSD = designScheme->GetShadow("DialPointer", type);
 
-    mIndicatorCS = designScheme->getColorSpec("DialIndicator", type);
-    mCircleFillCS = designScheme->getColorSpec("DialCircleFill", type);
-    mPointerFillCS = designScheme->getColorSpec("DialPointerFill", type);
-    mOutlineCS = designScheme->getColorSpec("DialOutline", type);
-    mPointerOutlineCS = designScheme->getColorSpec("DialPointerOutline", type);
-    mInactiveOverlayCS = designScheme->getColorSpec("DialInactiveOverlay", type);
+    mIndicatorCS = designScheme->GetColorSpec("DialIndicator", type);
+    mCircleFillCS = designScheme->GetColorSpec("DialCircleFill", type);
+    mPointerFillCS = designScheme->GetColorSpec("DialPointerFill", type);
+    mOutlineCS = designScheme->GetColorSpec("DialOutline", type);
+    mPointerOutlineCS = designScheme->GetColorSpec("DialPointerOutline", type);
+    mInactiveOverlayCS = designScheme->GetColorSpec("DialInactiveOverlay", type);
 
-    mDrawValOnlyOnMO = designScheme->getFlag("DialDrawValOnlyOnMO");
+    mDrawValOnlyOnMO = designScheme->GetFlag("DialDrawValOnlyOnMO");
 
     // Text 
 
-    mPromptHalfHeight = (0.5 * designScheme->getTextStyle("DialValue", type)->mSize) + designScheme->getDimension("DialPromptPadding", type);
+    mPromptHalfHeight = (0.5 * designScheme->GetTextStyle("DialValue", type)->mSize) + designScheme->GetDimension("DialPromptPadding", type);
 
-    double textPad = designScheme->getDimension("DialPromptPadding", type);
+    double textPad = designScheme->GetDimension("DialPromptPadding", type);
     double halfWidth = mR;// * mPromptRatio;// * mPointerCircRadius;
     double labelHalfWidth = mR * 1.2;
 
@@ -1164,11 +1164,11 @@ HISSTools_Switch::HISSTools_Switch(int paramIdx, double x, double y, double w, d
 
     mX = x;
     mY = y;
-    mW = w < 0 ? designScheme->getDimension("SwitchWidth", type) : w;
-    mH = h < 0 ? designScheme->getDimension("SwitchHeight", type) : h;
+    mW = w < 0 ? designScheme->GetDimension("SwitchWidth", type) : w;
+    mH = h < 0 ? designScheme->GetDimension("SwitchHeight", type) : h;
     mS = std::min(w, h);
 
-    double roundness = designScheme->getDimension("SwitchRoundness", type);
+    double roundness = designScheme->GetDimension("SwitchRoundness", type);
     mRoundness = roundness < 0 ? mH / 2 : roundness;
 
     // Number of States
@@ -1179,16 +1179,16 @@ HISSTools_Switch::HISSTools_Switch(int paramIdx, double x, double y, double w, d
 
     // Get Appearance
 
-    mHandleTK = designScheme->getDimension("SwitchHandleOutline", type);
-    mBoxOutlineTK = designScheme->getDimension("SwitchBoxOutline", type);
+    mHandleTK = designScheme->GetDimension("SwitchHandleOutline", type);
+    mBoxOutlineTK = designScheme->GetDimension("SwitchBoxOutline", type);
 
-    mShadow = designScheme->getShadow("Switch", type);
+    mShadow = designScheme->GetShadow("Switch", type);
 
-    mHandleFillCS = designScheme->getColorSpec("SwitchHandleFill", type);
-    mHandleOutlineCS = designScheme->getColorSpec("SwitchHandleOutline", type);
-    mBoxFillCS = designScheme->getColorSpec("SwitchBoxFill", type);
-    mBoxOutlineCS = designScheme->getColorSpec("SwitchOutline", type);
-    mInactiveOverlayCS = designScheme->getColorSpec("SwitchInactiveOverlay", type);
+    mHandleFillCS = designScheme->GetColorSpec("SwitchHandleFill", type);
+    mHandleOutlineCS = designScheme->GetColorSpec("SwitchHandleOutline", type);
+    mBoxFillCS = designScheme->GetColorSpec("SwitchBoxFill", type);
+    mBoxOutlineCS = designScheme->GetColorSpec("SwitchOutline", type);
+    mInactiveOverlayCS = designScheme->GetColorSpec("SwitchInactiveOverlay", type);
 
     // Calculate Areas (including shadows and thicknesses)
 
@@ -1302,12 +1302,12 @@ HISSTools_Matrix::HISSTools_Matrix(int paramIdx, double x, double y, int xDim, i
     mYDim = yDim;
     mX = x;
     mY = y;
-    mS = designScheme->getDimension("MatrixHandleSize", type);
-    mGap = designScheme->getDimension("MatrixHandleGap", type);
+    mS = designScheme->GetDimension("MatrixHandleSize", type);
+    mGap = designScheme->GetDimension("MatrixHandleGap", type);
     mUnit = mS + mGap;
     mW = mXDim * mUnit - mGap;
     mH = mYDim * mUnit - mGap;
-    mRoundness = designScheme->getDimension("MatrixHandleRoundness", type);
+    mRoundness = designScheme->GetDimension("MatrixHandleRoundness", type);
     mRoundness = mRoundness < 0. ? mS / 2 : mRoundness;
 
     // States
@@ -1327,7 +1327,7 @@ HISSTools_Matrix::HISSTools_Matrix(int paramIdx, double x, double y, int xDim, i
         char testName[16];
 
         sprintf(testName, "MatrixState%d", i);
-        mStateCS[i] = currentStateScheme->getColorSpec(testName, type);
+        mStateCS[i] = currentStateScheme->GetColorSpec(testName, type);
 
         if (!mStateCS[i])
             break;
@@ -1345,14 +1345,14 @@ HISSTools_Matrix::HISSTools_Matrix(int paramIdx, double x, double y, int xDim, i
 
     // Get Appearance
 
-    mHandleEmptyOutlineTK = designScheme->getDimension("MatrixShadowOutline", type);
-    mHandleFilledOutlineTK = designScheme->getDimension("MatrixOutline", type);
-    mHiliteTK = designScheme->getDimension("MatrixHilite", type);
+    mHandleEmptyOutlineTK = designScheme->GetDimension("MatrixShadowOutline", type);
+    mHandleFilledOutlineTK = designScheme->GetDimension("MatrixOutline", type);
+    mHiliteTK = designScheme->GetDimension("MatrixHilite", type);
 
-    mShadow = designScheme->getShadow("Matrix", type);
+    mShadow = designScheme->GetShadow("Matrix", type);
 
-    mOutlineCS = designScheme->getColorSpec("MatrixOutline", type);
-    mHiliteCS = designScheme->getColorSpec("MatrixHilite", type);
+    mOutlineCS = designScheme->GetColorSpec("MatrixOutline", type);
+    mHiliteCS = designScheme->GetColorSpec("MatrixHilite", type);
 
     // Calculate Areas (including shadows and thicknesses)
 
@@ -1573,13 +1573,13 @@ HISSTools_Progress::HISSTools_Progress(double x, double y, double w, double h, c
 {
     // Get Appearance
 
-    mOutlineTK = designScheme->getDimension("ProgressOutline", type);
+    mOutlineTK = designScheme->GetDimension("ProgressOutline", type);
 
-    mBackgroundCS = designScheme->getColorSpec("ProgressBackground", type);
-    mOutlineCS = designScheme->getColorSpec("ProgressOutline", type);
-    mProgressCS = designScheme->getColorSpec("Progress", type);
+    mBackgroundCS = designScheme->GetColorSpec("ProgressBackground", type);
+    mOutlineCS = designScheme->GetColorSpec("ProgressOutline", type);
+    mProgressCS = designScheme->GetColorSpec("Progress", type);
 
-    mShadow = designScheme->getShadow("Progress", type);
+    mShadow = designScheme->GetShadow("Progress", type);
 
     // Area
 
@@ -1706,22 +1706,22 @@ HISSTools_VUMeter::HISSTools_VUMeter(double x, double y, double w, double h, boo
 
     // Get Appearance
 
-    mOutlineTK = designScheme->getDimension("VUOutline", type);
-    mTickTK = designScheme->getDimension("VUTick", type);
-    mPeakHoldTK = designScheme->getDimension("VUPeakHold", type);
+    mOutlineTK = designScheme->GetDimension("VUOutline", type);
+    mTickTK = designScheme->GetDimension("VUTick", type);
+    mPeakHoldTK = designScheme->GetDimension("VUPeakHold", type);
 
-    mShadow = designScheme->getShadow("Meter", type);
+    mShadow = designScheme->GetShadow("Meter", type);
 
-    mOverlayFixedGradientBox = designScheme->getFlag("VUOverlayFixedGradientBox", type);
+    mOverlayFixedGradientBox = designScheme->GetFlag("VUOverlayFixedGradientBox", type);
 
-    mBackgroundCS = designScheme->getColorSpec("VUBackground", type);
-    mOutlineCS = designScheme->getColorSpec("VUOutline", type);
-    mVU1CS = designScheme->getColorSpec("VU1", type);
-    mVU1PeakCS = designScheme->getColorSpec("VU1Peak", type);
-    mVU2CS = designScheme->getColorSpec("VU2", type);
-    mVU2PeakCS = designScheme->getColorSpec("VU2Peak", type);
-    mVUSideCS = designScheme->getColorSpec("VUSide", type);
-    mVUSidePeakCS = designScheme->getColorSpec("VUSidePeak", type);
+    mBackgroundCS = designScheme->GetColorSpec("VUBackground", type);
+    mOutlineCS = designScheme->GetColorSpec("VUOutline", type);
+    mVU1CS = designScheme->GetColorSpec("VU1", type);
+    mVU1PeakCS = designScheme->GetColorSpec("VU1Peak", type);
+    mVU2CS = designScheme->GetColorSpec("VU2", type);
+    mVU2PeakCS = designScheme->GetColorSpec("VU2Peak", type);
+    mVUSideCS = designScheme->GetColorSpec("VUSide", type);
+    mVUSidePeakCS = designScheme->GetColorSpec("VUSidePeak", type);
 
     mMinDB = minDB;
     mMaxDB = maxDB;
