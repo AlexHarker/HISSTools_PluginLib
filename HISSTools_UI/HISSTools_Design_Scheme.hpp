@@ -1,4 +1,23 @@
 
+/**
+ * @file HISSTools_Design_Scheme.hpp
+ * @brief Defines the HISSTools_Design_Scheme class and associated components for managing design specifications.
+ *
+ * This file contains the declaration of the `HISSTools_Design_Scheme` class,
+ * which is responsible for managing various design specifications, such as
+ * dimensions, colors, text styles, and shadows, within the HISSTools framework.
+ * It includes methods for adding, retrieving, and managing these specifications,
+ * as well as support for default and customizable design schemes.
+ *
+ * The file also provides utility methods for handling labeled data (via the
+ * `HISSTools_Label` class template) and supporting different design elements
+ * (e.g., colors, text styles, shadows). A static default design scheme is also
+ * declared, which can be used as a baseline configuration.
+ *
+ * @note The design scheme and associated components are intended to support
+ * the customization of visual and interactive elements in applications or tools
+ * using the HISSTools framework.
+ */
 
 #ifndef __HISSTOOLS_DESIGN_SCHEME__
 #define __HISSTOOLS_DESIGN_SCHEME__
@@ -14,19 +33,94 @@
 /////////////////////////////////////////// Label Template Class //////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * @brief A template class for labeling objects with associated data.
+ *
+ * The `HISSTools_Label` class is a generic container that associates a label
+ * with a data value of type `T`. It allows for efficient storage and
+ * retrieval of labeled values within various HISSTools components.
+ *
+ * @tparam T The type of the data value to be associated with the label.
+ * This can be any data type, such as `int`, `float`, `bool`, etc.
+ */
+
 template <class T>
 class HISSTools_Label
 {
 public:
+    
+    /**
+     * @brief A string representing the type name.
+     *
+     * `TypeName` stores the name of the type as a `WDL_String`. It is used
+     * to identify the type associated with a particular object or specification
+     * within the HISSTools framework.
+     */
+    
     WDL_String TypeName;
+    
+    /**
+     * @brief A string representing the subtype.
+     *
+     * `SubType` stores the name of the subtype as a `WDL_String`. It is used
+     * to provide additional categorization or differentiation for an object
+     * or specification within the HISSTools framework, complementing the main type name.
+     */
+    
     WDL_String SubType;
+    
+    /**
+     * @brief The stored value of type `T`.
+     *
+     * `mValue` holds the actual data associated with this object. The type of
+     * `mValue` is determined by the template parameter `T`, allowing for
+     * flexibility in the type of data stored, such as `int`, `float`, `bool`, or
+     * any other user-defined types.
+     */
+    
     T mValue;
+    
+    /**
+     * @brief A flag indicating whether the associated object should be deleted.
+     *
+     * `mDelete` is a boolean flag that specifies whether the object associated
+     * with this instance should be deleted when no longer needed. If set to `true`,
+     * the object will be marked for deletion, otherwise it will not be deleted.
+     */
+    
     bool mDelete;
 
+    /**
+     * @brief Constructor for the HISSTools_Label class.
+     *
+     * This constructor initializes a `HISSTools_Label` object with the given value,
+     * type name, subtype, and a flag indicating whether the object should be deleted.
+     *
+     * @param value The value of type `T` to be stored in the label.
+     * @param name A C-style string representing the type name, which is stored in `TypeName`.
+     * @param subType A C-style string representing the subtype, stored in `SubType`.
+     * @param free A boolean flag (`mDelete`) that specifies whether the associated
+     * object should be deleted (`true`) or not (`false`) when no longer needed.
+     */
+    
     HISSTools_Label(T value, const char *name, const char *subType, bool free)
         : TypeName(name), SubType(subType), mValue(value), mDelete(free)
     {}
 
+    /**
+     * @brief Constructor for the HISSTools_Label class without deletion control.
+     *
+     * This constructor initializes a `HISSTools_Label` object with the given value,
+     * type name, and subtype, and sets the deletion flag (`mDelete`) to `false` by default.
+     *
+     * @param value The value of type `T` to be stored in the label.
+     * @param name A C-style string representing the type name, stored in `TypeName`.
+     * @param subType A C-style string representing the subtype, stored in `SubType`.
+     *
+     * @note The `mDelete` flag is set to `false`, meaning the object will not be
+     * deleted when no longer needed.
+     */
+    
     HISSTools_Label(T value, const char *name, const char *subType)
         : TypeName(name), SubType(subType), mValue(value), mDelete(false)
     {}
@@ -36,17 +130,45 @@ public:
 /////////////////////////////////////////// Design Scheme Class ///////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * @class HISSTools_Design_Scheme
+ * @brief A class representing the design scheme for HISSTools.
+ *
+ * The `HISSTools_Design_Scheme` class manages and stores design specifications,
+ * such as dimensions, colors, and text styles, for various components in the
+ * HISSTools framework. It allows customization and retrieval of design-related
+ * parameters, and can be initialized with default values or custom configurations.
+ */
 
 class HISSTools_Design_Scheme
 {
 public:
 
+    /**
+     * @brief Constructor for the HISSTools_Design_Scheme class.
+     *
+     * This constructor initializes a design scheme for the HISSTools. If the
+     * `defaultScheme` parameter is set to true, the scheme is initialized with
+     * default values; otherwise, it is initialized as an empty scheme.
+     *
+     * @param defaultScheme A boolean flag indicating whether to initialize the
+     * design scheme with default values. The default value is false.
+     */
+    
     HISSTools_Design_Scheme(bool defaultScheme = false)
     {
         if (defaultScheme)
             SetDefaults();
     }
 
+    /**
+     * @brief Destructor for the HISSTools_Design_Scheme class.
+     *
+     * This destructor is responsible for cleaning up resources used by the
+     * `HISSTools_Design_Scheme` class. It ensures that any dynamically allocated
+     * memory or objects associated with the design scheme are properly released.
+     */
+    
     ~HISSTools_Design_Scheme()
     {
         DeletePointers(mColorSpecs);
@@ -62,14 +184,82 @@ private:
 
     // Storage for all named specificiations
 
+    /**
+     * @brief A vector storing labeled text style specifications.
+     *
+     * `mTextStyles` is a collection of `HISSTools_Label` objects, where each label
+     * contains a pointer to a `HISSTools_Text` object. It is used to store and manage
+     * different text styles within the design scheme, allowing for the customization
+     * and retrieval of various text style specifications.
+     */
+    
     std::vector<HISSTools_Label<HISSTools_Text*>>           mTextStyles;
+    
+    /**
+     * @brief A vector storing labeled color specifications.
+     *
+     * `mColorSpecs` is a collection of `HISSTools_Label` objects, where each label
+     * contains a pointer to a `HISSTools_Color_Spec` object. It is used to store and manage
+     * various color specifications within the design scheme, allowing for the customization
+     * and retrieval of color settings for different elements.
+     */
+    
     std::vector<HISSTools_Label<HISSTools_Color_Spec*>>     mColorSpecs;
+    
+    /**
+     * @brief A vector storing labeled shadow specifications.
+     *
+     * `mShadowSpecs` is a collection of `HISSTools_Label` objects, where each label
+     * contains a pointer to a `HISSTools_Shadow` object. It is used to store and manage
+     * shadow specifications within the design scheme, allowing for customization and
+     * retrieval of shadow properties for various design elements.
+     */
+    
     std::vector<HISSTools_Label<HISSTools_Shadow*>>         mShadowSpecs;
+    
+    /**
+     * @brief A vector storing labeled dimensional values.
+     *
+     * `mDimensions` is a collection of `HISSTools_Label` objects, where each label
+     * contains a `double` value representing a dimension. It is used to store and
+     * manage various size or positional dimensions within the design scheme, allowing
+     * for the customization and retrieval of numerical design parameters.
+     */
+    
     std::vector<HISSTools_Label<double>>                    mDimensions;
+    
+    /**
+     * @brief A vector storing labeled boolean flags.
+     *
+     * `mFlags` is a collection of `HISSTools_Label` objects, where each label
+     * contains a `bool` value representing a flag. These flags are used to store
+     * and manage various boolean settings or options within the design scheme,
+     * allowing for the customization and retrieval of on/off or true/false values.
+     */
+    
     std::vector<HISSTools_Label<bool>>                      mFlags;
 
     // Searching Template
 
+    /**
+     * @brief Finds a labeled value in a search space by its name and subtype.
+     *
+     * This template function searches through a vector of `HISSTools_Label<T>` objects
+     * to find a value that matches the provided name and subtype. If no match is found,
+     * the specified default value is returned.
+     *
+     * @tparam T The type of the value being searched for.
+     *
+     * @param searchSpace A reference to a vector of `HISSTools_Label<T>` objects
+     * representing the search space.
+     * @param searchName A C-style string representing the name of the label to search for.
+     * @param searchSubTypes A C-style string representing the subtype of the label to search for.
+     * @param defaultValue The value to return if no matching label is found.
+     *
+     * @return The value associated with the matching label, or the default value if
+     * no match is found.
+     */
+    
     template <class T>
     T FindByName(std::vector<HISSTools_Label<T>>& searchSpace, const char *searchName, const char *searchSubTypes, T defaultValue)
     {
@@ -97,6 +287,24 @@ private:
 
     // Addition Template For Pointers
 
+    /**
+     * @brief Adds a pointer to a labeled object in the specified search space.
+     *
+     * This template function inserts a new pointer to an object of type `T` into a
+     * vector of `HISSTools_Label<T*>` objects. Each pointer is associated with a label
+     * consisting of a name and an optional subtype.
+     *
+     * @tparam T The type of the object being pointed to.
+     *
+     * @param searchSpace A reference to a vector of `HISSTools_Label<T*>` objects
+     * representing the search space where the new label and pointer will be added.
+     * @param name A C-style string representing the name of the label to associate
+     * with the pointer.
+     * @param subType A C-style string representing the subtype of the label to
+     * associate with the pointer.
+     * @param newValue A pointer to the new object that will be added to the search space.
+     */
+    
     template <class T>
     void AddPointer(std::vector<HISSTools_Label<T*>>& searchSpace, const char *name, const char *subType, T *newValue)
     {
@@ -114,6 +322,22 @@ private:
 
     // Deletion Template for Pointers
 
+    /**
+     * @brief Deletes pointers in the specified search space.
+     *
+     * This template function iterates through a vector of `HISSTools_Label<T*>` objects
+     * and deletes the pointers that were marked for deletion (if applicable). It ensures
+     * that any dynamically allocated objects in the search space are properly cleaned up.
+     *
+     * @tparam T The type of the objects being pointed to and deleted.
+     *
+     * @param searchSpace A reference to a vector of `HISSTools_Label<T*>` objects
+     * representing the search space from which pointers will be deleted.
+     *
+     * @note This function assumes that the objects pointed to need to be deleted
+     * manually, and it should be used with care to avoid double deletions or dangling pointers.
+     */
+    
     template <class T>
     void DeletePointers(std::vector<HISSTools_Label<T*>>& searchSpace)
     {
@@ -132,16 +356,57 @@ public:
 
     // Color Specs
 
+    /**
+     * @brief Adds a color specification to the design scheme.
+     *
+     * This method inserts a new color specification into the design scheme by associating
+     * a `HISSTools_Color_Spec` object with a specified name and subtype.
+     *
+     * @param name A C-style string representing the name of the color specification.
+     * @param subType A C-style string representing the subtype of the color specification,
+     * allowing for more specific categorization.
+     * @param spec A pointer to a `HISSTools_Color_Spec` object representing the color
+     * specification to be added.
+     */
+    
     void AddColorSpec(const char *name, const char *subType, HISSTools_Color_Spec *spec)
     {
         AddPointer(mColorSpecs, name, subType, spec);
     }
 
+    /**
+     * @brief Adds a color specification to the design scheme.
+     *
+     * This method inserts a new color specification into the design scheme by associating
+     * a `HISSTools_Color_Spec` object with a specified name. Unlike the other overload,
+     * this method does not require a subtype and is used for general color specifications.
+     *
+     * @param name A C-style string representing the name of the color specification.
+     * @param spec A pointer to a `HISSTools_Color_Spec` object representing the color
+     * specification to be added.
+     */
+    
     void AddColorSpec(const char *name, HISSTools_Color_Spec *spec)
     {
         AddColorSpec(name, nullptr, spec);
     }
 
+    /**
+     * @brief Retrieves a color specification by name and subtype.
+     *
+     * This method searches for and returns a pointer to a `HISSTools_Color_Spec` object
+     * based on the specified name and optional subtype. If the subtype is not provided,
+     * it defaults to `0`, and the method attempts to retrieve the color specification
+     * based solely on the name.
+     *
+     * @param name A C-style string representing the name of the color specification.
+     * @param subType A C-style string representing the subtype of the color specification.
+     * If not provided, the default is `0` (null), meaning the search will be based only on the name.
+     *
+     * @return A pointer to the corresponding `HISSTools_Color_Spec` object if found,
+     * or `nullptr` if no matching color specification is found.
+     */
+    
     HISSTools_Color_Spec *GetColorSpec(const char *name, const char *subType = 0)
     {
         return FindByName(mColorSpecs, name, subType, (HISSTools_Color_Spec *)NULL);
@@ -149,16 +414,55 @@ public:
 
     // Dimensions
 
+    /**
+     * @brief Adds a dimensional specification to the design scheme.
+     *
+     * This method inserts a new dimensional value into the design scheme by associating
+     * a name and subtype with a given numerical dimension, such as thickness, width, or height.
+     *
+     * @param name A C-style string representing the name of the dimension.
+     * @param subType A C-style string representing the subtype of the dimension,
+     * allowing for more specific categorization of the dimension.
+     * @param thickness A double value representing the dimension (e.g., thickness) to be added.
+     */
+    
     void AddDimension(const char *name, const char *subType, double thickness)
     {
         mDimensions.push_back(HISSTools_Label<double>(thickness, name, subType));
     }
 
+    /**
+     * @brief Adds a dimensional specification to the design scheme.
+     *
+     * This method inserts a new dimensional value into the design scheme by associating
+     * a name with a given numerical dimension, such as thickness, width, or height.
+     * Unlike the other overload, this method does not require a subtype and is used
+     * for general dimensions.
+     *
+     * @param name A C-style string representing the name of the dimension.
+     * @param thickness A double value representing the dimension (e.g., thickness) to be added.
+     */
+    
     void AddDimension(const char *name, double thickness)
     {
         AddDimension(name, nullptr, thickness);
     }
 
+    /**
+     * @brief Retrieves a dimensional value by name and optional subtype.
+     *
+     * This method searches for and returns a dimensional value (e.g., thickness, width, height)
+     * based on the provided name and optional subtype. If the subtype is not specified,
+     * it defaults to `0` and the method attempts to retrieve the dimension based solely on the name.
+     *
+     * @param name A C-style string representing the name of the dimension.
+     * @param subType A C-style string representing the subtype of the dimension.
+     * If not provided, the default is `0` (null), and the search will be based only on the name.
+     *
+     * @return A double value representing the corresponding dimension if found,
+     * or a default value if no matching dimension is found.
+     */
+    
     double GetDimension(const char *name, const char *subType = 0)
     {
         return FindByName(mDimensions, name, subType, 0.0);
@@ -166,16 +470,56 @@ public:
 
     // Text
 
+    /**
+     * @brief Adds a text style specification to the design scheme.
+     *
+     * This method inserts a new text style into the design scheme by associating
+     * a `HISSTools_Text` object with a specified name and subtype. It allows for
+     * customization and categorization of different text styles used within the design.
+     *
+     * @param name A C-style string representing the name of the text style.
+     * @param subType A C-style string representing the subtype of the text style,
+     * allowing for more specific categorization.
+     * @param spec A pointer to a `HISSTools_Text` object representing the text style specification to be added.
+     */
+    
     void AddTextStyle(const char *name, const char *subType, HISSTools_Text *spec)
     {
         AddPointer(mTextStyles, name, subType, spec);
     }
 
+    /**
+     * @brief Adds a text style specification to the design scheme.
+     *
+     * This method inserts a new text style into the design scheme by associating
+     * a `HISSTools_Text` object with a specified name. Unlike the other overload,
+     * this method does not require a subtype and is used for general text style specifications.
+     *
+     * @param name A C-style string representing the name of the text style.
+     * @param spec A pointer to a `HISSTools_Text` object representing the text style specification to be added.
+     */
+    
     void AddTextStyle(const char *name, HISSTools_Text *spec)
     {
         AddTextStyle(name, nullptr, spec);
     }
 
+    /**
+     * @brief Retrieves a text style specification by name and optional subtype.
+     *
+     * This method searches for and returns a pointer to a `HISSTools_Text` object
+     * representing a text style based on the specified name and optional subtype.
+     * If the subtype is not provided, it defaults to `0`, and the method attempts to
+     * retrieve the text style based solely on the name.
+     *
+     * @param name A C-style string representing the name of the text style.
+     * @param subType A C-style string representing the subtype of the text style.
+     * If not provided, the default is `0` (null), meaning the search will be based only on the name.
+     *
+     * @return A pointer to the corresponding `HISSTools_Text` object if found,
+     * or `nullptr` if no matching text style is found.
+     */
+    
     HISSTools_Text *GetTextStyle(const char *name, const char *subType = 0)
     {
         return FindByName(mTextStyles, name, subType, (HISSTools_Text *)NULL);
@@ -183,16 +527,56 @@ public:
 
     // Shadows
 
+    /**
+     * @brief Adds a shadow specification to the design scheme.
+     *
+     * This method inserts a new shadow specification into the design scheme by associating
+     * a `HISSTools_Shadow` object with a specified name and subtype. It allows for
+     * customization and categorization of shadow properties used within the design elements.
+     *
+     * @param name A C-style string representing the name of the shadow specification.
+     * @param subType A C-style string representing the subtype of the shadow specification,
+     * allowing for more specific categorization.
+     * @param spec A pointer to a `HISSTools_Shadow` object representing the shadow specification to be added.
+     */
+    
     void AddShadow(const char *name, const char *subType, HISSTools_Shadow *spec)
     {
         AddPointer(mShadowSpecs, name, subType, spec);
     }
 
+    /**
+     * @brief Adds a shadow specification to the design scheme.
+     *
+     * This method inserts a new shadow specification into the design scheme by associating
+     * a `HISSTools_Shadow` object with a specified name. Unlike the other overload,
+     * this method does not require a subtype and is used for general shadow specifications.
+     *
+     * @param name A C-style string representing the name of the shadow specification.
+     * @param spec A pointer to a `HISSTools_Shadow` object representing the shadow specification to be added.
+     */
+    
     void AddShadow(const char *name, HISSTools_Shadow *spec)
     {
         AddShadow(name, nullptr, spec);
     }
 
+    /**
+     * @brief Retrieves a shadow specification by name and optional subtype.
+     *
+     * This method searches for and returns a pointer to a `HISSTools_Shadow` object
+     * representing a shadow specification based on the provided name and optional subtype.
+     * If the subtype is not provided, it defaults to `0`, and the method attempts to
+     * retrieve the shadow specification based solely on the name.
+     *
+     * @param name A C-style string representing the name of the shadow specification.
+     * @param subType A C-style string representing the subtype of the shadow specification.
+     * If not provided, the default is `0` (null), meaning the search will be based only on the name.
+     *
+     * @return A pointer to the corresponding `HISSTools_Shadow` object if found,
+     * or `nullptr` if no matching shadow specification is found.
+     */
+    
     HISSTools_Shadow *GetShadow(const char *name, const char *subType = 0)
     {
         return FindByName(mShadowSpecs, name, subType, (HISSTools_Shadow *)NULL);
@@ -200,16 +584,58 @@ public:
 
     // Flags
 
+    /**
+     * @brief Adds a boolean flag to the design scheme.
+     *
+     * This method inserts a new boolean flag into the design scheme by associating
+     * the flag value with a specified name and subtype. It allows for the customization
+     * of various on/off or true/false settings within the design.
+     *
+     * @param name A C-style string representing the name of the flag.
+     * @param subType A C-style string representing the subtype of the flag,
+     * allowing for more specific categorization.
+     * @param flag A boolean value representing the flag, where `true` typically indicates
+     * that the flag is active or enabled, and `false` indicates it is inactive or disabled.
+     */
+    
     void AddFlag(const char *name, const char *subType, bool flag)
     {
         mFlags.push_back(HISSTools_Label<bool>(flag, name, subType));
     }
 
+    /**
+     * @brief Adds a boolean flag to the design scheme.
+     *
+     * This method inserts a new boolean flag into the design scheme by associating
+     * the flag value with a specified name. Unlike the other overload, this method
+     * does not require a subtype and is used for general flags.
+     *
+     * @param name A C-style string representing the name of the flag.
+     * @param flag A boolean value representing the flag, where `true` typically indicates
+     * that the flag is active or enabled, and `false` indicates it is inactive or disabled.
+     */
+    
     void AddFlag(const char *name, bool flag)
     {
         AddFlag(name, nullptr, flag);
     }
 
+    /**
+     * @brief Retrieves a boolean flag by name and optional subtype.
+     *
+     * This method searches for and returns the value of a boolean flag based on the
+     * provided name and optional subtype. If the subtype is not provided, it defaults
+     * to `0`, and the method attempts to retrieve the flag based solely on the name.
+     *
+     * @param name A C-style string representing the name of the flag.
+     * @param subType A C-style string representing the subtype of the flag.
+     * If not provided, the default is `0` (null), meaning the search will be based only on the name.
+     *
+     * @return A boolean value representing the flag, where `true` typically indicates
+     * that the flag is active or enabled, and `false` indicates it is inactive or disabled.
+     * If no matching flag is found, a default value of `false` is returned.
+     */
+    
     bool GetFlag(const char *name, const char *subType = 0)
     {
         return FindByName(mFlags, name, subType, (bool)false);
@@ -221,6 +647,17 @@ public:
 
 private:
 
+    /**
+     * @brief Sets the default values for the design scheme.
+     *
+     * This method initializes the design scheme with a set of predefined default values
+     * for various design parameters, such as dimensions, colors, and text styles. It ensures
+     * that the design scheme has a consistent baseline configuration, which can be
+     * customized further as needed.
+     *
+     * @note This method is typically called during the initialization of a design scheme
+     * to ensure that all necessary parameters have appropriate default settings.
+     */
     void SetDefaults()
     {
         // FIX - NEATEN THIS
@@ -604,6 +1041,18 @@ private:
         AddDimension("SpectralCurveSubSample", 1.0);
     }
 };
+
+/**
+ * @brief A static instance of the HISSTools_Design_Scheme initialized with default values.
+ *
+ * `DefaultDesignScheme` is a static instance of the `HISSTools_Design_Scheme` class
+ * that is initialized with default values by passing `true` to the constructor.
+ * This instance serves as the default design scheme and can be used as a baseline
+ * configuration for other design schemes or components.
+ *
+ * @note As a static instance, `DefaultDesignScheme` is shared across all instances
+ * of the class and persists for the duration of the program's execution.
+ */
 
 static HISSTools_Design_Scheme DefaultDesignScheme(true);
 

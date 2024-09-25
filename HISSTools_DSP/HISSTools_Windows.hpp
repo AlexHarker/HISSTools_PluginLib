@@ -1,4 +1,15 @@
 
+/**
+ * @file HISSTools_Windows.hpp
+ * @brief Defines the HISSTools_Windows class for applying windowing functions in signal processing.
+ *
+ * This file contains the declaration of the HISSTools_Windows class and related enumerations.
+ * The class provides methods to apply various windowing functions (e.g., Hann, Hamming) to input signals,
+ * with options for gain compensation and square root processing. It also manages internal storage for window values.
+ *
+ * The windowing functions are essential for tasks such as spectral analysis, filtering, or any operation
+ * that involves smoothing signal edges in time-domain processing.
+ */
 
 #ifndef __HISSTOOLS_WINDOWS__
 #define __HISSTOOLS_WINDOWS__
@@ -13,6 +24,12 @@
 #define WIND_FOURPI			12.56637061435817295384
 #define WIND_SIXPI			18.84955592153875943076
 
+/**
+ * @brief Enumeration of different window types.
+ *
+ * This enum defines the various types of windows that can be used in signal processing.
+ * Each type corresponds to a specific windowing function.
+ */
 
 enum WindowTypes {
 	
@@ -31,6 +48,12 @@ enum WindowTypes {
 	WIND_RECT = 12,
 };
 
+/**
+ * @brief Enumeration of different gain types.
+ *
+ * This enum defines the various types of gain adjustments that can be applied.
+ * Each gain type represents a specific method or mode of adjusting the signal amplitude.
+ */
 
 enum GainTypes {
 	
@@ -45,7 +68,15 @@ class HISSTools_Windows
 	
 public:
 	
-	HISSTools_Windows(unsigned long maxwindowSize) 
+    /**
+     * @brief Constructs an instance of the HISSTools_Windows class.
+     *
+     * This constructor initializes the HISSTools_Windows object and sets the maximum allowable window size.
+     *
+     * @param maxwindowSize The maximum size of the window in samples or points.
+     */
+    
+	HISSTools_Windows(unsigned long maxwindowSize)
 	{
 		if (maxwindowSize < 1)
 			maxwindowSize = 1;
@@ -62,13 +93,36 @@ public:
 		mWindowSize = -1;			
 	};
 	
-	
-	~HISSTools_Windows() 
+    /**
+     * @brief Destructor for the HISSTools_Windows class.
+     *
+     * This destructor is responsible for cleaning up any resources or memory allocated by the HISSTools_Windows object.
+     * It ensures proper deallocation when the object goes out of scope or is deleted.
+     */
+    
+	~HISSTools_Windows()
 	{
 		delete[] mWindow;
 	};
 	
-	
+    /**
+     * @brief Applies a windowing function to the input data.
+     *
+     * This method applies a selected windowing function to the input array `in` and stores the result in the output array `out`.
+     * It allows for customization of the window type, size, and optional square-root processing.
+     * Additionally, a fixed gain can be applied, and gain compensation can be selected for the window.
+     *
+     * @param in Pointer to the input data array.
+     * @param out Pointer to the output data array where the windowed result will be stored.
+     * @param windowType The type of windowing function to apply (e.g., Hann, Hamming).
+     * @param windowSize The size of the window to be applied.
+     * @param sqrtWindow If true, applies the square root of the window function.
+     * @param fixedGain A fixed gain factor to be applied to the windowed result.
+     * @param compensateWindowGain The type of gain compensation to be applied based on the window.
+     *
+     * @return Returns true if the window was applied successfully, false otherwise.
+     */
+    
 	bool applyWindow(double *in, double *out, WindowTypes windowType, unsigned long windowSize, bool sqrtWindow, double fixedGain, GainTypes compensateWindowGain)
 	{
 		double *window = mWindow;
@@ -95,7 +149,21 @@ public:
 		return true;
 	}
 	
-	
+    /**
+     * @brief Applies a windowing function to the input/output data array.
+     *
+     * This method applies a selected windowing function to the input/output array `io` in-place.
+     * It allows for the customization of the window type, size, and optional square-root processing.
+     * Additionally, a fixed gain can be applied, and gain compensation can be selected for the window.
+     *
+     * @param io Pointer to the input/output data array that will be modified by the windowing function.
+     * @param windowType The type of windowing function to apply (e.g., Hann, Hamming).
+     * @param windowSize The size of the window to be applied.
+     * @param sqrtWindow If true, applies the square root of the window function.
+     * @param fixedGain A fixed gain factor to be applied to the windowed result.
+     * @param compensateWindowGain The type of gain compensation to be applied based on the window.
+     */
+    
 	void applyWindow(double *io, WindowTypes windowType, unsigned long windowSize, bool sqrtWindow, double fixedGain, GainTypes compensateWindowGain)
 	{
 		applyWindow(io, io, windowType, windowSize, sqrtWindow, fixedGain, compensateWindowGain);
@@ -104,6 +172,17 @@ public:
 	
 private:
 	
+    /**
+     * @brief Computes the zeroth-order modified Bessel function of the first kind.
+     *
+     * This method calculates the zeroth-order modified Bessel function of the first kind (I₀) for a given input.
+     * It is commonly used in windowing functions such as the Kaiser window.
+     *
+     * @param xSq The square of the input value for which the Bessel function will be computed.
+     *
+     * @return The computed value of the I₀ Bessel function.
+     */
+    
 	double IZero(double xSq)
 	{
 		unsigned long i;
@@ -119,7 +198,18 @@ private:
 		return bFunction;
 	}
 	
-	
+    /**
+     * @brief Calculates and stores the windowing function for a given window size and type.
+     *
+     * This method computes the windowing function based on the specified window size and type.
+     * It also offers an option to apply the square root of the windowing function if required.
+     * The computed window values are typically stored internally for later use.
+     *
+     * @param windowSize The size of the window to be calculated.
+     * @param windowType The type of windowing function to generate (e.g., Hann, Hamming).
+     * @param sqrtWindow If non-zero, the square root of the windowing function is applied.
+     */
+    
 	void calculateWindow(unsigned long windowSize, WindowTypes windowType, long sqrtWindow)
 	{
 		double *window = mWindow;
@@ -239,21 +329,73 @@ private:
 	
 	// Window
 	
+    /**
+     * @brief Pointer to the array storing the calculated window values.
+     *
+     * This member variable holds a dynamically allocated array that contains the computed windowing function values.
+     * It is used internally to apply the window to input data during signal processing.
+     */
+    
 	double *mWindow;
 	
 	// Current Parameters
 	
+    /**
+     * @brief Stores the size of the currently calculated window.
+     *
+     * This member variable holds the size of the window that has been calculated and stored in the `mWindow` array.
+     * It determines the number of elements in the windowing function and is used during window application.
+     */
+    
 	unsigned long mWindowSize;
+    
+    /**
+     * @brief Stores the type of the currently selected window function.
+     *
+     * This member variable holds the type of window function (e.g., Hann, Hamming) that is currently in use or has been calculated.
+     * It is used to determine the windowing function to apply during signal processing.
+     */
+    
 	WindowTypes mWindowType;
+    
+    /**
+     * @brief Indicates whether the square root of the window function is applied.
+     *
+     * This member variable holds a boolean value that determines if the square root of the window function is applied.
+     * If true, the square root of the windowing function will be used during calculations.
+     */
+    
 	bool mSqrtWindow;
 	
 	// Gain Values
 	
-	double mWindowLinGain;	
-	double mWindowSqGain;	
+    /**
+     * @brief Stores the linear gain factor applied to the window function.
+     *
+     * This member variable holds the linear gain value that is applied to the window function.
+     * It is used to scale the windowed signal, affecting the overall amplitude of the processed output.
+     */
+    
+	double mWindowLinGain;
+    
+    /**
+     * @brief Stores the squared gain factor applied to the window function.
+     *
+     * This member variable holds the squared gain value applied to the window function.
+     * It is used to adjust the amplitude of the windowed signal when working with the square root of the window or other gain adjustments.
+     */
+    
+	double mWindowSqGain;
 	
 	// Maximum Size
 	
+    /**
+     * @brief Stores the maximum allowable window size.
+     *
+     * This member variable holds the maximum window size that can be used or allocated by the HISSTools_Windows class.
+     * It is used to ensure that the window size does not exceed a predefined limit during window calculations.
+     */
+    
 	unsigned long mMaxWindowSize;
 };
 
